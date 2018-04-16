@@ -148,7 +148,8 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-        <src:Minus3Converter x:Key="Minus3Converter"></src:Minus3Converter>
+        <src:Minus15Converter x:Key="Minus15Converter"/>
+        <src:Minus204Converter x:Key="Minus204Converter"/>
     </Window.Resources>
     <Grid x:Name="grdMain" Focusable="True">
         <Grid.Background>
@@ -278,7 +279,7 @@
             <ListBox x:Name="lbPingSessions" Margin="77,29,10,51">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid Background="Black" Height="{Binding GridHeight}" Width="{Binding ElementName=lbPingSessions, Path=ActualWidth, Converter={StaticResource Minus3Converter}}" VerticalAlignment="Top">
+                        <Grid Background="Black" Height="{Binding GridHeight}" Width="{Binding ElementName=lbPingSessions, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" VerticalAlignment="Top">
                             <lvc:CartesianChart AnimationsSpeed="0:0:0.5" Hoverable="False" DataTooltip="{x:Null}" Foreground="{x:Null}" BorderBrush="#FF4F4F4F" Margin="27,18,0,0">
                                 <lvc:CartesianChart.Series>
                                     <lvc:LineSeries Values="{Binding ChartValues}" 
@@ -318,7 +319,7 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <TextBox x:Name="txtNetAddress" Margin="241,2,10,0" KeyDown="txtNetAddress_KeyDown" TextWrapping="Wrap" Text="8.8.8.8" VerticalAlignment="Top"  Height="22">
+            <TextBox x:Name="txtNetAddress" Margin="288,2,10,0" KeyDown="txtNetAddress_KeyDown" TextWrapping="Wrap" Text="8.8.8.8" VerticalAlignment="Top"  Height="22">
                 <i:Interaction.Behaviors>
                     <src:DoubleClickBehavior/>
                 </i:Interaction.Behaviors>
@@ -327,13 +328,28 @@
             <Button x:Name="btnNetLookup" Content="NsLookup" Style="{StaticResource ResourceKey=ButtonEdges}" Click="btnNetLookup_Click" HorizontalAlignment="Left" Margin="127,2,0,0" VerticalAlignment="Top" Width="67"/>
             <TextBlock x:Name="lblNetResolved" Margin="76,0,0,17" TextWrapping="Wrap" Text="NSlookup:" Foreground="#FF8D8D8D" Height="18" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="60"/>
             <Button x:Name="btnNetPingToggleAll" Content="⏯ All" Click="btnNetPingToggleAll_Click" Style="{StaticResource ResourceKey=ButtonEdges}" HorizontalAlignment="Left" Margin="77,2,0,0" VerticalAlignment="Top" Width="45"/>
-            <ListBox x:Name="lbResolvedAddresses" Margin="136,0,10,5" Height="41" VerticalAlignment="Bottom">
+            <ListBox x:Name="lbResolvedAddresses" Margin="136,0,10,3" Height="45" VerticalAlignment="Bottom">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid HorizontalAlignment="Left" Height="16" Margin="0,0,0,0" VerticalAlignment="Top" Width="306" Background="Black">
-                            <TextBlock MouseDown="lblNetDNS_MouseDown" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding IPAddress}" VerticalAlignment="Top" Width="87" Height="16" Foreground="#FFC91A1A"/>
-                            <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text=" = " VerticalAlignment="Top" Width="15" Foreground="#FFC91A1A" Height="16" Margin="87,0,0,0"/>
-                            <TextBlock MouseDown="lblNetDNS_MouseDown" TextWrapping="Wrap" Text="Hostname" VerticalAlignment="Top" Foreground="#FFC91A1A" Height="16" Margin="102,0,10,0"/>
+                        <Grid HorizontalAlignment="Left" Height="16" Margin="0,0,0,0" VerticalAlignment="Top" Width="{Binding ElementName=lbResolvedAddresses, Path=ActualWidth, Converter={StaticResource Minus204Converter}}" Background="Black">
+                            <TextBlock MouseDown="lblNetDNS_MouseDown" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding IPAddress}" VerticalAlignment="Top" Width="87" Height="16" Foreground="#FF8D8D8D"/>
+                            <TextBlock MouseDown="lblNetDNSFull_MouseDown" HorizontalAlignment="Left" TextWrapping="Wrap" Text=" = " VerticalAlignment="Top" Width="15" Foreground="#FF8D8D8D" Height="16" Margin="87,0,0,0"/>
+                            <TextBlock MouseDown="lblNetDNS_MouseDown" TextWrapping="Wrap" Text="{Binding HostName}" VerticalAlignment="Top" Width="{Binding ElementName=lbResolvedAddresses, Path=ActualWidth, Converter={StaticResource Minus204Converter}}" Foreground="#FF8D8D8D" Height="16" Margin="102,0,10,0"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Button x:Name="btnNetTrace" Content="Trace" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="241,2,0,0" VerticalAlignment="Top" Width="42"/>
+            <ListBox x:Name="lbTraceSessions" HorizontalAlignment="Left" Height="45" Margin="458,0,-370,3" VerticalAlignment="Bottom" Width="366">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Background="Black" Height="{Binding GridHeight}" Width="{Binding ElementName=lbPingSessions, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" VerticalAlignment="Top">
+                            
+                            <TextBlock Margin="27,0,0,0" TextWrapping="Wrap" Text="{Binding ChartTitle}" LineStackingStrategy="BlockLineHeight" Foreground="#FF00CFF0" Height="18" VerticalAlignment="Top"/>
+                            <Button Content="⏯" Click="BtnPingEntryToggle_Click" HorizontalAlignment="Left" Margin="1,0,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
+                            <Button Content="Dn" Click="BtnPingEntryDownArrow_Click" HorizontalAlignment="Left" Margin="1,51,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
+                            <Button Content="Up" Click="BtnPingEntryUpArrow_Click" HorizontalAlignment="Left" Margin="1,26,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
+                            <Button Content="X" Click="BtnPingEntryClose_Click" HorizontalAlignment="Left" VerticalAlignment="Top" Width="26" Height="26" Margin="0,77,427,0" FontSize="14"/>
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

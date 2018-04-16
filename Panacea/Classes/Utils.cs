@@ -109,11 +109,24 @@ namespace Panacea.Classes
 
     #region Supporting Classes
 
-    public class Minus3Converter : IValueConverter
+    public class Minus15Converter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return ((double)value) - 15;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException("Cannot convert back");
+        }
+    }
+
+    public class Minus204Converter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return ((double)value) - 204;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

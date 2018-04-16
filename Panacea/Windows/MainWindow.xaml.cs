@@ -73,6 +73,7 @@ namespace Panacea
         private bool aboutPlaying = false;
         private bool glblPinging = true;
         private bool resolvingDNS = false;
+        private int resolvedEntries = 0;
         private bool settingsBadAlerted = false;
 
         #endregion
@@ -468,18 +469,51 @@ namespace Panacea
 
         private void lblNetDNS_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            try
+            int retries = 3;
+            int delay = 100;
+            for (int i = 1; i <= retries; i++)
             {
-                if (e.ChangedButton == MouseButton.Left)
+                try
                 {
-                    var textBlock = (TextBlock)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
-                    Clipboard.SetText(textBlock.Text);
-                    uStatusUpdate($"Set Clipboard: {textBlock.Text}");
+                    if (e.ChangedButton == MouseButton.Left)
+                    {
+                        var textBlock = (TextBlock)e.OriginalSource;
+                        Clipboard.SetText(textBlock.Text);
+                        uStatusUpdate($"Set Clipboard: {textBlock.Text}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (i <= retries)
+                        Thread.Sleep(delay);
+                    else
+                        LogException(ex);
                 }
             }
-            catch (Exception ex)
+        }
+
+        private void lblNetDNSFull_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            int retries = 3;
+            int delay = 100;
+            for (int i = 1; i <= retries; i++)
             {
-                LogException(ex);
+                try
+                {
+                    if (e.ChangedButton == MouseButton.Left)
+                    {
+                        var dnsEntry = (HostEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
+                        Clipboard.SetText($"{dnsEntry.IPAddress} = {dnsEntry.HostName}");
+                        uStatusUpdate($"Set Clipboard: {dnsEntry.IPAddress} = {dnsEntry.HostName}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (i <= retries)
+                        Thread.Sleep(delay);
+                    else
+                        LogException(ex);
+                }
             }
         }
 
@@ -662,15 +696,32 @@ namespace Panacea
 
         private void DumpDebugLog()
         {
-            try
+            int retries = 3;
+            int delay = 1000;
+            for (int i = 1; i <= retries; i++)
             {
-                using (StreamWriter sw = File.AppendText($@"{logDir}DebugLog_{DateTime.Now.ToString("MM-dd-yy")}.log"))
-                    sw.WriteLine(Toolbox.debugLog.ToString());
-                Toolbox.debugLog.Clear();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
+                try
+                {
+                    using (StreamWriter sw = File.AppendText($@"{logDir}DebugLog_{DateTime.Now.ToString("MM-dd-yy")}.log"))
+                        sw.WriteLine(Toolbox.debugLog.ToString());
+                    Toolbox.debugLog.Clear();
+                }
+                catch (IOException io)
+                {
+                    if (i <= retries)
+                        Thread.Sleep(delay);
+                    else
+                    {
+                        Toolbox.uAddDebugLog($"Dumping debug w/ retries resulted in ioexception: {io.Message}");
+                        using (StreamWriter sw = File.AppendText($@"{logDir}DebugLog_{DateTime.Now.ToString("MM-dd-yy")}_{Toolbox.GenerateRandomNumber()}.log"))
+                            sw.WriteLine(Toolbox.debugLog.ToString());
+                        Toolbox.debugLog.Clear();
+                    }
+                }
+                catch (Exception ex)
+                {
+                        LogException(ex);
+                }
             }
         }
 
@@ -830,17 +881,25 @@ namespace Panacea
 
         private void SerializeSettings()
         {
-            try
+            int retries = 3;
+            int delay = 1000;
+            for (int i = 1; i <= retries; i++)
             {
-                uDebugLogAdd("Starting settings serialization");
-                string serializedObj = JsonConvert.SerializeObject(Toolbox.settings, Formatting.Indented);
-                using (StreamWriter sw = new StreamWriter($@"{confDir}Settings.conf"))
-                    sw.WriteLine(serializedObj);
-                uDebugLogAdd($"Settings.conf serialized");
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
+                try
+                {
+                    uDebugLogAdd("Starting settings serialization");
+                    string serializedObj = JsonConvert.SerializeObject(Toolbox.settings, Formatting.Indented);
+                    using (StreamWriter sw = new StreamWriter($@"{confDir}Settings.conf"))
+                        sw.WriteLine(serializedObj);
+                    uDebugLogAdd($"Settings.conf serialized");
+                }
+                catch (Exception ex)
+                {
+                    if (i <= retries)
+                        Thread.Sleep(delay);
+                    else
+                        LogException(ex);
+                }
             }
         }
 
@@ -892,6 +951,7 @@ namespace Panacea
             {
                 uDebugLogAdd("Saving settings");
                 Toolbox.settings.WindowLocation = new WindowDimensions() { Left = this.Left, Top = this.Top, Height = this.Height, Width = this.Width };
+                SerializeSettings();
                 uDebugLogAdd("Settings saved");
             }
             catch (Exception ex)
@@ -1258,6 +1318,7 @@ namespace Panacea
             {
                 lbResolvedAddresses.Items.Clear();
                 resolvingDNS = true;
+                int entriesToLookFor = 0;
                 string resolvedAddress = string.Empty;
                 string currentAddress = string.Empty;
                 var addressNoSpace = Regex.Replace(address, @"\s+", "");
@@ -1265,8 +1326,10 @@ namespace Panacea
                 uDebugLogAdd("Starting address lookup");
                 foreach (var entry in entries)
                 {
+                    entriesToLookFor++;
                     tResolveDNSEntry(entry);
                 }
+                tDNSResolvingHelper(entriesToLookFor);
             }
             catch (Exception ex)
             {
@@ -1274,8 +1337,7 @@ namespace Panacea
             }
             finally
             {
-                resolvingDNS = false;
-                uDebugLogAdd("Finished address lookup");
+                uDebugLogAdd("Finished address lookup method");
             }
         }
 
@@ -1454,6 +1516,7 @@ namespace Panacea
                         }
                     }
                     worker.ReportProgress(1);
+                    resolvedEntries++;
                 }
                 catch (Exception ex)
                 {
@@ -1466,6 +1529,39 @@ namespace Panacea
                 {
                     uDebugLogAdd($"Worker progress is {e2.ProgressPercentage}, adding ResolvedEntry | IP({resolvedEntry.IPAddress}) | HN({resolvedEntry.HostName})");
                     lbResolvedAddresses.Items.Add(resolvedEntry);
+                }
+            };
+            worker.RunWorkerAsync();
+        }
+
+        private void tDNSResolvingHelper(int entriesToLookFor)
+        {
+            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+            worker.DoWork += (work, we) =>
+            {
+                while (resolvedEntries != entriesToLookFor)
+                {
+                    worker.ReportProgress(1);
+                    Thread.Sleep(500);
+                    worker.ReportProgress(0);
+                }
+                worker.ReportProgress(2);
+            };
+            worker.ProgressChanged += (pc, pe) =>
+            {
+                if (pe.ProgressPercentage == 1)
+                {
+                    if (lblNetResolved.Text == "NSlookup:")
+                        lblNetResolved.Text = ".";
+                    else if (lblNetResolved.Text != ".....")
+                        lblNetResolved.Text = $"{lblNetResolved.Text}.";
+                    else
+                        lblNetResolved.Text = ".";
+                }
+                if (pe.ProgressPercentage == 2)
+                {
+                    lblNetResolved.Text = "NSlookup:";
+                    resolvedEntries = 0;
                 }
             };
             worker.RunWorkerAsync();
