@@ -3,3 +3,9 @@
 ################################################################################
 
 /.vs/Panacea/v15/Server/sqlite3
+/Panacea/bin/Debug
+/Upstaller/bin/Debug
+/Upstaller/obj/Debug
+/Panacea/obj/Debug
+/Panacea/bin/x64/Debug
+/Panacea/obj/x64/Debug
