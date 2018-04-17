@@ -47,6 +47,17 @@ namespace Panacea.Classes
             grd.BeginAnimation(Grid.MarginProperty, animation);
         }
 
+        public static void AnimateListBox(ListBox lb, System.Windows.Thickness toThickness)
+        {
+            ThicknessAnimation animation = new ThicknessAnimation()
+            {
+                AccelerationRatio = .9,
+                Duration = TimeSpan.FromSeconds(.3),
+                To = toThickness
+            };
+            lb.BeginAnimation(ListBox.MarginProperty, animation);
+        }
+
         public static int GenerateRandomNumber()
         {
             return random.Next();

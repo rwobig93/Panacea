@@ -72,6 +72,8 @@ namespace Panacea
         private bool notificationPlaying = false;
         private bool aboutPlaying = false;
         private bool glblPinging = true;
+        private int settingsTimer = 5;
+        private bool settingsSaveVerificationInProgress = false;
         private bool resolvingDNS = false;
         private int resolvedEntries = 0;
         private bool settingsBadAlerted = false;
@@ -101,6 +103,7 @@ namespace Panacea
         {
             // Allow borderless window to be resized
             WindowChrome.SetWindowChrome(this, new WindowChrome() { ResizeBorderThickness = new Thickness(5), CaptionHeight = .05 });
+            CleanupOldFiles();
         }
 
         private void winMain_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -481,6 +484,7 @@ namespace Panacea
                         Clipboard.SetText(textBlock.Text);
                         uStatusUpdate($"Set Clipboard: {textBlock.Text}");
                     }
+                    break;
                 }
                 catch (Exception ex)
                 {
@@ -506,6 +510,7 @@ namespace Panacea
                         Clipboard.SetText($"{dnsEntry.IPAddress} = {dnsEntry.HostName}");
                         uStatusUpdate($"Set Clipboard: {dnsEntry.IPAddress} = {dnsEntry.HostName}");
                     }
+                    break;
                 }
                 catch (Exception ex)
                 {
@@ -517,18 +522,25 @@ namespace Panacea
             }
         }
 
+        private void btnNetTrace_Click(object sender, RoutedEventArgs e)
+        {
+            if (lbTraceSessions.Items.Count <= 0)
+                ToggleListBox(lbTraceSessions);
+
+        }
+
         #endregion
 
         #region grdSettings
 
         private void txtSetNetPingCount_KeyDown(object sender, KeyEventArgs e)
         {
-            tUpdateSettings(SettingsUpdate.PingCount, txtSetNetPingCount.Text);
+            StartSettingsUpdate();
         }
 
         private void cmbxSetNetDTFormat_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            tUpdateSettings(SettingsUpdate.PingDTFormat);
+            StartSettingsUpdate();
         }
 
         #endregion
@@ -705,6 +717,7 @@ namespace Panacea
                     using (StreamWriter sw = File.AppendText($@"{logDir}DebugLog_{DateTime.Now.ToString("MM-dd-yy")}.log"))
                         sw.WriteLine(Toolbox.debugLog.ToString());
                     Toolbox.debugLog.Clear();
+                    break;
                 }
                 catch (IOException io)
                 {
@@ -716,6 +729,7 @@ namespace Panacea
                         using (StreamWriter sw = File.AppendText($@"{logDir}DebugLog_{DateTime.Now.ToString("MM-dd-yy")}_{Toolbox.GenerateRandomNumber()}.log"))
                             sw.WriteLine(Toolbox.debugLog.ToString());
                         Toolbox.debugLog.Clear();
+                        break;
                     }
                 }
                 catch (Exception ex)
@@ -795,6 +809,27 @@ namespace Panacea
             }
         }
 
+        private void ToggleListBox(ListBox lb)
+        {
+            try
+            {
+                if (lb.Margin != Defaults.TraceLBIn)
+                {
+                    lb.Visibility = Visibility.Visible;
+                    Toolbox.AnimateListBox(lb, Defaults.TraceLBIn);
+                }
+                else
+                {
+                    Toolbox.AnimateListBox(lb, Defaults.TraceLBOut);
+                    lb.Visibility = Visibility.Hidden;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         private void HideUnusedMenuGrids(Grid grid = null)
         {
             if (grid != grdAudio)
@@ -824,6 +859,7 @@ namespace Panacea
             try
             {
                 HideUnusedMenuGrids();
+                HideElementsThatNeedHidden();
             }
             catch (Exception ex)
             {
@@ -831,10 +867,47 @@ namespace Panacea
             }
         }
 
+        private void HideElementsThatNeedHidden()
+        {
+            lbTraceSessions.Visibility = Visibility.Hidden;
+        }
+
         public object GetPropertyValue(string propertyName)
         {
             //returns value of property Name
             return this.GetType().GetProperty(propertyName).GetValue(this, null);
+        }
+
+        private void CleanupOldFiles()
+        {
+            try
+            {
+                foreach (var file in Directory.EnumerateFiles(logDir))
+                {
+                    FileInfo fileInfo = new FileInfo(file);
+                    string fileNaem = fileInfo.Name;
+                    if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
+                    {
+                        try
+                        {
+                            fileInfo.Delete();
+                            uStatusUpdate($"Deleted old log file: {fileNaem}");
+                        }
+                        catch (IOException io)
+                        {
+                            uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            LogException(ex);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion
@@ -892,6 +965,7 @@ namespace Panacea
                     using (StreamWriter sw = new StreamWriter($@"{confDir}Settings.conf"))
                         sw.WriteLine(serializedObj);
                     uDebugLogAdd($"Settings.conf serialized");
+                    break;
                 }
                 catch (Exception ex)
                 {
@@ -934,9 +1008,24 @@ namespace Panacea
             {
                 uDebugLogAdd("Setting default settings");
                 txtSetNetPingCount.Text = Toolbox.settings.PingChartLength.ToString();
-                cmbxSetNetDTFormat.Items.Add("Seconds");
-                cmbxSetNetDTFormat.Items.Add("Minutes");
-                cmbxSetNetDTFormat.Items.Add("Hours");
+                var seconds = "Seconds";
+                var minutes = "Minutes";
+                var hours = "Hours";
+                cmbxSetNetDTFormat.Items.Add(seconds);
+                cmbxSetNetDTFormat.Items.Add(minutes);
+                cmbxSetNetDTFormat.Items.Add(hours);
+                switch (Toolbox.settings.DateTimeFormat)
+                {
+                    case DTFormat.Sec:
+                        cmbxSetNetDTFormat.SelectedItem = seconds;
+                        break;
+                    case DTFormat.Min:
+                        cmbxSetNetDTFormat.SelectedItem = minutes;
+                        break;
+                    case DTFormat.Hours:
+                        cmbxSetNetDTFormat.SelectedItem = hours;
+                        break;
+                }
                 uDebugLogAdd("Default settings set");
             }
             catch (Exception ex)
@@ -953,6 +1042,50 @@ namespace Panacea
                 Toolbox.settings.WindowLocation = new WindowDimensions() { Left = this.Left, Top = this.Top, Height = this.Height, Width = this.Width };
                 SerializeSettings();
                 uDebugLogAdd("Settings saved");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void StartSettingsUpdate()
+        {
+
+            try
+            {
+                if (!settingsSaveVerificationInProgress)
+                {
+                    settingsSaveVerificationInProgress = true;
+                    BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                    worker.DoWork += (ws, we) =>
+                    {
+                        try
+                        {
+                            while (settingsTimer > 0)
+                            {
+                                Thread.Sleep(1000);
+                                settingsTimer--;
+                            }
+                            worker.ReportProgress(1);
+                            settingsSaveVerificationInProgress = false;
+                            settingsTimer = 5;
+                        }
+                        catch (Exception ex)
+                        {
+                            LogException(ex);
+                        }
+                    };
+                    worker.ProgressChanged += (ps, pe) =>
+                    {
+                        if (pe.ProgressPercentage == 1)
+                        {
+                            tUpdateSettings(SettingsUpdate.PingCount, txtSetNetPingCount.Text);
+                            tUpdateSettings(SettingsUpdate.PingDTFormat);
+                        }
+                    };
+                    worker.RunWorkerAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -1341,6 +1474,45 @@ namespace Panacea
             }
         }
 
+        public static IEnumerable<IPAddress> GetTraceRoute(string hostname)
+        {
+            // following are the defaults for the "traceroute" command in unix.
+            const int timeout = 10000;
+            const int maxTTL = 30;
+            const int bufferSize = 32;
+
+            byte[] buffer = new byte[bufferSize];
+            new Random().NextBytes(buffer);
+            Ping pinger = new Ping();
+
+            for (int ttl = 1; ttl <= maxTTL; ttl++)
+            {
+                PingOptions options = new PingOptions(ttl, true);
+                PingReply reply = pinger.Send(hostname, timeout, buffer, options);
+
+                if (reply.Status == IPStatus.Success)
+                {
+                    // Success means the tracert has completed
+                    yield return reply.Address;
+                    break;
+                }
+                if (reply.Status == IPStatus.TtlExpired)
+                {
+                    // TtlExpired means we've found an address, but there are more addresses
+                    yield return reply.Address;
+                    continue;
+                }
+                if (reply.Status == IPStatus.TimedOut)
+                {
+                    // TimedOut means this ttl is no good, we should continue searching
+                    continue;
+                }
+
+                // if we reach here, it's a status we don't recognize and we should exit.
+                break;
+            }
+        }
+
         #endregion
 
         #endregion
@@ -1358,6 +1530,8 @@ namespace Panacea
                     uDebugLogAdd($"Progress is {e.ProgressPercentage}, starting audio list refresh");
                     RefreshAudioList();
                     uStatusUpdate("Audio Playback Devices changed, list refreshed");
+                    uDebugLogAdd("Changing progress back to 0");
+                    worker.ReportProgress(0);
                 }
             };
             worker.DoWork += (sender, e) =>
@@ -1372,8 +1546,6 @@ namespace Panacea
                     {
                         uDebugLogAdd("Current ADL has changed from previous, changing progress to 1");
                         worker.ReportProgress(1);
-                        uDebugLogAdd("Changing progress back to 0");
-                        worker.ReportProgress(0);
                     }
                     else
                         uDebugLogAdd("Current ADL hasn't changed, not changing progress");
@@ -1470,6 +1642,10 @@ namespace Panacea
                     {
                         case 1:
                             Toolbox.settings.PingChartLength = int.Parse(txtSetNetPingCount.Text);
+                            foreach (PingEntry entry in lbPingSessions.Items)
+                            {
+                                entry.ChartLength = Toolbox.settings.PingChartLength;
+                            }
                             break;
                         case 2:
                             if (cmbxSetNetDTFormat.Text == "Seconds")

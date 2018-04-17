@@ -1,5 +1,7 @@
 ﻿using LiveCharts;
 using LiveCharts.Configurations;
+using LiveCharts.Defaults;
+using LiveCharts.Wpf;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -56,10 +58,10 @@ namespace Panacea.Classes
         private string _chartTitle { get; set; }
         private SolidColorBrush _chartStroke { get; set; }
         private SolidColorBrush _chartFill { get; set; }
-        private Int32 _historyLength { get; set; } = 12;
+        private Int32 _historyLength { get; set; } = Toolbox.settings.PingChartLength + 2;
         private Int32 _gridHeight { get; set; } = 104;
         private Int32 _gridWidth { get; set; }
-        private Int32 _chartLength { get; set; } = 10;
+        private Int32 _chartLength { get; set; } = Toolbox.settings.PingChartLength;
         public ChartValues<PingModel> ChartValues { get; set; }
         public Func<double, string> DateTimeFormatter { get; set; }
         public double AxisStep { get; set; }
@@ -396,6 +398,136 @@ namespace Panacea.Classes
                 _hostName = value;
                 OnPropertyChanged("HostName");
             }
+        }
+
+        #region INotifyPropertyChanged implementation
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName = null)
+        {
+            if (PropertyChanged != null)
+                PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
+    }
+
+    #endregion
+
+    #region Trace
+
+    public class TraceModel
+    {
+        public string Address { get; set; }
+        public string HostName { get; set; }
+        public double HighRTT { get; set; }
+        public double LowRTT { get; set; }
+        public double OpenRTT { get; set; }
+        public double CloseRTT { get; set; }
+    }
+
+    public class TraceEntry : INotifyPropertyChanged
+    {
+        private bool tracing = false;
+        private List<TraceModel> _traceList = new List<TraceModel>();
+        private string _address { get; set; }
+        private string _hostName { get; set; }
+        private int _tripTime { get; set; }
+        private string[] _labels;
+        public SeriesCollection SeriesCollection { get; set; }
+        public string[] Labels
+        {
+            get { return _labels; }
+            set
+            {
+                _labels = value;
+                OnPropertyChanged("Labels");
+            }
+        }
+        public string HostName
+        {
+            get { return _hostName; }
+            set
+            {
+                _hostName = value;
+                OnPropertyChanged("HostName");
+            }
+        }
+        public int TripTime
+        {
+            get { return _tripTime; }
+            set
+            {
+                _tripTime = value;
+                OnPropertyChanged("TripTime");
+            }
+        }
+
+        public TraceEntry(IEnumerable<IPAddress> traceResults)
+        {
+            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+            worker.DoWork += (ws, we) =>
+            {
+                foreach (var trace in traceResults)
+                {
+                    Ping ping = new Ping();
+                    var reply = ping.Send(trace);
+                    _traceList.Add(new TraceModel()
+                    {
+                        Address = reply.Address.ToString(),
+                        HostName = "Hostname Not Found",
+                        HighRTT = reply.RoundtripTime,
+                        LowRTT = reply.RoundtripTime,
+                        CloseRTT = reply.RoundtripTime,
+                        OpenRTT = reply.RoundtripTime
+                    });
+                    Thread addressLookup = new Thread(() => 
+                    {
+                        var dnsEntry = Dns.GetHostEntry(trace);
+                        if (dnsEntry != null)
+                        {
+                            if (!string.IsNullOrWhiteSpace(dnsEntry.HostName))
+                            {
+                                _traceList.Find(x => x.Address == reply.Address.ToString()).HostName = dnsEntry.HostName;
+                            }
+                        }
+                    });
+                    addressLookup.Start();
+                }
+                var ohlcValues = new ChartValues<OhlcPoint>();
+                var lineValues = new ChartValues<double>();
+                foreach (var entry in _traceList)
+                {
+                    ohlcValues.Add(new OhlcPoint(entry.OpenRTT, entry.HighRTT, entry.LowRTT, entry.CloseRTT));
+                    lineValues.Add(entry.CloseRTT);
+                }
+                SeriesCollection = new SeriesCollection
+                    {
+                        new OhlcSeries()
+                        {
+                            Values = ohlcValues
+                        },
+                        new LineSeries
+                        {
+                            Values = lineValues,
+                            Fill = Brushes.Transparent
+                        }
+                    };
+            };
+            worker.ProgressChanged += (ps, pe) =>
+            {
+                if (pe.ProgressPercentage == 1)
+                {
+                    
+                }
+            };
+            worker.RunWorkerAsync();
+        }
+
+        private void TraceRouteRTT(IEnumerable<IPAddress> traceResults)
+        {
+
         }
 
         #region INotifyPropertyChanged implementation

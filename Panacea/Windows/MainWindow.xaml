@@ -202,7 +202,7 @@
                     <GradientStop Color="#FF191919" Offset="0.84"/>
                 </LinearGradientBrush>
             </Grid.Background>
-            <ListBox x:Name="lbAudioDevices" SelectionChanged="lbAudioDevices_SelectionChanged" SelectionMode="Single" HorizontalAlignment="Left" Height="145" Margin="82,33,0,0" VerticalAlignment="Top" Width="287">
+            <ListBox x:Name="lbAudioDevices" SelectionChanged="lbAudioDevices_SelectionChanged" SelectionMode="Single" Margin="82,33,85,10">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding FriendlyName}"/>
@@ -210,15 +210,7 @@
                 </ListBox.ItemTemplate>
             </ListBox>
             <Label x:Name="lblAudioDevices" Content="Windows Playback Devices" HorizontalAlignment="Left" Margin="160,7,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="160"/>
-            <Button x:Name="btnRefreshAudio" Click="btnRefreshAudio_Click" Content="Refresh" HorizontalAlignment="Left" VerticalAlignment="Top" Width="146" Foreground="#FF8D8D8D" Margin="311,93,-52,0" Height="24" RenderTransformOrigin="0.5,0.5">
-                <Button.RenderTransform>
-                    <TransformGroup>
-                        <ScaleTransform/>
-                        <SkewTransform/>
-                        <RotateTransform Angle="90"/>
-                        <TranslateTransform/>
-                    </TransformGroup>
-                </Button.RenderTransform>
+            <Button x:Name="btnRefreshAudio" Click="btnRefreshAudio_Click" Content="Refresh" HorizontalAlignment="Right" VerticalAlignment="Top" Width="70" Foreground="#FF8D8D8D" Margin="0,33,10,0" Height="24">
             </Button>
         </Grid>
         <StackPanel x:Name="pnlMenu" HorizontalAlignment="Left" Margin="2,30,0,20" Width="72" Panel.ZIndex="90">
@@ -339,12 +331,16 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Button x:Name="btnNetTrace" Content="Trace" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="241,2,0,0" VerticalAlignment="Top" Width="42"/>
-            <ListBox x:Name="lbTraceSessions" HorizontalAlignment="Left" Height="45" Margin="458,0,-370,3" VerticalAlignment="Bottom" Width="366">
+            <Button x:Name="btnNetTrace" Content="Trace" Click="btnNetTrace_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="241,2,0,0" VerticalAlignment="Top" Width="42"/>
+            <ListBox x:Name="lbTraceSessions" Height="45" Margin="458,0,-370,3" VerticalAlignment="Bottom">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid Background="Black" Height="{Binding GridHeight}" Width="{Binding ElementName=lbPingSessions, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" VerticalAlignment="Top">
-                            
+                            <lvc:CartesianChart Series="{Binding SeriesCollection}">
+                                <lvc:CartesianChart.AxisX>
+                                    <lvc:Axis Labels="{Binding Labels}"/>
+                                </lvc:CartesianChart.AxisX>
+                            </lvc:CartesianChart>
                             <TextBlock Margin="27,0,0,0" TextWrapping="Wrap" Text="{Binding ChartTitle}" LineStackingStrategy="BlockLineHeight" Foreground="#FF00CFF0" Height="18" VerticalAlignment="Top"/>
                             <Button Content="⏯" Click="BtnPingEntryToggle_Click" HorizontalAlignment="Left" Margin="1,0,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
                             <Button Content="Dn" Click="BtnPingEntryDownArrow_Click" HorizontalAlignment="Left" Margin="1,51,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
