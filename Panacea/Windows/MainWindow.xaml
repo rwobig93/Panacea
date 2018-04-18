@@ -332,24 +332,25 @@
                 </ListBox.ItemTemplate>
             </ListBox>
             <Button x:Name="btnNetTrace" Content="Trace" Click="btnNetTrace_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="241,2,0,0" VerticalAlignment="Top" Width="42"/>
-            <ListBox x:Name="lbTraceSessions" Height="45" Margin="458,0,-370,3" VerticalAlignment="Bottom">
+            <ListBox x:Name="lbTraceSessions" Height="169" Margin="458,0,-370,3" VerticalAlignment="Bottom">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid Background="Black" Height="{Binding GridHeight}" Width="{Binding ElementName=lbPingSessions, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" VerticalAlignment="Top">
-                            <lvc:CartesianChart Series="{Binding SeriesCollection}">
+                            <lvc:CartesianChart Series="{Binding SeriesCollection}" Foreground="#FFC30C0C" Margin="26,0,0,0" BorderBrush="#FF18058D" Background="Black">
                                 <lvc:CartesianChart.AxisX>
                                     <lvc:Axis Labels="{Binding Labels}"/>
                                 </lvc:CartesianChart.AxisX>
                             </lvc:CartesianChart>
                             <TextBlock Margin="27,0,0,0" TextWrapping="Wrap" Text="{Binding ChartTitle}" LineStackingStrategy="BlockLineHeight" Foreground="#FF00CFF0" Height="18" VerticalAlignment="Top"/>
-                            <Button Content="⏯" Click="BtnPingEntryToggle_Click" HorizontalAlignment="Left" Margin="1,0,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
-                            <Button Content="Dn" Click="BtnPingEntryDownArrow_Click" HorizontalAlignment="Left" Margin="1,51,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
-                            <Button Content="Up" Click="BtnPingEntryUpArrow_Click" HorizontalAlignment="Left" Margin="1,26,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
-                            <Button Content="X" Click="BtnPingEntryClose_Click" HorizontalAlignment="Left" VerticalAlignment="Top" Width="26" Height="26" Margin="0,77,427,0" FontSize="14"/>
+                            <Button Content="⏯" Click="BtnTraceEntryToggle_Click" HorizontalAlignment="Left" Margin="1,0,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
+                            <Button Content="Dn" Click="BtnTraceEntryDownArrow_Click" HorizontalAlignment="Left" Margin="1,51,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
+                            <Button Content="Up" Click="BtnTraceEntryUpArrow_Click" HorizontalAlignment="Left" Margin="1,26,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
+                            <Button Content="X" Click="BtnTraceEntryClose_Click" HorizontalAlignment="Left" VerticalAlignment="Top" Width="26" Height="26" Margin="0,77,427,0" FontSize="14"/>
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
+            <TextBlock x:Name="lblTraceStatus" HorizontalAlignment="Left" Margin="78,5,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="158" Foreground="#FFD61212" Background="Black"/>
         </Grid>
         <Grid x:Name="grdSettings" Margin="454,30,-454,20" d:IsLocked="True" d:IsHidden="True">
             <Grid.Background>

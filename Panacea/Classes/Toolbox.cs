@@ -63,6 +63,16 @@ namespace Panacea.Classes
             return random.Next();
         }
 
+        public static int GenerateRandomNumber(int max)
+        {
+            return random.Next(max);
+        }
+
+        public static int GenerateRandomNumber(int min, int max)
+        {
+            return random.Next(min, max);
+        }
+
         public static void uAddDebugLog(string _log, DebugType _type = DebugType.INFO)
         {
             debugLog.Append($"{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {_type.ToString()}: {_log}{Environment.NewLine}");

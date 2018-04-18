@@ -77,6 +77,7 @@ namespace Panacea
         private bool resolvingDNS = false;
         private int resolvedEntries = 0;
         private bool settingsBadAlerted = false;
+        private bool traceLoading = false;
 
         #endregion
 
@@ -305,7 +306,7 @@ namespace Panacea
                 var address = txtNetAddress.Text;
                 if (!VerifyInput(address))
                 {
-                    uDebugLogAdd($"Input entered was invalid, sending notification and canceling ping | Input: {address}");
+                    uDebugLogAdd($"Input entered was invalid, sending notification and canceling dns lookup | Input: {address}");
                     ShowNotification("Address(es) entered incorrect or duplicate, try again");
                     return;
                 }
@@ -406,6 +407,63 @@ namespace Panacea
             {
                 var lbItem = (PingEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
                 lbItem.TogglePing();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void BtnTraceEntryUpArrow_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var lbItem = (TraceEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
+                MoveTraceEntry(lbItem, Direction.Up);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void BtnTraceEntryDownArrow_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var lbItem = (TraceEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
+                MoveTraceEntry(lbItem, Direction.Down);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void BtnTraceEntryClose_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var lbItem = (TraceEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
+                lbTraceSessions.Items.Remove(lbItem);
+                lbItem = null;
+                if (lbTraceSessions.Items.Count <= 0)
+                {
+                    ToggleListBox(lbTraceSessions);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void BtnTraceEntryToggle_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var lbItem = (TraceEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
+                lbItem.ToggleTrace();
             }
             catch (Exception ex)
             {
@@ -524,9 +582,43 @@ namespace Panacea
 
         private void btnNetTrace_Click(object sender, RoutedEventArgs e)
         {
-            if (lbTraceSessions.Items.Count <= 0)
-                ToggleListBox(lbTraceSessions);
-
+            try
+            {
+                if (traceLoading)
+                    return;
+                if (lbTraceSessions.Items.Count <= 0)
+                    ToggleListBox(lbTraceSessions);
+                var address = txtNetAddress.Text;
+                var sendNotif = false;
+                var addressNoSpace = Regex.Replace(address, @"\s+", "");
+                var entries = addressNoSpace.Split(',');
+                var validEntries = string.Empty;
+                foreach (var entry in entries)
+                {
+                    if (!VerifyInput(entry))
+                    {
+                        uDebugLogAdd($"Input entered was invalid, sending notification and canceling trace | Input: {entry}");
+                        sendNotif = true;
+                    }
+                    else
+                        validEntries = $"{validEntries}{entries},";
+                }
+                if (sendNotif && validEntries == string.Empty)
+                {
+                    ShowNotification("Address(es) entered incorrect or duplicate, try again");
+                    return;
+                }
+                else if (sendNotif && validEntries != string.Empty)
+                {
+                    ShowNotification("Address(es) entered incorrect or duplicate, added non duplicate(s)");
+                    address = validEntries;
+                }
+                AddTraceEntry(address);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion
@@ -1419,6 +1511,106 @@ namespace Panacea
             }
         }
 
+        private void AddTraceEntry(string address)
+        {
+            try
+            {
+                TraceLoading();
+                var addressNoSpace = Regex.Replace(address, @"\s+", "");
+                var entries = addressNoSpace.Split(',');
+                var testRoute = new List<TraceModel>();
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (ws, we) =>
+                {
+                    foreach (var entry in entries)
+                    {
+                        uDebugLogAdd($"Starting trace entry {entry}");
+                        var indexNum = 0;
+                        testRoute.Clear();
+                        foreach (var iaddress in GetTraceRoute(entry))
+                        {
+                            uDebugLogAdd($"Starting ping for {iaddress}");
+                            Ping ping = new Ping();
+                            var reply = ping.Send(iaddress);
+                            if (reply != null)
+                                testRoute.Add(new TraceModel()
+                                {
+                                    Address = reply.Address == null ? "Unknown" : reply.Address.ToString(),
+                                    HostName = "Hostname Not Found",
+                                    HighRTT = reply.RoundtripTime,
+                                    LowRTT = reply.RoundtripTime,
+                                    CloseRTT = reply.RoundtripTime,
+                                    OpenRTT = reply.RoundtripTime,
+                                    Index = indexNum
+                                });
+                            else
+                                testRoute.Add(new TraceModel()
+                                {
+                                    Address = reply.Address == null ? "Unknown" : reply.Address.ToString(),
+                                    HostName = "Hostname Not Found",
+                                    HighRTT = 0,
+                                    LowRTT = 0,
+                                    CloseRTT = 0,
+                                    OpenRTT = 0,
+                                    Index = indexNum
+                                });
+                            uDebugLogAdd($"Added TraceModel() for {iaddress}");
+                            indexNum++;
+                        }
+                        uDebugLogAdd($"Adding trace entry {entry}");
+                        worker.ReportProgress(1);
+                        ShowNotification($"Finished adding trace entry {entry}");
+                    }
+                    traceLoading = false;
+                };
+                worker.ProgressChanged += (ps, pe) =>
+                {
+                    if (pe.ProgressPercentage == 1)
+                    {
+                        lbTraceSessions.Items.Add(new TestTrace(testRoute));
+                    }
+                };
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void TraceLoading()
+        {
+            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+            worker.DoWork += (ws, we) =>
+            {
+                traceLoading = true;
+                worker.ReportProgress(0);
+                while (traceLoading)
+                {
+                    Thread.Sleep(1000);
+                    worker.ReportProgress(1);
+                }
+                worker.ReportProgress(2);
+            };
+            worker.ProgressChanged += (ps, pe) =>
+            {
+                if (pe.ProgressPercentage == 0)
+                {
+                    lblTraceStatus.Text = "Tracing";
+                }
+                if (pe.ProgressPercentage == 1)
+                {
+                    if (lblTraceStatus.Text != "Tracing.....")
+                        lblTraceStatus.Text = $"{lblTraceStatus.Text}.";
+                    else
+                        lblTraceStatus.Text = "Tracing";
+                }
+                if (pe.ProgressPercentage == 2)
+                    lblTraceStatus.Text = "Done";
+            };
+            worker.RunWorkerAsync();
+        }
+
         private void MovePingEntry(PingEntry pingEntry, Direction direction)
         {
             try
@@ -1438,6 +1630,32 @@ namespace Panacea
                 var newIndex = lbPingSessions.Items.IndexOf(pingEntry) + directionInt;
                 lbPingSessions.Items.Remove(pingEntry);
                 lbPingSessions.Items.Insert(newIndex, pingEntry);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveTraceEntry(TraceEntry traceEntry, Direction direction)
+        {
+            try
+            {
+                var currentIndex = lbTraceSessions.Items.IndexOf(traceEntry);
+                if (currentIndex < 0 || currentIndex >= lbTraceSessions.Items.Count)
+                    return;
+                var directionInt = 0;
+                if (direction == Direction.Up && currentIndex == 0)
+                    return;
+                if (direction == Direction.Down && currentIndex == lbTraceSessions.Items.Count - 1)
+                    return;
+                if (direction == Direction.Down)
+                    directionInt = 1;
+                else
+                    directionInt = -1;
+                var newIndex = lbTraceSessions.Items.IndexOf(traceEntry) + directionInt;
+                lbTraceSessions.Items.Remove(traceEntry);
+                lbTraceSessions.Items.Insert(newIndex, traceEntry);
             }
             catch (Exception ex)
             {
