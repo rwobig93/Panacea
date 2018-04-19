@@ -75,7 +75,17 @@ namespace Panacea.Classes
 
         public static void uAddDebugLog(string _log, DebugType _type = DebugType.INFO)
         {
-            debugLog.Append($"{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {_type.ToString()}: {_log}{Environment.NewLine}");
+            try
+            {
+                debugLog.Append($"{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {_type.ToString()}: {_log}{Environment.NewLine}");
+#if DEBUG
+                Events.AddDebugStatus(_log, _type); 
+#endif
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
     }
 }

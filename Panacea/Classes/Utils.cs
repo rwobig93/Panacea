@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Media;
+using static Panacea.MainWindow;
 
 namespace Panacea.Classes
 {
@@ -94,6 +95,13 @@ namespace Panacea.Classes
             WinInfoArgs args = new WinInfoArgs(WindowInfo.GetWindowInfoFromProc(process));
             UpdateWinHandle(args);
         }
+        public delegate void AddDebugLogStatus(DebugUpdateArgs args);
+        public static event AddDebugLogStatus UpdateDebugStatus;
+        public static void AddDebugStatus(string logUpdate, DebugType debugType)
+        {
+            DebugUpdateArgs args = new DebugUpdateArgs(logUpdate, debugType);
+            UpdateDebugStatus(args);
+        }
     }
     public class WinInfoArgs : EventArgs
     {
@@ -103,6 +111,18 @@ namespace Panacea.Classes
             this.winInfo = windowInfo;
         }
         public WindowInfo WindowInfo { get { return winInfo; } }
+    }
+    public class DebugUpdateArgs : EventArgs
+    {
+        private string _logUpdate;
+        private DebugType _debugType;
+        public DebugUpdateArgs(string logUpdate, DebugType debugType)
+        {
+            this._logUpdate = logUpdate;
+            this._debugType = debugType;
+        }
+        public string LogUpdate { get { return _logUpdate; } }
+        public DebugType DebugType { get { return _debugType; } }
     }
 
     #endregion

@@ -427,6 +427,7 @@ namespace Panacea.Classes
 
     public class TraceModel : INotifyPropertyChanged
     {
+        private IPStatus _status { get; set; }
         private int _index { get; set; }
         private string _address { get; set; }
         private string _hostName { get; set; }
@@ -497,6 +498,15 @@ namespace Panacea.Classes
                 OnPropertyChanged("CloseRTT");
             }
         }
+        public IPStatus IPStatus
+        {
+            get { return _status; }
+            set
+            {
+                _status = value;
+                OnPropertyChanged("IPStatus");
+            }
+        }
         
 
         #region INotifyPropertyChanged implementation
@@ -514,11 +524,12 @@ namespace Panacea.Classes
 
     public class TraceEntry : INotifyPropertyChanged
     {
-        private bool tracing = false;
+        private bool exists = true;
+        private bool tracing = true;
         private List<TraceModel> _traceList = new List<TraceModel>();
         private string[] _labels;
         private string _chartTitle { get; set; }
-        private double _gridHeight { get; set; } = 165;
+        private double _gridHeight { get; set; } = 150;
         private SeriesCollection _seriesCollection { get; set; }
         public string[] Labels
         {
@@ -556,232 +567,81 @@ namespace Panacea.Classes
                 OnPropertyChanged("GridHeight");
             }
         }
-
-        public TraceEntry()
+        public List<TraceModel> TraceList
         {
-            var fakeList = new List<string>() { "192.168.1.1", "192.168.1.91", "8.8.8.8", "8.8.4.4", "216.69.100.100" };
-            var ohlcValues = new ChartValues<OhlcPoint>();
-            var lineValues = new ChartValues<double>();
-            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
-            worker.DoWork += (ws, we) =>
+            get { return _traceList; }
+            set
             {
-                int indexNum = 0;
-                var labelArray = new string[5];
-                foreach (var trace in fakeList)
-                {
-                    //Ping ping = new Ping();
-                    //var reply = ping.Send(trace);
-                    //if (reply != null)
-                    //    _traceList.Add(new TraceModel()
-                    //    {
-                    //        Address = reply.Address == null ? "Unknown" : reply.Address.ToString(),
-                    //        HostName = "Hostname Not Found",
-                    //        HighRTT = reply.RoundtripTime,
-                    //        LowRTT = reply.RoundtripTime,
-                    //        CloseRTT = reply.RoundtripTime,
-                    //        OpenRTT = reply.RoundtripTime,
-                    //        Index = indexNum
-                    //    });
-                    //else
-                    //    _traceList.Add(new TraceModel()
-                    //    {
-                    //        Address = reply.Address == null ? "Unknown" : reply.Address.ToString(),
-                    //        HostName = "Hostname Not Found",
-                    //        HighRTT = 0,
-                    //        LowRTT = 0,
-                    //        CloseRTT = 0,
-                    //        OpenRTT = 0,
-                    //        Index = indexNum
-                    //    });
-                    _traceList.Add(new TraceModel()
-                    {
-                        Address = trace,
-                        HostName = "Hostname Not Found",
-                        HighRTT = Toolbox.GenerateRandomNumber(55, 100),
-                        LowRTT = Toolbox.GenerateRandomNumber(0, 30),
-                        CloseRTT = Toolbox.GenerateRandomNumber(30, 55),
-                        OpenRTT = Toolbox.GenerateRandomNumber(30, 55),
-                        Index = indexNum
-                    });
-                    Thread addressLookup = new Thread(() =>
-                    {
-                        try
-                        {
-                            var dnsEntry = Dns.GetHostEntry(trace);
-                            if (dnsEntry != null)
-                            {
-                                if (!string.IsNullOrWhiteSpace(dnsEntry.HostName))
-                                {
-                                    _traceList.Find(x => x.Address == trace).HostName = dnsEntry.HostName;
-                                }
-                            }
-                        }
-                        catch (SocketException se)
-                        {
-                            Toolbox.uAddDebugLog($"{tracing}: {se.Message}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Toolbox.LogException(ex);
-                        }
-                    });
-                    addressLookup.Start();
-                    indexNum++;
-                }
-                foreach (var entry in _traceList)
-                {
-                    ohlcValues.Add(new OhlcPoint(entry.OpenRTT, entry.HighRTT, entry.LowRTT, entry.CloseRTT));
-                    lineValues.Add(entry.CloseRTT);
-                    labelArray[entry.Index] = $"({entry.Address}){Environment.NewLine}{entry.HostName}";
-                }
-                worker.ReportProgress(2);
-                Labels = labelArray;
-                tracing = true;
-                worker.ReportProgress(1);
-            };
-            worker.ProgressChanged += (ps, pe) =>
-            {
-                if (pe.ProgressPercentage == 1)
-                {
-                    TraceRouteContinous();
-                }
-                if (pe.ProgressPercentage == 2)
-                {
-                    _seriesCollection = new SeriesCollection
-                    {
-                        new OhlcSeries()
-                        {
-                            Values = ohlcValues
-                        },
-                        new LineSeries
-                        {
-                            Values = lineValues,
-                            Fill = Brushes.Transparent
-                        }
-                    };
-                }
-            };
-            worker.RunWorkerAsync();
+                _traceList = value;
+                OnPropertyChanged("TraceList");
+            }
         }
 
-        public TraceEntry(IEnumerable<IPAddress> traceResults)
+        public TraceEntry(List<TraceModel> traceList)
         {
+            TraceList = traceList;
+            //foreach (var trace in TraceList)
+            //{
+            //    ResolveTraceHost(trace.Address, trace.Index);
+            //}
             var ohlcValues = new ChartValues<OhlcPoint>();
             var lineValues = new ChartValues<double>();
-            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
-            worker.DoWork += (ws, we) =>
+            var labelValues = new string[_traceList.Count];
+            var index = 0;
+
+            foreach (var address in _traceList)
             {
-                int indexNum = 0;
-                var labelArray = new string[traceResults.Count()];
-                foreach (var trace in traceResults)
-                {
-                    Ping ping = new Ping();
-                    var reply = ping.Send(trace);
-                    if (reply != null)
-                        _traceList.Add(new TraceModel()
-                        {
-                            Address = reply.Address == null ? "Unknown" : reply.Address.ToString(),
-                            HostName = "Hostname Not Found",
-                            HighRTT = reply.RoundtripTime,
-                            LowRTT = reply.RoundtripTime,
-                            CloseRTT = reply.RoundtripTime,
-                            OpenRTT = reply.RoundtripTime,
-                            Index = indexNum
-                        });
-                    else
-                        _traceList.Add(new TraceModel()
-                        {
-                            Address = reply.Address == null ? "Unknown" : reply.Address.ToString(),
-                            HostName = "Hostname Not Found",
-                            HighRTT = 0,
-                            LowRTT = 0,
-                            CloseRTT = 0,
-                            OpenRTT = 0,
-                            Index = indexNum
-                        });
-                    Thread addressLookup = new Thread(() => 
-                    {
-                        try
-                        {
-                            var dnsEntry = Dns.GetHostEntry(trace);
-                            if (dnsEntry != null)
-                            {
-                                if (!string.IsNullOrWhiteSpace(dnsEntry.HostName))
-                                {
-                                    _traceList.Find(x => x.Address == reply.Address.ToString()).HostName = dnsEntry.HostName;
-                                }
-                            }
-                        }
-                        catch (SocketException se)
-                        {
-                            Toolbox.uAddDebugLog($"{tracing}: {se.Message}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Toolbox.LogException(ex);
-                        }
-                    });
-                    addressLookup.Start();
-                    indexNum++;
-                }
-                foreach (var entry in _traceList)
-                {
-                    ohlcValues.Add(new OhlcPoint(entry.OpenRTT, entry.HighRTT, entry.LowRTT, entry.CloseRTT));
-                    lineValues.Add(entry.CloseRTT);
-                    labelArray[entry.Index] = $"({entry.Address}){Environment.NewLine}{entry.HostName}";
-                }
-                worker.ReportProgress(2);
-                Labels = labelArray;
-                tracing = true;
-                worker.ReportProgress(1);
-            };
-            worker.ProgressChanged += (ps, pe) =>
+                ohlcValues.Add(new OhlcPoint(address.OpenRTT, address.HighRTT, address.LowRTT, address.CloseRTT));
+                lineValues.Add(address.OpenRTT);
+                labelValues[index] = address.Address;
+                index++;
+            }
+
+            SeriesCollection = new SeriesCollection
             {
-                if (pe.ProgressPercentage == 1)
+                new OhlcSeries()
                 {
-                    TraceRouteContinous();
-                }
-                if (pe.ProgressPercentage == 2)
+                    Values = ohlcValues
+                },
+                new LineSeries
                 {
-                    _seriesCollection = new SeriesCollection
-                    {
-                        new OhlcSeries()
-                        {
-                            Values = ohlcValues
-                        },
-                        new LineSeries
-                        {
-                            Values = lineValues,
-                            Fill = Brushes.Transparent
-                        }
-                    };
+                    Values = lineValues,
+                    Fill = Brushes.Transparent
                 }
             };
-            worker.RunWorkerAsync();
+            Labels = labelValues;
+            TraceRouteContinous();
         }
 
-        private void TraceRouteContinous()
+        private void ResolveTraceHost(string address, int index)
         {
+            var hostName = string.Empty;
             BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
             worker.DoWork += (sender, e) =>
             {
                 try
                 {
-                    Ping ping = new Ping();
-                    while (true)
-                    {
-                        while (tracing)
+                    var hostEntry = Dns.GetHostEntry(address);
+                    if (hostEntry != null)
+                        if (!string.IsNullOrWhiteSpace(hostEntry.HostName))
                         {
-                            foreach (var entry in _traceList)
-                            {
-                                var reply = ping.Send(entry.Address);
-                                entry.HighRTT = reply.RoundtripTime > entry.HighRTT ? reply.RoundtripTime : entry.HighRTT;
-                                entry.LowRTT = reply.RoundtripTime < entry.LowRTT ? reply.RoundtripTime : entry.LowRTT;
-                                entry.OpenRTT = reply.RoundtripTime;
-                                entry.CloseRTT = reply.RoundtripTime;
-                            }
+                            hostName = hostEntry.HostName;
+                            worker.ReportProgress(1);
                         }
-                        Thread.Sleep(5000);
+                }
+                catch (SocketException) { return; }
+                catch (Exception ex)
+                {
+                    Toolbox.LogException(ex);
+                }
+            };
+            worker.ProgressChanged += (ps, pe) =>
+            {
+                try
+                {
+                    if (pe.ProgressPercentage == 1)
+                    {
+                        Labels[index] = hostName;
                     }
                 }
                 catch (Exception ex)
@@ -790,6 +650,78 @@ namespace Panacea.Classes
                 }
             };
             worker.RunWorkerAsync();
+        }
+
+        private void TraceRouteContinous()
+        {
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += (sender, e) =>
+            {
+                try
+                {
+                    foreach (var entry in TraceList)
+                    {
+                        ContinuousTraceEntryPing(entry);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Toolbox.LogException(ex);
+                }
+            };
+            worker.RunWorkerAsync();
+        }
+
+        private void ContinuousTraceEntryPing(TraceModel entry)
+        {
+            TraceModel currentModel = null;
+            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+            worker.DoWork += (ws, we) =>
+            {
+                Toolbox.uAddDebugLog($"Started continuous ping for TraceEntry {entry.Address}");
+                Ping ping = new Ping();
+                while (exists)
+                {
+                    Toolbox.uAddDebugLog($"Tracing is {tracing}");
+                    while (tracing)
+                    {
+                            try
+                            {
+                                if (entry.Address != "*")
+                                {
+                                    var reply = ping.Send(entry.Address);
+                                    entry.HighRTT = reply.RoundtripTime > entry.HighRTT ? reply.RoundtripTime : entry.HighRTT;
+                                    entry.LowRTT = reply.RoundtripTime < entry.LowRTT ? reply.RoundtripTime : entry.LowRTT;
+                                    entry.OpenRTT = reply.RoundtripTime;
+                                    currentModel = entry;
+                                    Toolbox.uAddDebugLog($"Updated TraceModel {entry.Address}");
+                                    worker.ReportProgress(1);
+                                }
+                                else
+                                    Toolbox.uAddDebugLog($"Entry {entry.Address} doesn't respond to trace");
+                            }
+                            catch (PingException pe) { Toolbox.uAddDebugLog($"PingException: {entry}::{pe.Message}"); }
+                            catch (Exception ex)
+                            {
+                                Toolbox.LogException(ex);
+                            }
+                        Thread.Sleep(1000);
+                    }
+                    Thread.Sleep(1000);
+                }
+            };
+            worker.ProgressChanged += (ps, pe) =>
+            {
+                if (pe.ProgressPercentage == 1)
+                {
+                    Toolbox.uAddDebugLog($"Updating currentModel ohlcpoint {currentModel.Address}");
+                    SeriesCollection[0].Values[currentModel.Index] = new OhlcPoint(currentModel.OpenRTT, currentModel.HighRTT, currentModel.LowRTT, currentModel.CloseRTT);
+                    SeriesCollection[1].Values[currentModel.Index] = currentModel.OpenRTT;
+                    Toolbox.uAddDebugLog($"Ohlcpoint for {currentModel.Address} successfully updated");
+                }
+            };
+            worker.RunWorkerAsync();
+            
         }
 
         public void ToggleTrace(bool? setTracing = null)
@@ -805,6 +737,13 @@ namespace Panacea.Classes
                 tracing = (bool)setTracing;
         }
 
+        public void Dispose()
+        {
+            exists = false;
+            tracing = false;
+            Toolbox.uAddDebugLog("Disposed TraceEntry");
+        }
+
         #region INotifyPropertyChanged implementation
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -818,60 +757,6 @@ namespace Panacea.Classes
         #endregion
     }
 
-    public class TestTrace : INotifyPropertyChanged
-    {
-        private string[] _labels;
-        public SeriesCollection SeriesCollection { get; set; }
-        public string[] Labels
-        {
-            get { return _labels; }
-            set
-            {
-                _labels = value;
-                OnPropertyChanged("Labels");
-            }
-        }
-
-        public TestTrace(List<TraceModel> addresses)
-        {
-            SeriesCollection = new SeriesCollection
-            {
-                new OhlcSeries()
-                {
-                    Values = new ChartValues<OhlcPoint>
-                    {
-                        new OhlcPoint(addresses[0].OpenRTT, addresses[0].HighRTT, addresses[0].LowRTT, addresses[0].CloseRTT),
-                        new OhlcPoint(addresses[1].OpenRTT, addresses[1].HighRTT, addresses[1].LowRTT, addresses[1].CloseRTT),
-                        new OhlcPoint(addresses[2].OpenRTT, addresses[2].HighRTT, addresses[2].LowRTT, addresses[2].CloseRTT),
-                        new OhlcPoint(addresses[3].OpenRTT, addresses[3].HighRTT, addresses[3].LowRTT, addresses[3].CloseRTT),
-                        new OhlcPoint(addresses[4].OpenRTT, addresses[4].HighRTT, addresses[4].LowRTT, addresses[4].CloseRTT)
-                    }
-                },
-                new LineSeries
-                {
-                    Values = new ChartValues<double> { addresses[0].OpenRTT, addresses[1].OpenRTT, addresses[2].OpenRTT, addresses[3].OpenRTT, addresses[4].OpenRTT},
-                    Fill = Brushes.Transparent
-                }
-            };
-            
-            Labels = new[]
-            {
-                addresses[0].Address,
-                addresses[1].Address,
-                addresses[2].Address,
-                addresses[3].Address,
-                addresses[4].Address,
-            };
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string propertyName = null)
-        {
-            if (PropertyChanged != null) PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
     public class TraceRoute
     {
         /// <summary>
@@ -883,37 +768,17 @@ namespace Panacea.Classes
         private const int MAX_HOPS = 30;
         private const int REQUEST_TIMEOUT = 4000;
         public List<TraceModel> traceModelList = new List<TraceModel>();
-
-        /// <summary>
-        /// Runs traceroute and writes result to console.
-        /// </summary>
+        
         public async Task<List<TraceModel>> TraceRouteAsync(string hostNameOrAddress)
         {
             EnsureCommonArguments(hostNameOrAddress);
             Contract.EndContractBlock();
-
-            return await TryTraceRouteAsync(hostNameOrAddress);
-        }
-
-        /// <summary>
-        /// Runs traceroute and writes result to provided stream.
-        /// </summary>
-        public async Task<List<TraceModel>> TryTraceRouteAsync(string hostNameOrAddress)
-        {
-            EnsureCommonArguments(hostNameOrAddress);
-            Contract.EndContractBlock();
-
-            //dispatch parallel tasks for each hop
             var arrTraceRouteTasks = new Task<TraceModel>[MAX_HOPS];
             for (int zeroBasedHop = 0; zeroBasedHop < MAX_HOPS; zeroBasedHop++)
             {
-                arrTraceRouteTasks[zeroBasedHop] = TryTraceRouteInternalAsync(hostNameOrAddress, zeroBasedHop);
+                arrTraceRouteTasks[zeroBasedHop] = TraceRouteHopGatherAsync(hostNameOrAddress, zeroBasedHop);
             }
-
-            //and wait for them to finish
             await Task.WhenAll(arrTraceRouteTasks);
-
-            //now just collect all results and write them to output stream
             for (int hop = 0; hop < MAX_HOPS; hop++)
             {
                 var traceTask = arrTraceRouteTasks[hop];
@@ -921,6 +786,8 @@ namespace Panacea.Classes
                 {
                     var model = traceTask.Result;
                     traceModelList.Add(model);
+                    if (model.IPStatus == IPStatus.Success)
+                        break;
                 }
                 else
                 {
@@ -970,7 +837,7 @@ namespace Panacea.Classes
             }
         }
 
-        public async Task<TraceModel> TryTraceRouteInternalAsync(string hostNameOrAddress, int zeroBasedHop)
+        public async Task<TraceModel> TraceRouteHopGatherAsync(string hostNameOrAddress, int zeroBasedHop)
         {
             using (Ping pingSender = new Ping())
             {
@@ -1006,7 +873,7 @@ namespace Panacea.Classes
                     pingReplyAddress = pingReply.Address.ToString();
                 }
 
-                return new TraceModel() { Address = pingReplyAddress, CloseRTT = elapsedMilliseconds, HighRTT = elapsedMilliseconds, LowRTT = elapsedMilliseconds, OpenRTT = elapsedMilliseconds };
+                return new TraceModel() { Address = pingReplyAddress, CloseRTT = elapsedMilliseconds, HighRTT = elapsedMilliseconds, LowRTT = elapsedMilliseconds, OpenRTT = elapsedMilliseconds, Index = zeroBasedHop, IPStatus = pingReply.Status };
             }
         }
     }

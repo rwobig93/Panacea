@@ -38,7 +38,7 @@ namespace Panacea
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window//, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
         public MainWindow()
         {
@@ -49,6 +49,7 @@ namespace Panacea
             DeSerializeSettings();
             SetDefaultSettings();
             SetWindowLocation();
+            SubscribeToEvents();
             SetupAudioDeviceList();
             tSaveSettingsAuto();
             InitializeMenuGrids();
@@ -204,6 +205,23 @@ namespace Panacea
             try
             {
                 ToggleMenuGrid(grdSettings);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void Events_UpdateDebugStatus(DebugUpdateArgs args)
+        {
+            try
+            {
+                if (debugMode) Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { txtStatus.AppendText($"{Environment.NewLine}{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {args.DebugType.ToString()}: {args.LogUpdate}"); } catch (Exception ex) { LogException(ex); } });
+                if (Toolbox.debugLog.Length > 10000)
+                {
+                    Toolbox.debugLog.Append($"{args.DebugType.ToString()} :: {DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()}: Dumping Debug Logs...");
+                    DumpDebugLog();
+                }
             }
             catch (Exception ex)
             {
@@ -446,7 +464,7 @@ namespace Panacea
             {
                 var lbItem = (TraceEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
                 lbTraceSessions.Items.Remove(lbItem);
-                lbItem = null;
+                lbItem.Dispose();
                 if (lbTraceSessions.Items.Count <= 0)
                 {
                     ToggleListBox(lbTraceSessions);
@@ -785,12 +803,6 @@ namespace Panacea
             try
             {
                 Toolbox.uAddDebugLog(_log, _type);
-                if (debugMode) Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { txtStatus.AppendText($"{Environment.NewLine}{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {_type.ToString()}: {_log}"); } catch (Exception ex) { LogException(ex); } });
-                if (Toolbox.debugLog.Length > 10000)
-                {
-                    Toolbox.debugLog.Append($"{_type.ToString()} :: {DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()}: Dumping Debug Logs...");
-                    DumpDebugLog();
-                }
             }
             catch (Exception ex)
             {
@@ -1000,6 +1012,11 @@ namespace Panacea
             {
                 LogException(ex);
             }
+        }
+
+        private void SubscribeToEvents()
+        {
+            Events.UpdateDebugStatus += Events_UpdateDebugStatus;
         }
 
         #endregion
@@ -1522,44 +1539,21 @@ namespace Panacea
                 BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
                 worker.DoWork += (ws, we) =>
                 {
+                    TraceRoute trace = new TraceRoute();
+                    Stopwatch stopwatch = new Stopwatch();
                     foreach (var entry in entries)
                     {
                         uDebugLogAdd($"Starting trace entry {entry}");
-                        var indexNum = 0;
                         testRoute.Clear();
-                        foreach (var iaddress in GetTraceRoute(entry))
-                        {
-                            uDebugLogAdd($"Starting ping for {iaddress}");
-                            Ping ping = new Ping();
-                            var reply = ping.Send(iaddress);
-                            if (reply != null)
-                                testRoute.Add(new TraceModel()
-                                {
-                                    Address = reply.Address == null ? "Unknown" : reply.Address.ToString(),
-                                    HostName = "Hostname Not Found",
-                                    HighRTT = reply.RoundtripTime,
-                                    LowRTT = reply.RoundtripTime,
-                                    CloseRTT = reply.RoundtripTime,
-                                    OpenRTT = reply.RoundtripTime,
-                                    Index = indexNum
-                                });
-                            else
-                                testRoute.Add(new TraceModel()
-                                {
-                                    Address = reply.Address == null ? "Unknown" : reply.Address.ToString(),
-                                    HostName = "Hostname Not Found",
-                                    HighRTT = 0,
-                                    LowRTT = 0,
-                                    CloseRTT = 0,
-                                    OpenRTT = 0,
-                                    Index = indexNum
-                                });
-                            uDebugLogAdd($"Added TraceModel() for {iaddress}");
-                            indexNum++;
-                        }
+                        uDebugLogAdd("Trace starting now");
+                        stopwatch.Start();
+                        testRoute = trace.TraceRouteAsync(entry).Result;
+                        stopwatch.Stop();
+                        uDebugLogAdd($"Finished trace: {stopwatch.ElapsedMilliseconds}ms");
                         uDebugLogAdd($"Adding trace entry {entry}");
                         worker.ReportProgress(1);
-                        ShowNotification($"Finished adding trace entry {entry}");
+                        uDebugLogAdd($"Finished adding trace entry {entry}");
+                        stopwatch.Reset();
                     }
                     traceLoading = false;
                 };
@@ -1567,7 +1561,7 @@ namespace Panacea
                 {
                     if (pe.ProgressPercentage == 1)
                     {
-                        lbTraceSessions.Items.Add(new TestTrace(testRoute));
+                        lbTraceSessions.Items.Add(new TraceEntry(testRoute));
                     }
                 };
                 worker.RunWorkerAsync();
@@ -1587,7 +1581,7 @@ namespace Panacea
                 worker.ReportProgress(0);
                 while (traceLoading)
                 {
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
                     worker.ReportProgress(1);
                 }
                 worker.ReportProgress(2);
@@ -1596,6 +1590,7 @@ namespace Panacea
             {
                 if (pe.ProgressPercentage == 0)
                 {
+                    lblTraceStatus.Visibility = Visibility.Visible;
                     lblTraceStatus.Text = "Tracing";
                 }
                 if (pe.ProgressPercentage == 1)
@@ -1606,7 +1601,10 @@ namespace Panacea
                         lblTraceStatus.Text = "Tracing";
                 }
                 if (pe.ProgressPercentage == 2)
+                {
                     lblTraceStatus.Text = "Done";
+                    lblTraceStatus.Visibility = Visibility.Hidden;
+                }
             };
             worker.RunWorkerAsync();
         }
