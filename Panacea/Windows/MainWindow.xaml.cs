@@ -44,12 +44,12 @@ namespace Panacea
         {
             InitializeComponent();
             DataContext = this;
-            uDebugLogAdd(string.Format("{0}##################################### Application Start #####################################{0}", Environment.NewLine));
+            SubscribeToEvents();
             SetupAppFiles();
+            uDebugLogAdd(string.Format("{0}##################################### Application Start #####################################{0}", Environment.NewLine));
             DeSerializeSettings();
             SetDefaultSettings();
             SetWindowLocation();
-            SubscribeToEvents();
             SetupAudioDeviceList();
             tSaveSettingsAuto();
             InitializeMenuGrids();
@@ -68,6 +68,7 @@ namespace Panacea
         private MMDevice selectedAudioEndpoint = null;
         private IntPtr LastFoundWindow = IntPtr.Zero;
         private HandleDisplay windowHandleDisplay = null;
+        private Point mouseStartPoint = new Point(0,0);
         private bool audioRefreshing = false;
         private bool debugMode = false;
         private bool notificationPlaying = false;
@@ -79,6 +80,7 @@ namespace Panacea
         private int resolvedEntries = 0;
         private bool settingsBadAlerted = false;
         private bool traceLoading = false;
+        private bool resizingNetGrid = false;
 
         #endregion
 
@@ -97,7 +99,7 @@ namespace Panacea
 
         private void winMain_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left)
+            if (e.ChangedButton == MouseButton.Left && resizingNetGrid == false)
                 DragMove();
         }
 
@@ -371,7 +373,10 @@ namespace Panacea
                     ShowNotification("Address(es) entered incorrect or duplicate, added non duplicate(s)");
                     address = validEntries;
                 }
-                AddPingEntry(address);
+                if (lbPingSessions.Visibility == Visibility.Visible)
+                    AddPingEntry(address);
+                else
+                    AddBasicPing(address);
             }
             catch (Exception ex)
             {
@@ -468,6 +473,7 @@ namespace Panacea
                 if (lbTraceSessions.Items.Count <= 0)
                 {
                     ToggleListBox(lbTraceSessions);
+                    SwapPingGrids();
                 }
             }
             catch (Exception ex)
@@ -497,8 +503,18 @@ namespace Panacea
                     glblPinging = false;
                 else
                     glblPinging = true;
-                foreach (PingEntry entry in lbPingSessions.Items)
-                    entry.TogglePing(glblPinging);
+                if (lbPingSessions.Visibility == Visibility.Visible)
+                {
+                    foreach (PingEntry entry in lbPingSessions.Items)
+                        entry.TogglePing(glblPinging);
+                }
+                else
+                {
+                    foreach (PingBasic entry in lbPingBasic.Items)
+                        entry.TogglePing(glblPinging);
+                }
+                foreach (TraceEntry entry in lbTraceSessions.Items)
+                    entry.ToggleTrace(glblPinging);
             }
             catch (Exception ex)
             {
@@ -605,7 +621,13 @@ namespace Panacea
                 if (traceLoading)
                     return;
                 if (lbTraceSessions.Items.Count <= 0)
+                {
                     ToggleListBox(lbTraceSessions);
+                }
+                if (lbPingSessions.Items.Count > 0)
+                {
+                    SwapPingGrids();
+                }
                 var address = txtNetAddress.Text;
                 var sendNotif = false;
                 var addressNoSpace = Regex.Replace(address, @"\s+", "");
@@ -920,12 +942,16 @@ namespace Panacea
                 if (lb.Margin != Defaults.TraceLBIn)
                 {
                     lb.Visibility = Visibility.Visible;
+                    lbPingBasic.Visibility = Visibility.Visible;
                     Toolbox.AnimateListBox(lb, Defaults.TraceLBIn);
+                    Toolbox.AnimateListBox(lbPingBasic, Defaults.PingLBasicIn);
                 }
                 else
                 {
+                    Toolbox.AnimateListBox(lbPingBasic, Defaults.PingLBasicOut);
                     Toolbox.AnimateListBox(lb, Defaults.TraceLBOut);
                     lb.Visibility = Visibility.Hidden;
+                    lbPingBasic.Visibility = Visibility.Hidden;
                 }
             }
             catch (Exception ex)
@@ -1493,14 +1519,21 @@ namespace Panacea
 
         #region Network
         
-        private bool DoesPingSessionExist(ListBox lb, string address)
+        private bool DoesPingSessionExist(string address)
         {
             var exists = false;
-            foreach (PingEntry item in lb.Items)
-            {
-                if (item.Address == address)
-                    exists = true;
-            }
+            if (lbPingSessions.Visibility == Visibility.Visible)
+                foreach (PingEntry item in lbPingSessions.Items)
+                {
+                    if (item.Address == address)
+                        exists = true;
+                }
+            else
+                foreach (PingBasic item in lbPingBasic.Items)
+                {
+                    if (item.Address == address)
+                        exists = true;
+                }
             return exists;
         }
 
@@ -1508,9 +1541,21 @@ namespace Panacea
         {
             var isCorrect = true;
             isCorrect = !string.IsNullOrWhiteSpace(input);
-            isCorrect = !DoesPingSessionExist(lbPingSessions, input);
+            isCorrect = !DoesPingSessionExist(input);
+            isCorrect = !DoesTraceEntryExist(input);
             uDebugLogAdd($"Verified input, answer: {isCorrect} | input: {input}");
             return isCorrect;
+        }
+
+        private bool DoesTraceEntryExist(string input)
+        {
+            var exists = false;
+            foreach (TraceEntry item in lbTraceSessions.Items)
+            {
+                if (item.DestinationAddress == input)
+                    exists = true;
+            }
+            return exists;
         }
 
         private void AddPingEntry(string address)
@@ -1521,6 +1566,21 @@ namespace Panacea
                 var entries = addressNoSpace.Split(',');
                 foreach (var entry in entries)
                     lbPingSessions.Items.Add(new PingEntry(entry));
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void AddBasicPing(string address)
+        {
+            try
+            {
+                var addressNoSpace = Regex.Replace(address, @"\s+", "");
+                var entries = addressNoSpace.Split(',');
+                foreach (var entry in entries)
+                    lbPingBasic.Items.Add(new PingBasic(entry));
             }
             catch (Exception ex)
             {
@@ -1726,6 +1786,35 @@ namespace Panacea
 
                 // if we reach here, it's a status we don't recognize and we should exit.
                 break;
+            }
+        }
+
+        private void SwapPingGrids()
+        {
+            try
+            {
+                if (lbPingSessions.Visibility == Visibility.Visible)
+                {
+                    lbPingSessions.Visibility = Visibility.Hidden;
+                    foreach (PingEntry entry in lbPingSessions.Items)
+                    {
+                        lbPingBasic.Items.Add(new PingBasic(entry.Address));
+                    }
+                    lbPingSessions.Items.Clear();
+                }
+                else
+                {
+                    lbPingSessions.Visibility = Visibility.Visible;
+                    foreach (PingBasic entry in lbPingBasic.Items)
+                    {
+                        lbPingSessions.Items.Add(new PingEntry(entry.Address));
+                    }
+                    lbPingBasic.Items.Clear();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
             }
         }
 
@@ -1954,6 +2043,7 @@ namespace Panacea
                 {
                     lblNetResolved.Text = "NSlookup:";
                     resolvedEntries = 0;
+                    resolvingDNS = false;
                 }
             };
             worker.RunWorkerAsync();

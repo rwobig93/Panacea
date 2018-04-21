@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
+using System.Windows.Shapes;
 using static Panacea.MainWindow;
 
 namespace Panacea.Classes
@@ -56,6 +57,17 @@ namespace Panacea.Classes
                 To = toThickness
             };
             lb.BeginAnimation(ListBox.MarginProperty, animation);
+        }
+
+        public static void AnimateRectangle(Rectangle rect, System.Windows.Thickness toThickness)
+        {
+            ThicknessAnimation animation = new ThicknessAnimation()
+            {
+                AccelerationRatio = .9,
+                Duration = TimeSpan.FromSeconds(.3),
+                To = toThickness
+            };
+            rect.BeginAnimation(Rectangle.MarginProperty, animation);
         }
 
         public static int GenerateRandomNumber()

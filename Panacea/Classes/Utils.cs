@@ -97,7 +97,7 @@ namespace Panacea.Classes
         }
         public delegate void AddDebugLogStatus(DebugUpdateArgs args);
         public static event AddDebugLogStatus UpdateDebugStatus;
-        public static void AddDebugStatus(string logUpdate, DebugType debugType)
+        public static void AddDebugStatus(string logUpdate, DebugType debugType = DebugType.INFO)
         {
             DebugUpdateArgs args = new DebugUpdateArgs(logUpdate, debugType);
             UpdateDebugStatus(args);
@@ -116,7 +116,7 @@ namespace Panacea.Classes
     {
         private string _logUpdate;
         private DebugType _debugType;
-        public DebugUpdateArgs(string logUpdate, DebugType debugType)
+        public DebugUpdateArgs(string logUpdate, DebugType debugType = DebugType.INFO)
         {
             this._logUpdate = logUpdate;
             this._debugType = debugType;

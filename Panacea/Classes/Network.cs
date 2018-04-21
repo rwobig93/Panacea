@@ -381,6 +381,215 @@ namespace Panacea.Classes
         #endregion
     }
 
+    public class PingBasic : INotifyPropertyChanged
+    {
+        #region Variables
+
+        private string _address { get; set; }
+        private string _hostName { get; set; }
+        private string _responseTime { get; set; }
+        private bool pinging { get; set; }
+        private Int32 _gridHeight { get; set; } = 20;
+        private SolidColorBrush _pingStatusColor { get; set; }
+        public string Address
+        {
+            get { return _address; }
+        }
+        public Int32 GridHeight
+        {
+            get { return _gridHeight; }
+            set
+            {
+                _gridHeight = value;
+                OnPropertyChanged("GridHeight");
+            }
+        }
+        public string HostName
+        {
+            get { return _hostName; }
+            set
+            {
+                _hostName = value;
+                OnPropertyChanged("HostName");
+            }
+        }
+        public SolidColorBrush PingStatusColor
+        {
+            get { return _pingStatusColor; }
+            set
+            {
+                _pingStatusColor = value;
+                OnPropertyChanged("PingStatusColor");
+            }
+        }
+        public string RTT
+        {
+            get { return _responseTime; }
+            set
+            {
+                _responseTime = value;
+                OnPropertyChanged("RTT");
+            }
+        }
+
+        #endregion
+
+        public PingBasic(string address)
+        {
+            _address = address;
+            _hostName = "Host Not Found";
+
+            PingAddress(_address);
+            LookupHostName(_address);
+        }
+
+        #region Methods
+        
+        private void LookupHostName(string address)
+        {
+            try
+            {
+                string resolvedAddress = string.Empty;
+                string resolvedHostname = string.Empty;
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (sender, e) =>
+                {
+                    try
+                    {
+                        var dnsEntry = Dns.GetHostEntry(address);
+                        if (dnsEntry != null)
+                        {
+                            if (!string.IsNullOrWhiteSpace(dnsEntry.HostName))
+                            {
+                                resolvedAddress = dnsEntry.AddressList[0].ToString();
+                                resolvedHostname = dnsEntry.HostName;
+                                worker.ReportProgress(1);
+                            }
+                        }
+                    }
+                    catch (SocketException se)
+                    {
+                        Toolbox.uAddDebugLog($"{address}: {se.Message}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Toolbox.LogException(ex);
+                    }
+                };
+                worker.ProgressChanged += (sender2, e2) =>
+                {
+                    if (e2.ProgressPercentage == 1)
+                    {
+                        HostName = resolvedHostname;
+                    }
+                };
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+        }
+
+        private void PingAddress(string address)
+        {
+            try
+            {
+                pinging = true;
+                BackgroundWorker worker = new BackgroundWorker() { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
+                worker.DoWork += (sender2, e2) =>
+                {
+                    Ping ping = new Ping();
+                    while (true)
+                    {
+                        while (pinging)
+                        {
+                            try
+                            {
+                                var pingReply = ping.Send(address);
+                                PingSuccess(pingReply);
+                            }
+                            catch (PingException)
+                            {
+                                worker.ReportProgress(1);
+                            }
+                            catch (Exception ex)
+                            {
+                                Toolbox.LogException(ex);
+                            }
+                            Thread.Sleep(TimeSpan.FromSeconds(1));
+                        }
+                        Thread.Sleep(TimeSpan.FromSeconds(1));
+                    }
+                };
+                worker.ProgressChanged += (sender3, e3) =>
+                {
+                    if (e3.ProgressPercentage == 1)
+                    {
+                        PingFail();
+                    }
+                };
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+        }
+
+        private void PingFail()
+        {
+            try
+            {
+                PingStatusColor = NetworkVariables.defaultFailChartFill;
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+        }
+
+        private void PingSuccess(PingReply pingReply)
+        {
+            try
+            {
+                PingStatusColor = NetworkVariables.defaultSuccessChartFill;
+                RTT = pingReply.RoundtripTime.ToString();
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+        }
+
+        public void TogglePing(bool? setPinging = null)
+        {
+            if (setPinging == null)
+            {
+                if (pinging)
+                    pinging = false;
+                else
+                    pinging = true;
+            }
+            else
+                pinging = (bool)setPinging;
+        }
+
+        #endregion
+
+        #region INotifyPropertyChanged implementation
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName = null)
+        {
+            if (PropertyChanged != null)
+                PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
+    }
+
     #endregion
 
     #region NSLookup
@@ -524,6 +733,7 @@ namespace Panacea.Classes
 
     public class TraceEntry : INotifyPropertyChanged
     {
+        private string _destAddress = string.Empty;
         private bool exists = true;
         private bool tracing = true;
         private List<TraceModel> _traceList = new List<TraceModel>();
@@ -576,6 +786,15 @@ namespace Panacea.Classes
                 OnPropertyChanged("TraceList");
             }
         }
+        public string DestinationAddress
+        {
+            get { return _destAddress; }
+            set
+            {
+                _destAddress = value;
+                OnPropertyChanged("DestinationAddress");
+            }
+        }
 
         public TraceEntry(List<TraceModel> traceList)
         {
@@ -594,6 +813,8 @@ namespace Panacea.Classes
                 ohlcValues.Add(new OhlcPoint(address.OpenRTT, address.HighRTT, address.LowRTT, address.CloseRTT));
                 lineValues.Add(address.OpenRTT);
                 labelValues[index] = address.Address;
+                if (index == _traceList.Count - 1)
+                    _destAddress = address.Address;
                 index++;
             }
 
@@ -682,7 +903,6 @@ namespace Panacea.Classes
                 Ping ping = new Ping();
                 while (exists)
                 {
-                    Toolbox.uAddDebugLog($"Tracing is {tracing}");
                     while (tracing)
                     {
                             try
