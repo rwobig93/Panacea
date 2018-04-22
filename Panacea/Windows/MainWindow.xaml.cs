@@ -373,8 +373,13 @@ namespace Panacea
                     ShowNotification("Address(es) entered incorrect or duplicate, added non duplicate(s)");
                     address = validEntries;
                 }
-                if (lbPingSessions.Visibility == Visibility.Visible)
-                    AddPingEntry(address);
+                if (!Toolbox.settings.BasicPing)
+                {
+                    if (lbPingSessions.Visibility == Visibility.Visible)
+                        AddPingEntry(address);
+                    else
+                        AddBasicPing(address);
+                }
                 else
                     AddBasicPing(address);
             }
@@ -473,6 +478,8 @@ namespace Panacea
                 if (lbTraceSessions.Items.Count <= 0)
                 {
                     ToggleListBox(lbTraceSessions);
+                    if (Toolbox.settings.BasicPing)
+                        
                     SwapPingGrids();
                 }
             }
@@ -528,32 +535,18 @@ namespace Panacea
             {
                 if (e.Key == Key.Enter)
                 {
-                    var address = txtNetAddress.Text;
-                    var sendNotif = false;
-                    var addressNoSpace = Regex.Replace(address, @"\s+", "");
-                    var entries = addressNoSpace.Split(',');
-                    var validEntries = string.Empty;
-                    foreach (var entry in entries)
+                   switch (Toolbox.settings.ToolboxEnterAction)
                     {
-                        if (!VerifyInput(entry))
-                        {
-                            uDebugLogAdd($"Input entered was invalid, sending notification and canceling ping | Input: {entry}");
-                            sendNotif = true;
-                        }
-                        else
-                            validEntries = $"{validEntries}{entries},";
+                        case EnterAction.DNSLookup:
+                            btnNetLookup_Click(sender, e);
+                            break;
+                        case EnterAction.Ping:
+                            btnNetPing_Click(sender, e);
+                            break;
+                        case EnterAction.Trace:
+                            btnNetTrace_Click(sender, e);
+                            break;
                     }
-                    if (sendNotif && validEntries == string.Empty)
-                    {
-                        ShowNotification("Address(es) entered incorrect or duplicate, try again");
-                        return;
-                    }
-                    else if (sendNotif && validEntries != string.Empty)
-                    {
-                        ShowNotification("Address(es) entered incorrect or duplicate, added non duplicate(s)");
-                        address = validEntries;
-                    }
-                    AddPingEntry(address);
                 }
             }
             catch (Exception ex)
@@ -667,12 +660,17 @@ namespace Panacea
 
         private void txtSetNetPingCount_KeyDown(object sender, KeyEventArgs e)
         {
-            StartSettingsUpdate();
+            StartSettingsUpdate(SettingsUpdate.PingCount);
         }
 
         private void cmbxSetNetDTFormat_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            StartSettingsUpdate();
+            StartSettingsUpdate(SettingsUpdate.PingDTFormat);
+        }
+
+        private void cmbxSetNetTextboxAction_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            StartSettingsUpdate(SettingsUpdate.TextBoxAction);
         }
 
         #endregion
@@ -1000,6 +998,21 @@ namespace Panacea
         private void HideElementsThatNeedHidden()
         {
             lbTraceSessions.Visibility = Visibility.Hidden;
+            SetChosenPing();
+        }
+
+        private void SetChosenPing()
+        {
+            if (Toolbox.settings.BasicPing)
+            {
+                Toolbox.AnimateListBox(lbPingBasic, Defaults.PingLBasicPIn);
+                lbPingSessions.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                Toolbox.AnimateListBox(lbPingSessions, Defaults.PingLBasicPIn);
+                lbPingBasic.Visibility = Visibility.Hidden;
+            }
         }
 
         public object GetPropertyValue(string propertyName)
@@ -1161,6 +1174,25 @@ namespace Panacea
                         cmbxSetNetDTFormat.SelectedItem = hours;
                         break;
                 }
+                var lookup = "DNSLookup";
+                var ping = "Ping";
+                var trace = "Trace";
+                cmbxSetNetTextboxAction.Items.Add(lookup);
+                cmbxSetNetTextboxAction.Items.Add(ping);
+                cmbxSetNetTextboxAction.Items.Add(trace);
+                switch (Toolbox.settings.ToolboxEnterAction)
+                {
+                    case EnterAction.DNSLookup:
+                        cmbxSetNetTextboxAction.SelectedItem = lookup;
+                        break;
+                    case EnterAction.Ping:
+                        cmbxSetNetTextboxAction.SelectedItem = ping;
+                        break;
+                    case EnterAction.Trace:
+                        cmbxSetNetTextboxAction.SelectedItem = trace;
+                        break;
+                }
+                chkNetBasicPing.IsChecked = Toolbox.settings.BasicPing;
                 uDebugLogAdd("Default settings set");
             }
             catch (Exception ex)
@@ -1184,11 +1216,12 @@ namespace Panacea
             }
         }
 
-        private void StartSettingsUpdate()
+        private void StartSettingsUpdate(SettingsUpdate settingsUpdate)
         {
 
             try
             {
+                SettingsTimerRefresh();
                 if (!settingsSaveVerificationInProgress)
                 {
                     settingsSaveVerificationInProgress = true;
@@ -1204,7 +1237,7 @@ namespace Panacea
                             }
                             worker.ReportProgress(1);
                             settingsSaveVerificationInProgress = false;
-                            settingsTimer = 5;
+                            settingsTimer = 2;
                         }
                         catch (Exception ex)
                         {
@@ -1215,8 +1248,10 @@ namespace Panacea
                     {
                         if (pe.ProgressPercentage == 1)
                         {
-                            tUpdateSettings(SettingsUpdate.PingCount, txtSetNetPingCount.Text);
-                            tUpdateSettings(SettingsUpdate.PingDTFormat);
+                            if (settingsUpdate == SettingsUpdate.PingCount)
+                                tUpdateSettings(settingsUpdate, txtSetNetPingCount.Text);
+                            else
+                                tUpdateSettings(settingsUpdate);
                         }
                     };
                     worker.RunWorkerAsync();
@@ -1226,6 +1261,11 @@ namespace Panacea
             {
                 LogException(ex);
             }
+        }
+
+        private void SettingsTimerRefresh()
+        {
+            settingsTimer = 2;
         }
 
         #endregion
@@ -1793,9 +1833,10 @@ namespace Panacea
         {
             try
             {
-                if (lbPingSessions.Visibility == Visibility.Visible)
+                if (Toolbox.settings.BasicPing)
                 {
                     lbPingSessions.Visibility = Visibility.Hidden;
+                    Toolbox.AnimateListBox(lbPingBasic, Defaults.PingLBasicPIn);
                     foreach (PingEntry entry in lbPingSessions.Items)
                     {
                         lbPingBasic.Items.Add(new PingBasic(entry.Address));
@@ -1805,6 +1846,8 @@ namespace Panacea
                 else
                 {
                     lbPingSessions.Visibility = Visibility.Visible;
+                    lbPingBasic.Visibility = Visibility.Hidden;
+                    Toolbox.AnimateListBox(lbPingSessions, Defaults.PingLBasicPIn);
                     foreach (PingBasic entry in lbPingBasic.Items)
                     {
                         lbPingSessions.Items.Add(new PingEntry(entry.Address));
@@ -1932,6 +1975,9 @@ namespace Panacea
                         case SettingsUpdate.PingDTFormat:
                             worker.ReportProgress(2);
                             break;
+                        case SettingsUpdate.TextBoxAction:
+                            worker.ReportProgress(3);
+                            break;
                     }
                 }
                 catch (Exception ex)
@@ -1959,6 +2005,14 @@ namespace Panacea
                                 Toolbox.settings.DateTimeFormat = DTFormat.Min;
                             else if (cmbxSetNetDTFormat.Text == "Hours")
                                 Toolbox.settings.DateTimeFormat = DTFormat.Hours;
+                            break;
+                        case 3:
+                            if (cmbxSetNetTextboxAction.Text == "DNSLookup")
+                                Toolbox.settings.ToolboxEnterAction = EnterAction.DNSLookup;
+                            else if (cmbxSetNetTextboxAction.Text == "Ping")
+                                Toolbox.settings.ToolboxEnterAction = EnterAction.Ping;
+                            else if (cmbxSetNetTextboxAction.Text == "Trace")
+                                Toolbox.settings.ToolboxEnterAction = EnterAction.Trace;
                             break;
                         case 99:
                             ShowNotification("Incorrect format entered");

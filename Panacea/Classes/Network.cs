@@ -40,6 +40,13 @@ namespace Panacea.Classes
         Hours
     }
 
+    public enum EnterAction
+    {
+        Ping,
+        DNSLookup,
+        Trace
+    }
+
     #endregion
 
     #region Ping

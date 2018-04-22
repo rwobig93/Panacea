@@ -16,6 +16,7 @@ namespace Panacea.Classes
         public static Thickness TraceLBOut = new Thickness(465, 29, -213, 53);
         public static Thickness PingLBasicIn = new Thickness(77, 29, 0, 53);
         public static Thickness PingLBasicOut = new Thickness(549, 29, -260, 53);
+        public static Thickness PingLBasicPIn = new Thickness(76, 29, 10, 53);
         public static Color enabledColor = Color.FromArgb(100, 0, 129, 24);
         public static Color disabledColor = Color.FromArgb(100, 160, 0, 0);
         public static Brush WinEnableButtonColorOn = new SolidColorBrush(enabledColor);

@@ -356,7 +356,7 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <ListBox x:Name="lbPingBasic" HorizontalAlignment="Left" Margin="549,29,-260,53" Width="165" Visibility="Hidden">
+            <ListBox x:Name="lbPingBasic" HorizontalAlignment="Left" Margin="549,29,-260,53" Width="165">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid HorizontalAlignment="Left" Height="{Binding GridHeight}" VerticalAlignment="Top" Width="{Binding ElementName=lbPingBasic, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" Background="Black">
@@ -379,16 +379,19 @@
                     <GradientStop Color="#FF191919" Offset="0.84"/>
                 </LinearGradientBrush>
             </Grid.Background>
-            <Rectangle x:Name="rectSettingsNetwork" HorizontalAlignment="Left" Height="69" Margin="79,4,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="365"/>
+            <Rectangle x:Name="rectSettingsNetwork" HorizontalAlignment="Left" Height="106" Margin="79,4,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="365"/>
             <Rectangle x:Name="rectSettingsNetTitle" HorizontalAlignment="Left" Height="16" Margin="79,4,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="50"/>
             <TextBlock HorizontalAlignment="Left" Margin="81,3,0,0" TextWrapping="Wrap" Text="Network" VerticalAlignment="Top" Foreground="#FF1DD8D0"/>
             <TextBox x:Name="txtSetNetPingCount" KeyDown="txtSetNetPingCount_KeyDown" HorizontalAlignment="Left" Height="17" Margin="229,6,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
             <ComboBox x:Name="cmbxSetNetDTFormat" SelectionChanged="cmbxSetNetDTFormat_SelectionChanged" HorizontalAlignment="Left" Style="{StaticResource {x:Type ComboBox}}" Margin="180,38,0,0" VerticalAlignment="Top" Width="120" Height="9" Foreground="{x:Null}"/>
             <TextBlock x:Name="lblSetNetPingCount" HorizontalAlignment="Left" Margin="131,5,0,0" TextWrapping="Wrap" Text="Ping Chart Count:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
             <TextBlock x:Name="lblSetNetPingDTF" HorizontalAlignment="Left" Margin="82,38,0,0" TextWrapping="Wrap" Text="Ping Time Format:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-            <TextBlock x:Name="lblSetNetPingDTFExample" HorizontalAlignment="Left" Margin="305,38,0,0" TextWrapping="Wrap" Text="ex: 55" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="136" Height="20"/>
+            <TextBlock x:Name="lblSetNetTextboxAction" HorizontalAlignment="Left" Margin="318,23,0,0" TextWrapping="Wrap" Text="Textbox Enter Action:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="122" Height="20"/>
             <TextBlock x:Name="lblSetNetPingCountWarning" HorizontalAlignment="Left" Margin="82,21,0,0" TextWrapping="Wrap" Text="*Warning: Higher count = More CPU Usage" VerticalAlignment="Top" Foreground="#FF4D4747" Width="234"/>
-            <TextBlock x:Name="lblSetNetPingDTFNote" HorizontalAlignment="Left" Margin="84,55,0,0" TextWrapping="Wrap" Text="*Note: Hours with small charts are unreadable" VerticalAlignment="Top" Foreground="#FF4D4747" Width="357"/>
+            <TextBlock x:Name="lblSetNetPingDTFNote" HorizontalAlignment="Left" Margin="84,55,0,0" TextWrapping="Wrap" Text="*Note: Hours with small charts are unreadable" VerticalAlignment="Top" Foreground="#FF4D4747" Width="252"/>
+            <TextBlock x:Name="lblNetBasicPing" HorizontalAlignment="Left" Margin="361,4,0,0" TextWrapping="Wrap" Text="Basic Ping:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+            <CheckBox x:Name="chkNetBasicPing" Content="" HorizontalAlignment="Left" Margin="422,6,0,0" VerticalAlignment="Top" Width="18" Background="{StaticResource BaseBackgroundBrush}" BorderBrush="{StaticResource BaseBorderBrush}" Foreground="#FF8D8D8D" Height="17"/>
+            <ComboBox x:Name="cmbxSetNetTextboxAction" SelectionChanged="cmbxSetNetTextboxAction_SelectionChanged"  HorizontalAlignment="Left" Style="{StaticResource {x:Type ComboBox}}" Margin="318,38,0,0" VerticalAlignment="Top" Width="120" Height="9" Foreground="{x:Null}"/>
         </Grid>
     </Grid>
 </Window>

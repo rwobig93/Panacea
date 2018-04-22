@@ -18,6 +18,8 @@ namespace Panacea.Classes
         private SolidColorBrush _pingFailStroke { get; set; } = NetworkVariables.defaultFailChartStroke;
         private DTFormat _dateTimeFormat { get; set; } = DTFormat.Sec;
         private Int32 _pingChartLength { get; set; } = NetworkVariables.defaultPingChartLength;
+        private EnterAction _toolboxEnterAction { get; set; } = EnterAction.DNSLookup;
+        private bool _basicPing { get; set; }
         public WindowDimensions WindowLocation
         {
             get { return _windowLocation; }
@@ -81,6 +83,24 @@ namespace Panacea.Classes
                 OnPropertyChanged("PingChartLength");
             }
         }
+        public EnterAction ToolboxEnterAction
+        {
+            get { return _toolboxEnterAction; }
+            set
+            {
+                _toolboxEnterAction = value;
+                OnPropertyChanged("ToolboxEnterAction");
+            }
+        }
+        public bool BasicPing
+        {
+            get { return _basicPing; }
+            set
+            {
+                _basicPing = value;
+                OnPropertyChanged("BasicPing");
+            }
+        }
         #region INotifyPropertyChanged implementation
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -97,6 +117,7 @@ namespace Panacea.Classes
     public enum SettingsUpdate
     {
         PingCount,
-        PingDTFormat
+        PingDTFormat,
+        TextBoxAction
     }
 }
