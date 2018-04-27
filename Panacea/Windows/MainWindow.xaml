@@ -150,6 +150,7 @@
         </Style>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus204Converter x:Key="Minus204Converter"/>
+        <FrameworkElement x:Key="TargetCursor" Cursor="Resources/Dependencies/target_small.cur"/>
     </Window.Resources>
     <Grid x:Name="grdMain" Focusable="True">
         <Grid.Background>
@@ -227,7 +228,7 @@
             <Button x:Name="btnMenuNetwork" Content="Network" Click="btnMenuNetwork_Click" Margin="-1,0,1,0"/>
             <Button x:Name="btnMenuSettings" Content="Settings" Click="btnMenuSettings_Click" Margin="-1,0,1,0"/>
         </StackPanel>
-        <Grid x:Name="grdWindows" Margin="454,30,-454,20" d:IsLocked="True" d:IsHidden="True">
+        <Grid x:Name="grdWindows" Margin="454,30,-454,20">
             <Grid.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1B1B1B" Offset="0"/>
@@ -236,10 +237,9 @@
                     <GradientStop Color="#FF191919" Offset="0.84"/>
                 </LinearGradientBrush>
             </Grid.Background>
-            <Button x:Name="btnTarget" Content="Target" HorizontalAlignment="Left" MouseDown="btnTarget_MouseDown" MouseUp="btnTarget_MouseUp" MouseMove="btnTarget_MouseMove" Margin="320,7,0,0" VerticalAlignment="Top" Width="75"/>
-            <Button x:Name="btnGetPosition" Content="Get Position" HorizontalAlignment="Left" Click="btnGetPosition_Click" Margin="320,34,0,0" VerticalAlignment="Top" Width="75"/>
-            <Button x:Name="btnMoveWindow" Content="Move Win" HorizontalAlignment="Left" Click="btnMoveWindow_Click" Margin="320,61,0,0" VerticalAlignment="Top" Width="75"/>
-            <ListBox x:Name="lbSavedWindows" HorizontalAlignment="Left" Height="198" Margin="80,7,0,0" VerticalAlignment="Top" Width="235" ItemsSource="{Binding savedWindows}">
+            <Button x:Name="btnGetPosition" Content="Update Location" HorizontalAlignment="Left" Click="btnGetPosition_Click" Margin="335,42,0,0" VerticalAlignment="Top" Width="100"/>
+            <Button x:Name="btnMoveWindow" Content="Move Win" HorizontalAlignment="Left" Click="btnMoveWindow_Click" Margin="335,69,0,0" VerticalAlignment="Top" Width="100"/>
+            <ListBox x:Name="lbSavedWindows" HorizontalAlignment="Left" Height="184" Margin="80,7,0,0" VerticalAlignment="Top" Width="235">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid>
@@ -257,9 +257,41 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Button x:Name="BtnDeleteWindowItem" Content="Delete" Click="BtnDeleteWindowItem_Click" HorizontalAlignment="Left" Margin="320,88,0,0" VerticalAlignment="Top" Width="75"/>
+            <Button x:Name="BtnDeleteWindowItem" Content="Delete" Click="BtnDeleteWindowItem_Click" HorizontalAlignment="Left" Margin="335,96,0,0" VerticalAlignment="Top" Width="100"/>
+            <Button x:Name="btnWinTarget" Click="btnWinTarget_Click" Content="Select" HorizontalAlignment="Left" Margin="335,7,0,0" VerticalAlignment="Top" Width="100"/>
+            <Rectangle x:Name="rectTarget" MouseDown="rectTarget_MouseDown" HorizontalAlignment="Left" Height="20" Margin="400,7,0,0" StrokeThickness="0.5" VerticalAlignment="Top" Width="20" Visibility="Hidden">
+                <Rectangle.Fill>
+                    <ImageBrush ImageSource="/Panacea;component/Dependencies/target_small.png"/>
+                </Rectangle.Fill>
+                <Rectangle.Stroke>
+                    <LinearGradientBrush EndPoint="0.2,1" StartPoint="0.2,0">
+                        <LinearGradientBrush.RelativeTransform>
+                            <TransformGroup>
+                                <ScaleTransform CenterY="0.5" CenterX="0.5"/>
+                                <SkewTransform CenterY="0.5" CenterX="0.5"/>
+                                <RotateTransform Angle="-52.125" CenterY="0.5" CenterX="0.5"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </LinearGradientBrush.RelativeTransform>
+                        <GradientStop Color="#CC03189E" Offset="0.961"/>
+                        <GradientStop Color="#7F000000" Offset="0.082"/>
+                        <GradientStop Color="#CC03189E" Offset="0.032"/>
+                        <GradientStop Color="#7F000000" Offset="0.918"/>
+                        <GradientStop Color="#FF0CBDAD" Offset="0.014"/>
+                        <GradientStop Color="#CC0CBDAD" Offset="0.982"/>
+                        <GradientStop Color="#CC03189E" Offset="1"/>
+                        <GradientStop Color="#CC03189E"/>
+                    </LinearGradientBrush>
+                </Rectangle.Stroke>
+            </Rectangle>
+            <Rectangle x:Name="rectWinSelArea" HorizontalAlignment="Left" Height="90" Margin="330,36,0,0" StrokeThickness="0.5" VerticalAlignment="Top" Width="110" Stroke="{StaticResource BaseBorderBrush}" d:IsLocked="True"/>
+            <TextBlock x:Name="lblWinSelectedProcess" HorizontalAlignment="Left" Padding="0" Margin="340,116,0,0" TextWrapping="Wrap" Text="Selected Process" VerticalAlignment="Top" Height="14" Foreground="#FF8D8D8D" Width="95" TextAlignment="Center"/>
+            <Button x:Name="btnWinProfile1" Click="btnWinProfile1_Click" Content="Profile 1" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="328,140,0,0" VerticalAlignment="Top" Width="54"/>
+            <Button x:Name="btnWinProfile2" Click="btnWinProfile2_Click" Content="Profile 2" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="388,140,0,0" VerticalAlignment="Top" Width="54"/>
+            <Button x:Name="btnWinProfile3" Click="btnWinProfile3_Click" Content="Profile 3" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="328,167,0,0" VerticalAlignment="Top" Width="54"/>
+            <Button x:Name="btnWinProfile4" Click="btnWinProfile4_Click" Content="Profile 4" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="388,167,0,0" VerticalAlignment="Top" Width="54"/>
         </Grid>
-        <Grid x:Name="grdNetwork" Margin="454,30,-454,20">
+        <Grid x:Name="grdNetwork" Margin="454,30,-454,20" d:IsLocked="True" d:IsHidden="True">
             <Grid.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1B1B1B" Offset="0"/>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace Panacea.Classes
     public class Settings: INotifyPropertyChanged
     {
         private WindowDimensions _windowLocation { get; set; } = new WindowDimensions { Left = 0, Top = 0, Height = 251.309, Width = 454.455 };
+        private List<WindowItem> _windowList { get; set; } = new List<WindowItem>();
         private SolidColorBrush _pingSuccessFill { get; set; } = NetworkVariables.defaultSuccessChartFill;
         private SolidColorBrush _pingSuccessStroke { get; set; } = NetworkVariables.defaultSuccessChartStroke;
         private SolidColorBrush _pingFailFill { get; set; } = NetworkVariables.defaultFailChartFill;
@@ -27,6 +29,15 @@ namespace Panacea.Classes
             {
                 _windowLocation = value;
                 OnPropertyChanged("WindowLocation");
+            }
+        }
+        public List<WindowItem> WindowList
+        {
+            get { return _windowList; }
+            set
+            {
+                _windowList = value;
+                OnPropertyChanged("WindowList");
             }
         }
         public SolidColorBrush PingSuccessFill
@@ -112,6 +123,30 @@ namespace Panacea.Classes
         }
 
         #endregion
+        public void AddWindow(WindowItem windowItem)
+        {
+            _windowList.Add(windowItem);
+            OnPropertyChanged("WindowList");
+        }
+        public void RemoveWindow(WindowItem windowItem)
+        {
+            _windowList.Remove(windowItem);
+            OnPropertyChanged("WindowList");
+        }
+        public void UpdateWindowLocation(WindowItem windowItem, Process proc)
+        {
+            var existingItem =_windowList.Find(x => x.WindowInfo.PrivateID == windowItem.WindowInfo.PrivateID);
+            WindowInfo windowInfo = WindowInfo.GetWindowInfoFromProc(proc);
+            if (proc == null)
+                Toolbox.uAddDebugLog("Update process was null");
+            if (existingItem != null && proc != null)
+            {
+                existingItem.WindowInfo = windowInfo;
+                OnPropertyChanged("WindowList");
+            }
+            else
+                Toolbox.uAddDebugLog("Couldn't find existing window item");
+        }
     }
 
     public enum SettingsUpdate

@@ -32,6 +32,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using NAudio.CoreAudioApi;
+using System.Collections;
 
 namespace Panacea
 {
@@ -61,7 +62,6 @@ namespace Panacea
         #region Globals
 
         private List<string> notifications = new List<string>();
-        public static ObservableCollection<WindowItem> savedWindows = new ObservableCollection<WindowItem>();
         private string logDir = $@"{Directory.GetCurrentDirectory()}\Logs\";
         private string confDir = $@"{Directory.GetCurrentDirectory()}\Config\";
         private string exDir = $@"{Directory.GetCurrentDirectory()}\Logs\Exceptions\";
@@ -81,6 +81,7 @@ namespace Panacea
         private bool settingsBadAlerted = false;
         private bool traceLoading = false;
         private bool resizingNetGrid = false;
+        private bool capturingHandle = false;
 
         #endregion
 
@@ -99,7 +100,7 @@ namespace Panacea
 
         private void winMain_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left && resizingNetGrid == false)
+            if (e.ChangedButton == MouseButton.Left && resizingNetGrid == false && capturingHandle == false)
                 DragMove();
         }
 
@@ -277,6 +278,25 @@ namespace Panacea
             GetSelectedWindowPosition();
         }
 
+        private void GetSelectedWindowPosition()
+        {
+            WindowItem windowItem = (WindowItem)lbSavedWindows.SelectedItem;
+            Process foundProc = null;
+            foreach (var proc in Process.GetProcesses())
+            {
+                if (
+                    proc.ProcessName == windowItem.WindowInfo.Name &&
+                    proc.MainModule.ModuleName == windowItem.WindowInfo.ModName &&
+                    proc.MainWindowTitle == windowItem.WindowInfo.Title &&
+                    proc.MainModule.FileName == windowItem.WindowInfo.FileName
+                   )
+                    foundProc = proc;
+            }
+            if (foundProc == null)
+                uDebugLogAdd("Running process matching windowItem wasn't foun");
+
+        }
+
         private void btnMoveWindow_Click(object sender, RoutedEventArgs e)
         {
             MoveSelectedWindow();
@@ -292,27 +312,57 @@ namespace Panacea
             ToggleWindowButtonChecked(sender);
         }
 
-        private void btnTarget_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            LookForWindowHandle(e);
-            OpenWindowHandleFinder();
-        }
-
-        private void btnTarget_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            RevertCursor();
-            CloseWindowHandleFinder();
-            SaveSelectedWindow();
-        }
-
-        private void btnTarget_MouseMove(object sender, MouseEventArgs e)
-        {
-            CaptureWindowHandle();
-        }
-
         private void BtnDeleteWindowItem_Click(object sender, RoutedEventArgs e)
         {
             DeleteSavedWindowItem();
+        }
+
+        private void rectTarget_MouseMove(object sender, MouseEventArgs e)
+        {
+        }
+
+        private void btnWinTarget_Click(object sender, RoutedEventArgs e)
+        {
+            OpenWindowHandleFinder();
+        }
+
+        private void MouseHook_OnMouseUp(object sender, System.Drawing.Point p)
+        {
+            if (capturingHandle)
+            {
+                RevertCursor();
+            }
+            //CloseWindowHandleFinder();
+            //SaveSelectedWindow();
+        }
+
+        private void rectTarget_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            LookForWindowHandle();
+            CaptureWindowHandle();
+            OpenWindowHandleFinder();
+            DisplayWindowInfo();
+            //OpenCaptureOverlay();
+        }
+
+        private void btnWinProfile1_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnWinProfile2_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnWinProfile3_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnWinProfile4_Click(object sender, RoutedEventArgs e)
+        {
+
         }
 
         #endregion
@@ -1056,6 +1106,7 @@ namespace Panacea
         private void SubscribeToEvents()
         {
             Events.UpdateDebugStatus += Events_UpdateDebugStatus;
+            WinAPIWrapper.MouseHook.OnMouseUp += MouseHook_OnMouseUp;
         }
 
         #endregion
@@ -1155,7 +1206,10 @@ namespace Panacea
             try
             {
                 uDebugLogAdd("Setting default settings");
+                uDebugLogAdd("SettingsNET: working on ping settings");
                 txtSetNetPingCount.Text = Toolbox.settings.PingChartLength.ToString();
+                chkNetBasicPing.IsChecked = Toolbox.settings.BasicPing;
+                uDebugLogAdd("SettingsNET: working on DTFormat settings");
                 var seconds = "Seconds";
                 var minutes = "Minutes";
                 var hours = "Hours";
@@ -1174,6 +1228,7 @@ namespace Panacea
                         cmbxSetNetDTFormat.SelectedItem = hours;
                         break;
                 }
+                uDebugLogAdd("SettingsNET: working on textbox action settings");
                 var lookup = "DNSLookup";
                 var ping = "Ping";
                 var trace = "Trace";
@@ -1192,7 +1247,8 @@ namespace Panacea
                         cmbxSetNetTextboxAction.SelectedItem = trace;
                         break;
                 }
-                chkNetBasicPing.IsChecked = Toolbox.settings.BasicPing;
+                uDebugLogAdd("SettingsWIN: working on window process settings");
+                lbSavedWindows.ItemsSource = Toolbox.settings.WindowList;
                 uDebugLogAdd("Default settings set");
             }
             catch (Exception ex)
@@ -1289,46 +1345,6 @@ namespace Panacea
             }
         }
 
-        private void GetSelectedWindowPosition()
-        {
-            try
-            {
-                uDebugLogAdd("Invoked GetSelectedWindowPosition");
-                if (lbSavedWindows.SelectedItem != null)
-                {
-                    uDebugLogAdd("Selected item isn't null");
-                    WinAPIWrapper.RECT location = new WinAPIWrapper.RECT();
-                    var windowItem = ((WindowItem)lbSavedWindows.SelectedItem);
-                    if (windowItem == null)
-                    {
-                        uDebugLogAdd("Window item from saved windows list is null");
-                        return;
-                    }
-                    uDebugLogAdd("Getting current process location");
-                    var proc = WinAPIWrapper.GetProcessFromWinItem(windowItem);
-                    if (proc != null)
-                        WinAPIWrapper.GetWindowRect(proc.Handle, ref location);
-                    else
-                    {
-                        uDebugLogAdd("Process not found for currently selected saved window");
-                        uStatusUpdate($"Process not found from selected saved process");
-                        return;
-                    }
-                    uDebugLogAdd("Updating current entry with new process location");
-                    var entry = savedWindows.ToList().Find(x => x.WindowInfo.PrivateID == windowItem.WindowInfo.PrivateID).WindowInfo;
-                    entry.XValue = location.Left;
-                    entry.YValue = location.Top;
-                    entry.Width = location.Right - location.Left;
-                    entry.Height = location.Bottom - location.Top;
-                    uDebugLogAdd("Finished updating current entry process location");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
         private void MoveSelectedWindow()
         {
             try
@@ -1361,16 +1377,14 @@ namespace Panacea
             }
         }
 
-        private void LookForWindowHandle(MouseButtonEventArgs e)
+        private void LookForWindowHandle()
         {
             try
             {
-                uDebugLogAdd("LookForWindowHandle started");
-                if (e.ChangedButton == MouseButton.Left)
-                {
-                    uDebugLogAdd("Left mouse button down, updating cursor");
-                    Mouse.OverrideCursor = new Cursor("target_small.cur");
-                }
+                capturingHandle = true;
+                uDebugLogAdd("LookForWindowHandle started, updating cursor");
+                // Mouse.OverrideCursor = Cursors.Cross;
+                Cursor = new Cursor($@"{Directory.GetCurrentDirectory()}\Dependencies\target_small.cur");
             }
             catch (Exception ex)
             {
@@ -1454,15 +1468,15 @@ namespace Panacea
         {
             try
             {
-                uDebugLogAdd($"Opening window handler info window, current ref: {windowHandleDisplay.ToString()}");
+                uDebugLogAdd($"Opening window handler info window");
                 windowHandleDisplay = new HandleDisplay
                 {
                     Topmost = true,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
                 };
-                uDebugLogAdd($"Window handler info window constructed, current ref: {windowHandleDisplay.ToString()}");
+                uDebugLogAdd($"Window handler info window constructed");
                 windowHandleDisplay.Show();
-                uDebugLogAdd($"Window handler info window shown, current ref: {windowHandleDisplay.ToString()}");
+                uDebugLogAdd($"Window handler info window shown");
             }
             catch (Exception ex)
             {
@@ -1474,9 +1488,12 @@ namespace Panacea
         {
             try
             {
+                capturingHandle = false;
+                CloseWindowHandleFinder();
                 uDebugLogAdd("Reverting cursor");
-                uDebugLogAdd($"Cursor wasn't Arrow, it was {Cursor.ToString()}");
-                Mouse.OverrideCursor = null;
+                Cursor = Cursors.Arrow;
+                //Mouse.Capture(null);
+                //Mouse.OverrideCursor = null;
             }
             catch (Exception ex)
             {
@@ -1492,7 +1509,7 @@ namespace Panacea
                 windowHandleDisplay.Close();
                 uDebugLogAdd($"Closed window handler info window, current ref: {windowHandleDisplay.ToString()}");
                 windowHandleDisplay = null;
-                uDebugLogAdd($"Null'd window handler info window, current ref: {windowHandleDisplay.ToString()}");
+                uDebugLogAdd("Null'd window handler info window");
             }
             catch (Exception ex)
             {
@@ -1504,15 +1521,30 @@ namespace Panacea
         {
             try
             {
-                uDebugLogAdd("Capturing window handle");
-                IntPtr FoundWindow = WinAPIWrapper.WindowFromPoint(WinAPIWrapper.GetMousePosition());
-                uDebugLogAdd($"FoundWindow = {FoundWindow.ToString()}");
-                if (FoundWindow != LastFoundWindow)
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (sender, e) =>
                 {
-                    uDebugLogAdd($"FoundWindow({FoundWindow.ToString()}) != LastFoundWindow({LastFoundWindow.ToString()})");
-                    LastFoundWindow = FoundWindow;
-                }
-                DisplayWindowInfo();
+                    try
+                    {
+                        while (capturingHandle)
+                        {
+                            uDebugLogAdd("Capturing window handle");
+                            IntPtr FoundWindow = ChildWindowFromPoint(WinAPIWrapper.GetMousePosition());
+                            uDebugLogAdd($"FoundWindow = {FoundWindow.ToString()}");
+                            if (FoundWindow != LastFoundWindow)
+                            {
+                                uDebugLogAdd($"FoundWindow({FoundWindow.ToString()}) != LastFoundWindow({LastFoundWindow.ToString()})");
+                                LastFoundWindow = FoundWindow;
+                            }
+                            Thread.Sleep(500);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                };
+                worker.RunWorkerAsync();
             }
             catch (Exception ex)
             {
@@ -1524,25 +1556,42 @@ namespace Panacea
         {
             try
             {
-                uDebugLogAdd("Starting DisplayWindowInfo, gathering windowProc");
-                Process windowProc = Process.GetProcessById(WinAPIWrapper.GetProcessId(LastFoundWindow));
-                uDebugLogAdd($"Gathered windowProc: {windowProc.Id}, invoking event UpdateWindowInfo");
-                Events.UpdateWindowInfo(windowProc);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void SaveSelectedWindow()
-        {
-            try
-            {
-                var windowItem = WindowItem.Create(Process.GetProcessById(WinAPIWrapper.GetProcessId(LastFoundWindow)));
-                bool duplicate = WindowItem.DoesDuplicateExist(windowItem);
-                if (!duplicate)
-                    savedWindows.Add(windowItem);
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (sender, e) =>
+                {
+                    try
+                    {
+                        uDebugLogAdd("Starting DisplayWindowInfo, gathering windowProc");
+                        while (capturingHandle)
+                        {
+                            try
+                            {
+                                if (LastFoundWindow != IntPtr.Zero)
+                                {
+                                    Process windowProc = GetProcessIDViaHAndle(LastFoundWindow);
+                                    //Process windowProc = Process.GetProcessById(WinAPIWrapper.GetProcessId(LastFoundWindow));
+                                    uDebugLogAdd($"Gathered windowProc: {windowProc.Id}, invoking event UpdateWindowInfo");
+                                    Events.UpdateWindowInfo(windowProc);
+                                }
+                                else
+                                {
+                                    uDebugLogAdd($"Window handle was {IntPtr.Zero}, defaulting window info");
+                                    Events.UpdateWindowInfo(null);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                LogException(ex);
+                            }
+                            Thread.Sleep(500);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                };
+                worker.RunWorkerAsync();
             }
             catch (Exception ex)
             {
@@ -1555,10 +1604,60 @@ namespace Panacea
             uStatusUpdate("Feature not yet implemented");
         }
 
+        private Process GetProcessIDViaHAndle(IntPtr handle)
+        {
+            return Process.GetProcesses().Single(
+            p => p.Id != 0 && p.MainWindowHandle == handle);
+        }
+
+        static IntPtr ChildWindowFromPoint(System.Drawing.Point point)
+        {
+            IntPtr WindowPoint = WinAPIWrapper.WindowFromPoint(point);
+            if (WindowPoint == IntPtr.Zero)
+                return IntPtr.Zero;
+
+            if (WinAPIWrapper.ScreenToClient(WindowPoint, ref point) == false)
+                Toolbox.uAddDebugLog("ScreenToClient failed");
+
+            IntPtr Window = WinAPIWrapper.ChildWindowFromPointEx(WindowPoint, point, 0);
+            if (Window == IntPtr.Zero)
+                return WindowPoint;
+
+            if (WinAPIWrapper.ClientToScreen(WindowPoint, ref point) == false)
+                Toolbox.uAddDebugLog("ClientToScreen failed");
+
+            if (WinAPIWrapper.IsChild(WinAPIWrapper.GetParent(Window), Window) == false)
+                return Window;
+
+            // create a list to hold all childs under the point
+            ArrayList WindowList = new ArrayList();
+            while (Window != IntPtr.Zero)
+            {
+                System.Drawing.Rectangle rect = WinAPIWrapper.GetWindowRect(Window);
+                if (rect.Contains(point))
+                    WindowList.Add(Window);
+                Window = WinAPIWrapper.GetWindow(Window, (uint)WinAPIWrapper.GetWindow_Cmd.GW_HWNDNEXT);
+            }
+
+            // search for the smallest window in the list
+            int MinPixel = WinAPIWrapper.GetSystemMetrics((int)WinAPIWrapper.GetSystem_Metrics.SM_CXFULLSCREEN) * WinAPIWrapper.GetSystemMetrics((int)WinAPIWrapper.GetSystem_Metrics.SM_CYFULLSCREEN);
+            for (int i = 0; i < WindowList.Count; ++i)
+            {
+                System.Drawing.Rectangle rect = WinAPIWrapper.GetWindowRect((IntPtr)WindowList[i]);
+                int ChildPixel = rect.Width * rect.Height;
+                if (ChildPixel < MinPixel)
+                {
+                    MinPixel = ChildPixel;
+                    Window = (IntPtr)WindowList[i];
+                }
+            }
+            return Window;
+        }
+
         #endregion
 
         #region Network
-        
+
         private bool DoesPingSessionExist(string address)
         {
             var exists = false;

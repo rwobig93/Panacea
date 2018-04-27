@@ -36,19 +36,37 @@ namespace Panacea.Classes
         public static WindowInfo GetWindowInfoFromProc(Process proc)
         {
             WinAPIWrapper.RECT dimensions = new WinAPIWrapper.RECT();
-            WinAPIWrapper.GetWindowRect(proc.Handle, ref dimensions);
-            return new WindowInfo()
+            if (proc != null)
             {
-                Name = proc.ProcessName,
-                ModName = proc.MainModule.ModuleName,
-                Title = proc.MainWindowTitle,
-                FileName = proc.MainModule.FileName,
-                IndexNum = 0,
-                XValue = dimensions.Left,
-                YValue = dimensions.Top,
-                Width = dimensions.Right - dimensions.Left,
-                Height = dimensions.Bottom - dimensions.Top
-            };
+                WinAPIWrapper.GetWindowRect(proc.Handle, ref dimensions);
+                return new WindowInfo()
+                {
+                    Name = proc.ProcessName,
+                    ModName = proc.MainModule.ModuleName,
+                    Title = proc.MainWindowTitle,
+                    FileName = proc.MainModule.FileName,
+                    IndexNum = 0,
+                    XValue = dimensions.Left,
+                    YValue = dimensions.Top,
+                    Width = dimensions.Right - dimensions.Left,
+                    Height = dimensions.Bottom - dimensions.Top
+                };
+            }
+            else
+            {
+                return new WindowInfo()
+                {
+                    Name = "NULL",
+                    ModName = "NULL",
+                    Title = "NULL",
+                    FileName = "NULL",
+                    IndexNum = -1,
+                    XValue = -1,
+                    YValue = -1,
+                    Width = -1,
+                    Height = -1
+                };
+            }
         }
     }
     public class WindowItem
@@ -66,9 +84,16 @@ namespace Panacea.Classes
                 WindowName = process.ProcessName
             };
         }
+        public static WindowItem GetWindowItemUpdate(WindowItem winItem, Process proc)
+        {
+            return new WindowItem()
+            {
+
+            };
+        }
         public static bool DoesDuplicateExist(WindowItem windowItem)
         {
-            var existingWinItem = MainWindow.savedWindows.ToList().Find(x => x.WindowInfo.Name == windowItem.WindowInfo.Name && x.WindowInfo.Title == windowItem.WindowInfo.Title && x.WindowInfo.FileName == windowItem.WindowInfo.FileName && x.WindowInfo.ModName == windowItem.WindowInfo.ModName);
+            var existingWinItem = Toolbox.settings.WindowList.ToList().Find(x => x.WindowInfo.Name == windowItem.WindowInfo.Name && x.WindowInfo.Title == windowItem.WindowInfo.Title && x.WindowInfo.FileName == windowItem.WindowInfo.FileName && x.WindowInfo.ModName == windowItem.WindowInfo.ModName);
             if (existingWinItem != null)
                 return true;
             else
