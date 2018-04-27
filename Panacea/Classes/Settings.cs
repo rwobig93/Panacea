@@ -14,6 +14,10 @@ namespace Panacea.Classes
     {
         private WindowDimensions _windowLocation { get; set; } = new WindowDimensions { Left = 0, Top = 0, Height = 251.309, Width = 454.455 };
         private List<WindowItem> _windowList { get; set; } = new List<WindowItem>();
+        private List<WindowItem> _windowProfile1 { get; set; } = new List<WindowItem>();
+        private List<WindowItem> _windowProfile2 { get; set; } = new List<WindowItem>();
+        private List<WindowItem> _windowProfile3 { get; set; } = new List<WindowItem>();
+        private List<WindowItem> _windowProfile4 { get; set; } = new List<WindowItem>();
         private SolidColorBrush _pingSuccessFill { get; set; } = NetworkVariables.defaultSuccessChartFill;
         private SolidColorBrush _pingSuccessStroke { get; set; } = NetworkVariables.defaultSuccessChartStroke;
         private SolidColorBrush _pingFailFill { get; set; } = NetworkVariables.defaultFailChartFill;
@@ -22,6 +26,7 @@ namespace Panacea.Classes
         private Int32 _pingChartLength { get; set; } = NetworkVariables.defaultPingChartLength;
         private EnterAction _toolboxEnterAction { get; set; } = EnterAction.DNSLookup;
         private bool _basicPing { get; set; }
+        private WindowProfile _currentWinProfile { get; set; } = WindowProfile.Profile1;
         public WindowDimensions WindowLocation
         {
             get { return _windowLocation; }
@@ -112,6 +117,15 @@ namespace Panacea.Classes
                 OnPropertyChanged("BasicPing");
             }
         }
+        public WindowProfile CurrentWindowProfile
+        {
+            get { return _currentWinProfile; }
+            set
+            {
+                _currentWinProfile = value;
+                OnPropertyChanged("CurrentWindowProfile");
+            }
+        }
         #region INotifyPropertyChanged implementation
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -146,6 +160,43 @@ namespace Panacea.Classes
             }
             else
                 Toolbox.uAddDebugLog("Couldn't find existing window item");
+        }
+        public void ChangeWindowProfile(WindowProfile windowProfile)
+        {
+            Toolbox.uAddDebugLog($"Saving current window list for profile: {CurrentWindowProfile.ToString()}");
+            switch (CurrentWindowProfile)
+            {
+                case WindowProfile.Profile1:
+                    _windowProfile1 = WindowList;
+                    break;
+                case WindowProfile.Profile2:
+                    _windowProfile2 = WindowList;
+                    break;
+                case WindowProfile.Profile3:
+                    _windowProfile3 = WindowList;
+                    break;
+                case WindowProfile.Profile4:
+                    _windowProfile4 = WindowList;
+                    break;
+            }
+            Toolbox.uAddDebugLog($"Moving from WindowProfile {CurrentWindowProfile.ToString()} to {windowProfile}");
+            CurrentWindowProfile = windowProfile;
+            switch (windowProfile)
+            {
+                case WindowProfile.Profile1:
+                    WindowList = _windowProfile1;
+                    break;
+                case WindowProfile.Profile2:
+                    WindowList = _windowProfile2;
+                    break;
+                case WindowProfile.Profile3:
+                    WindowList = _windowProfile3;
+                    break;
+                case WindowProfile.Profile4:
+                    WindowList = _windowProfile4;
+                    break;
+            }
+            Toolbox.uAddDebugLog("Finished changing window profile");
         }
     }
 

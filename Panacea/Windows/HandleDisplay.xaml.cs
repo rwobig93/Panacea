@@ -14,6 +14,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
@@ -36,6 +37,8 @@ namespace Panacea.Windows
 
         private ProcessOutline processOutline = null;
         private List<Process> _procList = new List<Process>();
+        private List<string> _notificationList = new List<string>();
+        private bool _playingNotification = false;
         public List<Process> ProcessList
         {
             get { return _procList; }
@@ -96,6 +99,7 @@ namespace Panacea.Windows
             try
             {
                 UpdateProcessList();
+                SendUserUpdateNotification("Let's get those processes!");
             }
             catch (Exception ex)
             {
@@ -114,6 +118,7 @@ namespace Panacea.Windows
             try
             {
                 AddProcessToWinList();
+                SendUserUpdateNotification("Added Selected Process");
             }
             catch (Exception ex)
             {
@@ -125,7 +130,10 @@ namespace Panacea.Windows
         {
             try
             {
+                uDebugLogAdd("Refresh clicked, updating process list");
                 UpdateProcessList();
+                SendUserUpdateNotification("Refreshed Process List");
+                uDebugLogAdd("Finished updating process list");
             }
             catch (Exception ex)
             {
@@ -168,7 +176,10 @@ namespace Panacea.Windows
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
+            uDebugLogAdd("Closing HandleDisplay window");
+            SendUserUpdateNotification("Closing...");
             this.Close();
+            uDebugLogAdd("HandleDisplay window closed");
         }
 
         #endregion
@@ -202,14 +213,17 @@ namespace Panacea.Windows
                 var tempProcList = new List<Process>();
                 foreach (var proc in Process.GetProcesses())
                 {
-                    uDebugLogAdd($"Process {proc.ProcessName} MainWinTitle: {proc.MainWindowTitle}");
-                    if (!string.IsNullOrWhiteSpace(proc.MainWindowTitle))
+                    var rect = WindowInfo.GetProcessDimensions(proc);
+                    uDebugLogAdd($"Process {proc.ProcessName} | T{rect.Top} L{rect.Left} H{rect.Bottom - rect.Top} W{rect.Right - rect.Left}");
+                    if (WindowInfo.DoesProcessHandleHaveSize(proc))
                     {
-                        uDebugLogAdd($"Process {proc.ProcessName}'s title wasn't empty, adding to proc list");
+                        uDebugLogAdd($"Process {proc.ProcessName} has size, adding to proc list");
                         tempProcList.Add(proc);
                     }
                 }
-                ProcessList = tempProcList;
+                lbProcList.ItemsSource = null;
+                ProcessList = tempProcList.OrderBy(x => x.ProcessName).ToList();
+                lbProcList.ItemsSource = ProcessList;
                 uDebugLogAdd("Updated process list");
             }
             catch (Exception ex)
@@ -234,8 +248,12 @@ namespace Panacea.Windows
         {
             try
             {
+                WindowItem windowItem = WindowItem.Create(proc);
                 if (processOutline == null)
-                    processOutline = new ProcessOutline(WindowItem.Create(proc));
+                {
+                    processOutline = new ProcessOutline(windowItem);
+                    processOutline.Show();
+                }
             }
             catch (Exception ex)
             {
@@ -247,9 +265,19 @@ namespace Panacea.Windows
         {
             try
             {
+                bool optionChecked = false;
                 Process selProc = (Process)lbProcList.SelectedItem;
+                ProcessOptions options = new ProcessOptions();
+                if (chkIgnoreWinTitle.IsChecked == true)
+                {
+                    options.IgnoreProcessTitle = true;
+                    optionChecked = true;
+                }
                 uDebugLogAdd($"Adding process to window list, {selProc.ProcessName}, {selProc.MainWindowTitle}");
-                Toolbox.settings.AddWindow(WindowItem.Create(selProc));
+                if (optionChecked)
+                    Toolbox.settings.AddWindow(WindowItem.Create(selProc, options));
+                else
+                    Toolbox.settings.AddWindow(WindowItem.Create(selProc));
                 uDebugLogAdd("Added process to window list");
             }
             catch (Exception ex)
@@ -290,6 +318,77 @@ namespace Panacea.Windows
             }
         }
 
+        private void SendUserUpdateNotification(string update)
+        {
+            try
+            {
+                uDebugLogAdd($"Adding notification: {update}");
+                _notificationList.Add(update);
+                if (!_playingNotification)
+                {
+                    uDebugLogAdd("Notification wasn't previously playing, starting Notification Helper");
+                    tNotificationHelper();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void tNotificationHelper()
+        {
+            try
+            {
+                _playingNotification = true;
+                DoubleAnimation animation = new DoubleAnimation()
+                {
+                    From = 1.0,
+                    To = 0.0,
+                    Duration = TimeSpan.FromSeconds(.3)
+                };
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (ws, we) =>
+                {
+                    
+                    try
+                    {
+                        while (_notificationList.ToList().Count > 0)
+                        {
+                            worker.ReportProgress(1);
+                            Thread.Sleep(TimeSpan.FromSeconds(3));
+                            _notificationList.RemoveAt(0);
+                        }
+                        _playingNotification = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                };
+                worker.ProgressChanged += (ps, pe) =>
+                {
+                    try
+                    {
+                        if (pe.ProgressPercentage == 1)
+                        {
+                            lblUpdateNotification.Text = _notificationList.ToList()[0];
+                            lblUpdateNotification.BeginAnimation(TextBlock.OpacityProperty, animation);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                };
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         #endregion
 
         #region INotifyPropertyChanged implementation
@@ -303,5 +402,10 @@ namespace Panacea.Windows
         }
 
         #endregion
+    }
+
+    public class ProcessOptions
+    {
+        public bool IgnoreProcessTitle { get; set; }
     }
 }

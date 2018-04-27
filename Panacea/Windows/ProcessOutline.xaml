@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Panacea.Windows"
         mc:Ignorable="d"
-        Title="ProcessOutline" Height="300" Width="300" WindowStyle="None" AllowsTransparency="True" Background="#00000000" Foreground="{x:Null}" Topmost="True" BorderBrush="#FFFF6800">
+        Title="ProcessOutline" Height="300" Width="300" WindowStyle="None" AllowsTransparency="True" Background="{x:Null}" Foreground="{x:Null}" Topmost="True" BorderBrush="#FFFF6800">
     <Grid>
+        <Rectangle x:Name="rectBorder" Stroke="#FFFF6800" StrokeThickness="5"/>
 
     </Grid>
 </Window>

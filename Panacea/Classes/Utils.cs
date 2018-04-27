@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Panacea.Windows;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -33,24 +34,41 @@ namespace Panacea.Classes
         public int YValue { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
-        public static WindowInfo GetWindowInfoFromProc(Process proc)
+        public static WindowInfo GetWindowInfoFromProc(Process proc, ProcessOptions options = null)
         {
-            WinAPIWrapper.RECT dimensions = new WinAPIWrapper.RECT();
             if (proc != null)
             {
-                WinAPIWrapper.GetWindowRect(proc.Handle, ref dimensions);
-                return new WindowInfo()
+                var dimensions = GetProcessDimensions(proc);
+                if (options == null)
                 {
-                    Name = proc.ProcessName,
-                    ModName = proc.MainModule.ModuleName,
-                    Title = proc.MainWindowTitle,
-                    FileName = proc.MainModule.FileName,
-                    IndexNum = 0,
-                    XValue = dimensions.Left,
-                    YValue = dimensions.Top,
-                    Width = dimensions.Right - dimensions.Left,
-                    Height = dimensions.Bottom - dimensions.Top
-                };
+                    return new WindowInfo()
+                    {
+                        Name = proc.ProcessName,
+                        ModName = proc.MainModule.ModuleName,
+                        Title = proc.MainWindowTitle,
+                        FileName = proc.MainModule.FileName,
+                        IndexNum = 0,
+                        XValue = dimensions.Left,
+                        YValue = dimensions.Top,
+                        Width = dimensions.Right - dimensions.Left,
+                        Height = dimensions.Bottom - dimensions.Top
+                    };
+                }
+                else
+                {
+                    return new WindowInfo()
+                    {
+                        Name = proc.ProcessName,
+                        ModName = proc.MainModule.ModuleName,
+                        Title = options.IgnoreProcessTitle ? "*" : proc.MainWindowTitle,
+                        FileName = proc.MainModule.FileName,
+                        IndexNum = 0,
+                        XValue = dimensions.Left,
+                        YValue = dimensions.Top,
+                        Width = dimensions.Right - dimensions.Left,
+                        Height = dimensions.Bottom - dimensions.Top
+                    };
+                }
             }
             else
             {
@@ -68,6 +86,26 @@ namespace Panacea.Classes
                 };
             }
         }
+        public static WinAPIWrapper.RECT GetProcessDimensions(Process proc)
+        {
+            WinAPIWrapper.RECT dimensions = new WinAPIWrapper.RECT();
+            WinAPIWrapper.GetWindowRect(proc.MainWindowHandle, ref dimensions);
+            return dimensions;
+        }
+        public static bool DoesProcessHandleHaveSize(Process proc)
+        {
+            var rect = GetProcessDimensions(proc);
+            if (rect.Left == 0 &&
+                rect.Top == 0 &&
+                rect.Bottom == 0 &&
+                rect.Right == 0
+                )
+            {
+                return false;
+            }
+            else
+                return true;
+        }
     }
     public class WindowItem
     {
@@ -76,11 +114,11 @@ namespace Panacea.Classes
         public string Enabled { get; set; } = "On";
         public string Checked { get; set; } = "";
         public Brush EnableColor { get; set; } = Defaults.WinEnableButtonColorOn;
-        public static WindowItem Create(Process process)
+        public static WindowItem Create(Process process, ProcessOptions options = null)
         {
             return new WindowItem()
             {
-                WindowInfo = WindowInfo.GetWindowInfoFromProc(process),
+                WindowInfo = WindowInfo.GetWindowInfoFromProc(process, options),
                 WindowName = process.ProcessName
             };
         }
@@ -105,6 +143,14 @@ namespace Panacea.Classes
     {
         Up,
         Down
+    }
+
+    public enum WindowProfile
+    {
+        Profile1,
+        Profile2,
+        Profile3,
+        Profile4
     }
 
     #endregion

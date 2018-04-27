@@ -5,25 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Topmost="True" ResizeMode="CanResizeWithGrip"
-        Title="MainWindow" Height="573.95" Width="668.852" WindowStyle="None" AllowsTransparency="True" Background="#00000000" Foreground="{x:Null}"
-        PreviewMouseDown="Window_PreviewMouseDown" Loaded="Window_Loaded" Closing="Window_Closing" >
+        Title="MainWindow" Height="573.95" Width="668.852" WindowStyle="None" AllowsTransparency="True" Background="{StaticResource BaseBackgroundBrush}" Foreground="{x:Null}"
+        MouseDown="Window_PreviewMouseDown" Loaded="Window_Loaded" Closing="Window_Closing" >
     <Grid x:Name="GrdMain">
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                <GradientStop Color="#4C000000" Offset="0.152"/>
-                <GradientStop Color="#00000000" Offset="1"/>
-                <GradientStop Color="#00000000"/>
-                <GradientStop Color="#4C000000" Offset="0.883"/>
-                <GradientStop Color="#99000000" Offset="0.486"/>
+                <GradientStop Color="Black" Offset="0"/>
+                <GradientStop Color="#CC252424" Offset="1"/>
             </LinearGradientBrush>
         </Grid.Background>
         <Rectangle x:Name="rectBorder" StrokeThickness="0.5">
-            <Rectangle.Fill>
-                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                    <GradientStop Color="Black" Offset="0"/>
-                    <GradientStop Color="#CC252424" Offset="1"/>
-                </LinearGradientBrush>
-            </Rectangle.Fill>
             <Rectangle.Stroke>
                 <LinearGradientBrush EndPoint="0.2,1" StartPoint="0.2,0">
                     <LinearGradientBrush.RelativeTransform>
@@ -50,15 +41,17 @@
         <TextBlock x:Name="TxtModName" Margin="10,42,10,0" TextWrapping="Wrap" Text="Module Name: {0}" VerticalAlignment="Top" Foreground="#FF666666"/>
         <TextBlock x:Name="TxtFilePath" Margin="10,58,10,0" TextWrapping="Wrap" Text="File Path: {0}" VerticalAlignment="Top" Foreground="#FF666666" Height="45"/>
         <TextBlock x:Name="TxtProcLocation" Margin="10,103,10,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="#FF666666" Height="80"><Run Text="Location:"/><LineBreak/><Run Text="   X: {0}"/><LineBreak/><Run Text="   Y: {0}"/><LineBreak/><Run Text="   Width: {0}"/><LineBreak/><Run Text="   Height: {0}"/></TextBlock>
+        <Button x:Name="btnRefreshProcList" Click="btnRefreshProcList_Click" Content="Refresh List" HorizontalAlignment="Right" Margin="0,188,102,0" VerticalAlignment="Top" Width="87"/>
+        <Button x:Name="btnAddProcess" Click="btnAddProcess_Click" Content="Add Selected" HorizontalAlignment="Left" Margin="10,188,0,0" VerticalAlignment="Top" Width="87"/>
+        <Button x:Name="btnClose" Click="btnClose_Click" Content="Close / Finish" HorizontalAlignment="Right" Margin="0,188,10,0" VerticalAlignment="Top" Width="87"/>
         <ListBox x:Name="lbProcList" SelectionChanged="lbProcList_SelectionChanged" ItemsSource="{Binding ProcessList}" Margin="10,215,10,10">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding ProcessName}" Foreground="#FF8D8D8D"/>
+                    <TextBlock Foreground="#FF8D8D8D" TextWrapping="Wrap" Text="{Binding ProcessName}" Width="650"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <Button x:Name="btnAddProcess" Click="btnAddProcess_Click" Content="Add Selected" HorizontalAlignment="Left" Margin="10,188,0,0" VerticalAlignment="Top" Width="87"/>
-        <Button x:Name="btnRefreshProcList" Click="btnRefreshProcList_Click" Content="Refresh List" HorizontalAlignment="Left" Margin="102,188,0,0" VerticalAlignment="Top" Width="87"/>
-        <Button x:Name="btnClose" Click="btnClose_Click" Content="Close / Finish" HorizontalAlignment="Right" Margin="0,188,10,0" VerticalAlignment="Top" Width="87"/>
+        <CheckBox x:Name="chkIgnoreWinTitle" Content="Ignore Window Title" HorizontalAlignment="Left" Margin="102,192,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D" BorderBrush="{StaticResource BaseBorderBrush}" Height="16" Background="{StaticResource BaseBackgroundBrush}"/>
+        <TextBlock x:Name="lblUpdateNotification" Margin="10,0,19,10" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Bottom" Foreground="#0014DC00" FontSize="24" Height="32" TextAlignment="Right"/>
     </Grid>
 </Window>

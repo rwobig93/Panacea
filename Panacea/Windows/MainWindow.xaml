@@ -237,12 +237,12 @@
                     <GradientStop Color="#FF191919" Offset="0.84"/>
                 </LinearGradientBrush>
             </Grid.Background>
-            <Button x:Name="btnGetPosition" Content="Update Location" HorizontalAlignment="Left" Click="btnGetPosition_Click" Margin="335,42,0,0" VerticalAlignment="Top" Width="100"/>
-            <Button x:Name="btnMoveWindow" Content="Move Win" HorizontalAlignment="Left" Click="btnMoveWindow_Click" Margin="335,69,0,0" VerticalAlignment="Top" Width="100"/>
-            <ListBox x:Name="lbSavedWindows" HorizontalAlignment="Left" Height="184" Margin="80,7,0,0" VerticalAlignment="Top" Width="235">
+            <Button x:Name="btnGetPosition" Content="Update Location" HorizontalAlignment="Right" Click="btnGetPosition_Click" Margin="0,42,19,0" VerticalAlignment="Top" Width="100"/>
+            <Button x:Name="btnMoveWindow" Content="Move" HorizontalAlignment="Right" Click="btnMoveWindow_Click" Margin="0,68,72,0" VerticalAlignment="Top" Width="47"/>
+            <ListBox x:Name="lbSavedWindows" Margin="80,7,139,10">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid>
+                        <Grid Width="{Binding ElementName=lbSavedWindows, Path=ActualWidth, Converter={StaticResource Minus15Converter}}">
                             <TextBlock Text="{Binding WindowName}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Height="19" Width="167" Foreground="#FF15D3CA" Margin="21,2,0,0"/>
                             <Button Content="{Binding Enabled}" Click="btnWindowItemEnabled" HorizontalAlignment="Left" Margin="188,0,0,0" VerticalAlignment="Top" Width="45" Height="22" OpacityMask="{x:Null}">
                                 <Button.Background>
@@ -257,8 +257,8 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Button x:Name="BtnDeleteWindowItem" Content="Delete" Click="BtnDeleteWindowItem_Click" HorizontalAlignment="Left" Margin="335,96,0,0" VerticalAlignment="Top" Width="100"/>
-            <Button x:Name="btnWinTarget" Click="btnWinTarget_Click" Content="Select" HorizontalAlignment="Left" Margin="335,7,0,0" VerticalAlignment="Top" Width="100"/>
+            <Button x:Name="BtnDeleteWindowItem" Content="Delete" Click="BtnDeleteWindowItem_Click" HorizontalAlignment="Right" Margin="0,68,19,0" VerticalAlignment="Top" Width="47"/>
+            <Button x:Name="btnWinTarget" Click="btnWinTarget_Click" Content="Add New" HorizontalAlignment="Right" Margin="0,7,19,0" VerticalAlignment="Top" Width="100"/>
             <Rectangle x:Name="rectTarget" MouseDown="rectTarget_MouseDown" HorizontalAlignment="Left" Height="20" Margin="400,7,0,0" StrokeThickness="0.5" VerticalAlignment="Top" Width="20" Visibility="Hidden">
                 <Rectangle.Fill>
                     <ImageBrush ImageSource="/Panacea;component/Dependencies/target_small.png"/>
@@ -284,12 +284,14 @@
                     </LinearGradientBrush>
                 </Rectangle.Stroke>
             </Rectangle>
-            <Rectangle x:Name="rectWinSelArea" HorizontalAlignment="Left" Height="90" Margin="330,36,0,0" StrokeThickness="0.5" VerticalAlignment="Top" Width="110" Stroke="{StaticResource BaseBorderBrush}" d:IsLocked="True"/>
-            <TextBlock x:Name="lblWinSelectedProcess" HorizontalAlignment="Left" Padding="0" Margin="340,116,0,0" TextWrapping="Wrap" Text="Selected Process" VerticalAlignment="Top" Height="14" Foreground="#FF8D8D8D" Width="95" TextAlignment="Center"/>
-            <Button x:Name="btnWinProfile1" Click="btnWinProfile1_Click" Content="Profile 1" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="328,140,0,0" VerticalAlignment="Top" Width="54"/>
-            <Button x:Name="btnWinProfile2" Click="btnWinProfile2_Click" Content="Profile 2" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="388,140,0,0" VerticalAlignment="Top" Width="54"/>
-            <Button x:Name="btnWinProfile3" Click="btnWinProfile3_Click" Content="Profile 3" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="328,167,0,0" VerticalAlignment="Top" Width="54"/>
-            <Button x:Name="btnWinProfile4" Click="btnWinProfile4_Click" Content="Profile 4" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="388,167,0,0" VerticalAlignment="Top" Width="54"/>
+            <Rectangle x:Name="rectWinSelArea" HorizontalAlignment="Right" Height="90" Margin="0,36,14,0" StrokeThickness="0.5" VerticalAlignment="Top" Width="110" Stroke="{StaticResource BaseBorderBrush}" d:IsLocked="True"/>
+            <TextBlock x:Name="lblWinSelectedProcess" HorizontalAlignment="Right" Padding="0" Margin="0,116,19,0" TextWrapping="Wrap" Text="Selected Process" VerticalAlignment="Top" Height="14" Foreground="#FF8D8D8D" Width="95" TextAlignment="Center"/>
+            <Button x:Name="btnWinProfile1" Click="btnWinProfile1_Click" Content="Profile 1" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,140,72,0" VerticalAlignment="Top" Width="54"/>
+            <Button x:Name="btnWinProfile2" Click="btnWinProfile2_Click" Content="Profile 2" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,140,12,0" VerticalAlignment="Top" Width="54"/>
+            <Button x:Name="btnWinProfile3" Click="btnWinProfile3_Click" Content="Profile 3" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,167,72,0" VerticalAlignment="Top" Width="54"/>
+            <Button x:Name="btnWinProfile4" Click="btnWinProfile4_Click" Content="Profile 4" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,167,12,0" VerticalAlignment="Top" Width="54"/>
+            <Button x:Name="btnWinUpdateManual" Click="btnWinUpdateManual_Click" Content="Edit" HorizontalAlignment="Right" Margin="0,94,72,0" VerticalAlignment="Top" Width="47" IsEnabled="False"/>
+            <Button x:Name="btnWinRefresh" Click="btnWinRefresh_Click" Content="Refresh" HorizontalAlignment="Right" Margin="0,94,19,0" VerticalAlignment="Top" Width="48"/>
         </Grid>
         <Grid x:Name="grdNetwork" Margin="454,30,-454,20" d:IsLocked="True" d:IsHidden="True">
             <Grid.Background>

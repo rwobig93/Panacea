@@ -278,25 +278,6 @@ namespace Panacea
             GetSelectedWindowPosition();
         }
 
-        private void GetSelectedWindowPosition()
-        {
-            WindowItem windowItem = (WindowItem)lbSavedWindows.SelectedItem;
-            Process foundProc = null;
-            foreach (var proc in Process.GetProcesses())
-            {
-                if (
-                    proc.ProcessName == windowItem.WindowInfo.Name &&
-                    proc.MainModule.ModuleName == windowItem.WindowInfo.ModName &&
-                    proc.MainWindowTitle == windowItem.WindowInfo.Title &&
-                    proc.MainModule.FileName == windowItem.WindowInfo.FileName
-                   )
-                    foundProc = proc;
-            }
-            if (foundProc == null)
-                uDebugLogAdd("Running process matching windowItem wasn't foun");
-
-        }
-
         private void btnMoveWindow_Click(object sender, RoutedEventArgs e)
         {
             MoveSelectedWindow();
@@ -347,22 +328,79 @@ namespace Panacea
 
         private void btnWinProfile1_Click(object sender, RoutedEventArgs e)
         {
-
+            try
+            {
+                if (Toolbox.settings.CurrentWindowProfile == WindowProfile.Profile1)
+                    MoveAllWindows();
+                else
+                    ChangeWindowProfiles(WindowProfile.Profile1);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void btnWinProfile2_Click(object sender, RoutedEventArgs e)
         {
-
+            try
+            {
+                if (Toolbox.settings.CurrentWindowProfile == WindowProfile.Profile2)
+                    MoveAllWindows();
+                else
+                    ChangeWindowProfiles(WindowProfile.Profile2);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void btnWinProfile3_Click(object sender, RoutedEventArgs e)
         {
-
+            try
+            {
+                if (Toolbox.settings.CurrentWindowProfile == WindowProfile.Profile3)
+                    MoveAllWindows();
+                else
+                    ChangeWindowProfiles(WindowProfile.Profile3);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void btnWinProfile4_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                if (Toolbox.settings.CurrentWindowProfile == WindowProfile.Profile4)
+                    MoveAllWindows();
+                else
+                    ChangeWindowProfiles(WindowProfile.Profile4);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
 
+        private void btnWinUpdateManual_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnWinRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                RefreshSavedWindows();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion
@@ -1248,6 +1286,7 @@ namespace Panacea
                         break;
                 }
                 uDebugLogAdd("SettingsWIN: working on window process settings");
+                ChangeWindowProfiles(Toolbox.settings.CurrentWindowProfile);
                 lbSavedWindows.ItemsSource = Toolbox.settings.WindowList;
                 uDebugLogAdd("Default settings set");
             }
@@ -1360,9 +1399,29 @@ namespace Panacea
                         return;
                     }
                     uDebugLogAdd("Got selected saved window");
-                    var proc = WinAPIWrapper.GetProcessFromWinItem(selectedWindow);
-                    if (proc != null)
-                        WinAPIWrapper.MoveWindow(proc.Handle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                    MoveProcessHandle(selectedWindow);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveProcessHandle(WindowItem selectedWindow)
+        {
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += (ws, we) =>
+            {
+                try
+                {
+                    Process process = WinAPIWrapper.GetProcessFromWinItem(selectedWindow);
+                    if (process != null)
+                    {
+                        uDebugLogAdd($"Moving process handle {process.ProcessName}");
+                        WinAPIWrapper.MoveWindow(process.MainWindowHandle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                        uDebugLogAdd($"Moved process handle {process.ProcessName}");
+                    }
                     else
                     {
                         uDebugLogAdd("Current process not found for selected item in saved windows list");
@@ -1370,11 +1429,12 @@ namespace Panacea
                         return;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
+                catch (Exception ex)
+                {
+                    LogException(ex);
+                }
+            };
+            worker.RunWorkerAsync();
         }
 
         private void LookForWindowHandle()
@@ -1476,12 +1536,18 @@ namespace Panacea
                 };
                 uDebugLogAdd($"Window handler info window constructed");
                 windowHandleDisplay.Show();
+                windowHandleDisplay.Closed += WindowHandleDisplay_Closed;
                 uDebugLogAdd($"Window handler info window shown");
             }
             catch (Exception ex)
             {
                 LogException(ex);
             }
+        }
+
+        private void WindowHandleDisplay_Closed(object sender, EventArgs e)
+        {
+            RefreshSavedWindows();
         }
 
         private void RevertCursor()
@@ -1601,7 +1667,29 @@ namespace Panacea
 
         private void DeleteSavedWindowItem()
         {
-            uStatusUpdate("Feature not yet implemented");
+            try
+            {
+                WindowItem item = (WindowItem)lbSavedWindows.SelectedItem;
+                Toolbox.settings.RemoveWindow(item);
+                RefreshSavedWindows();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void RefreshSavedWindows()
+        {
+            try
+            {
+                lbSavedWindows.ItemsSource = null;
+                lbSavedWindows.ItemsSource = Toolbox.settings.WindowList;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private Process GetProcessIDViaHAndle(IntPtr handle)
@@ -1652,6 +1740,97 @@ namespace Panacea
                 }
             }
             return Window;
+        }
+
+        private void GetSelectedWindowPosition()
+        {
+            try
+            {
+                WindowItem windowItem = (WindowItem)lbSavedWindows.SelectedItem;
+                Process foundProc = null;
+                foreach (var proc in Process.GetProcesses())
+                {
+                    if (
+                        proc.ProcessName == windowItem.WindowInfo.Name &&
+                        proc.MainModule.ModuleName == windowItem.WindowInfo.ModName &&
+                        proc.MainWindowTitle == windowItem.WindowInfo.Title &&
+                        proc.MainModule.FileName == windowItem.WindowInfo.FileName
+                       )
+                        foundProc = proc;
+                }
+                if (foundProc == null)
+                    uDebugLogAdd("Running process matching windowItem wasn't found");
+                else
+                {
+                    Toolbox.settings.UpdateWindowLocation(windowItem, foundProc);
+                    uDebugLogAdd($"Updated {windowItem.WindowName} windowItem");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ChangeWindowProfiles(WindowProfile profile)
+        {
+            try
+            {
+                Toolbox.settings.ChangeWindowProfile(profile);
+                lbSavedWindows.ItemsSource = Toolbox.settings.WindowList;
+                switch (profile)
+                {
+                    case WindowProfile.Profile1:
+                        btnWinProfile1.BorderBrush = Defaults.ButtonBorderSelected;
+                        btnWinProfile2.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile3.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile4.BorderBrush = Defaults.BaseBorderBrush;
+                        break;
+                    case WindowProfile.Profile2:
+                        btnWinProfile2.BorderBrush = Defaults.ButtonBorderSelected;
+                        btnWinProfile1.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile3.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile4.BorderBrush = Defaults.BaseBorderBrush;
+                        break;
+                    case WindowProfile.Profile3:
+                        btnWinProfile3.BorderBrush = Defaults.ButtonBorderSelected;
+                        btnWinProfile2.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile1.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile4.BorderBrush = Defaults.BaseBorderBrush;
+                        break;
+                    case WindowProfile.Profile4:
+                        btnWinProfile4.BorderBrush = Defaults.ButtonBorderSelected;
+                        btnWinProfile2.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile3.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile1.BorderBrush = Defaults.BaseBorderBrush;
+                        break;
+                }
+                UpdateWindowItemOptions();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void UpdateWindowItemOptions()
+        {
+            
+        }
+
+        private void MoveAllWindows()
+        {
+            try
+            {
+                foreach (var window in Toolbox.settings.WindowList.ToList())
+                {
+                    MoveProcessHandle(window);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion

@@ -10,7 +10,7 @@ using System.ComponentModel;
 
 namespace Panacea.Classes
 {
-    class WinAPIWrapper
+    public class WinAPIWrapper
     {
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -106,7 +106,10 @@ namespace Panacea.Classes
 
         public static Process GetProcessFromWinItem(WindowItem windowItem)
         {
-            return Process.GetProcesses().ToList().Find(x => x.ProcessName == windowItem.WindowInfo.Name && x.MainWindowTitle == windowItem.WindowInfo.Title && x.MainModule.FileName == windowItem.WindowInfo.FileName && x.MainModule.ModuleName == windowItem.WindowInfo.ModName);
+            if (windowItem.WindowInfo.Title == "*")
+                return Process.GetProcesses().ToList().Find(x => x.ProcessName == windowItem.WindowInfo.Name && x.MainModule.FileName == windowItem.WindowInfo.FileName && x.MainModule.ModuleName == windowItem.WindowInfo.ModName);
+            else
+                return Process.GetProcesses().ToList().Find(x => x.ProcessName == windowItem.WindowInfo.Name && x.MainWindowTitle == windowItem.WindowInfo.Title && x.MainModule.FileName == windowItem.WindowInfo.FileName && x.MainModule.ModuleName == windowItem.WindowInfo.ModName);
         }
 
         public static Rectangle GetWindowRect(IntPtr hWnd)

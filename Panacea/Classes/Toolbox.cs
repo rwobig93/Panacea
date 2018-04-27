@@ -48,6 +48,17 @@ namespace Panacea.Classes
             grd.BeginAnimation(Grid.MarginProperty, animation);
         }
 
+        public static void AnimateScrollviewer(ScrollViewer scroll, System.Windows.Thickness toThickness)
+        {
+            ThicknessAnimation animation = new ThicknessAnimation()
+            {
+                AccelerationRatio = .9,
+                Duration = TimeSpan.FromSeconds(.3),
+                To = toThickness
+            };
+            scroll.BeginAnimation(ScrollViewer.MarginProperty, animation);
+        }
+
         public static void AnimateListBox(ListBox lb, System.Windows.Thickness toThickness)
         {
             ThicknessAnimation animation = new ThicknessAnimation()
