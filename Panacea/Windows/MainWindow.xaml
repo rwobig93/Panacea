@@ -243,7 +243,7 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid Width="{Binding ElementName=lbSavedWindows, Path=ActualWidth, Converter={StaticResource Minus15Converter}}">
-                            <TextBlock Text="{Binding WindowName}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Height="19" Width="auto" Foreground="#FF15D3CA" Margin="0,0,0,0"/>
+                            <TextBlock Text="{Binding WindowSum}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Height="19" Width="auto" Foreground="#FF15D3CA" Margin="0,0,0,0"/>
                             <!--<Button Content="{Binding Enabled}" Click="btnWindowItemEnabled" HorizontalAlignment="Left" Margin="188,0,0,0" VerticalAlignment="Top" Width="45" Height="22" OpacityMask="{x:Null}"> Textblock Margin:"21,2,0,0"
                                 <Button.Background>
                                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">

@@ -211,20 +211,34 @@ namespace Panacea.Windows
             try
             {
                 var tempProcList = new List<Process>();
-                foreach (var proc in Process.GetProcesses())
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (ws, we) =>
                 {
-                    var rect = WindowInfo.GetProcessDimensions(proc);
-                    uDebugLogAdd($"Process {proc.ProcessName} | T{rect.Top} L{rect.Left} H{rect.Bottom - rect.Top} W{rect.Right - rect.Left}");
-                    if (WindowInfo.DoesProcessHandleHaveSize(proc))
+                    foreach (var proc in Process.GetProcesses())
                     {
-                        uDebugLogAdd($"Process {proc.ProcessName} has size, adding to proc list");
-                        tempProcList.Add(proc);
+                        var rect = WindowInfo.GetProcessDimensions(proc);
+                        uDebugLogAdd($"Process {proc.ProcessName} | T{rect.Top} L{rect.Left} H{rect.Bottom - rect.Top} W{rect.Right - rect.Left}");
+                        if (WindowInfo.DoesProcessHandleHaveSize(proc))
+                        {
+                            uDebugLogAdd($"Process {proc.ProcessName} has size");
+                                uDebugLogAdd($"Process {proc.ProcessName} doesn't currently exist in the proclist, adding process");
+                                tempProcList.Add(proc);
+                        }
                     }
-                }
-                lbProcList.ItemsSource = null;
-                ProcessList = tempProcList.OrderBy(x => x.ProcessName).ToList();
-                lbProcList.ItemsSource = ProcessList;
-                uDebugLogAdd("Updated process list");
+                    worker.ReportProgress(1);
+                };
+                worker.ProgressChanged += (ps, pe) =>
+                {
+                    if (pe.ProgressPercentage == 1)
+                    {
+
+                        lbProcList.ItemsSource = null;
+                        ProcessList = tempProcList.OrderBy(x => x.ProcessName).ToList();
+                        lbProcList.ItemsSource = ProcessList;
+                        uDebugLogAdd("Updated process list");
+                    }
+                };
+                worker.RunWorkerAsync();
             }
             catch (Exception ex)
             {
@@ -279,6 +293,8 @@ namespace Panacea.Windows
                 else
                     Toolbox.settings.AddWindow(WindowItem.Create(selProc));
                 uDebugLogAdd("Added process to window list");
+                //lbProcList.Items.Remove(selProc);
+                //uDebugLogAdd("Removed existing selected item from the window list");
             }
             catch (Exception ex)
             {

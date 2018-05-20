@@ -110,6 +110,7 @@ namespace Panacea.Classes
     public class WindowItem
     {
         public WindowInfo WindowInfo { get; set; }
+        public string WindowSum { get { return $"{this.WindowInfo.Name} | {this.WindowInfo.Title}"; } }
         public string WindowName { get; set; } = "";
         public string Enabled { get; set; } = "On";
         public string Checked { get; set; } = "";

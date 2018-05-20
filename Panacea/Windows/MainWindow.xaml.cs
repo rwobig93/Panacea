@@ -33,6 +33,7 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using NAudio.CoreAudioApi;
 using System.Collections;
+using System.Management;
 
 namespace Panacea
 {
@@ -1415,18 +1416,36 @@ namespace Panacea
             {
                 try
                 {
-                    Process process = WinAPIWrapper.GetProcessFromWinItem(selectedWindow);
-                    if (process != null)
+                    //Process process = WinAPIWrapper.GetProcessFromWinItem(selectedWindow);
+                    //if (process != null)
+                    //{
+                    //    uDebugLogAdd($"Moving process handle {process.ProcessName} {process.MainWindowHandle.ToInt32()}");
+                    //    WinAPIWrapper.MoveWindow(process.MainWindowHandle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                    //    uDebugLogAdd($"Moved process handle {process.ProcessName} {process.MainWindowHandle.ToInt32()}");
+
+                    //}
+                    //else
+                    //{
+                    //    uDebugLogAdd("Current process not found for selected item in saved windows list");
+                    //    uStatusUpdate("Running process not found for selected process");
+                    //    return;
+                    //}
+                    var procList = Process.GetProcessesByName(selectedWindow.WindowInfo.Name);
+                    foreach (var process in procList)
                     {
-                        uDebugLogAdd($"Moving process handle {process.ProcessName}");
-                        WinAPIWrapper.MoveWindow(process.MainWindowHandle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
-                        uDebugLogAdd($"Moved process handle {process.ProcessName}");
-                    }
-                    else
-                    {
-                        uDebugLogAdd("Current process not found for selected item in saved windows list");
-                        uStatusUpdate("Running process not found for selected process");
-                        return;
+                        if (WinAPIWrapper.ProcIsWhatWeAreLookingFor(selectedWindow, process))
+                        {
+                            var matchingHandles = WinAPIWrapper.FindWindowsWithText(process.MainWindowTitle);
+                            foreach (var hndl in matchingHandles)
+                            {
+                                uDebugLogAdd($"Proc {process.ProcessName} {process.Handle.ToInt32()} matched the selected window item");
+                                uDebugLogAdd($"Moving process handle {process.ProcessName}  {process.Handle.ToInt32()} {process.MainWindowHandle.ToInt32()}");
+                                WinAPIWrapper.SetWindowPos(hndl, 0, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, 0x0001);
+                                uDebugLogAdd($"Moved process handle {process.ProcessName}  {process.Handle.ToInt32()} {process.MainWindowHandle.ToInt32()}");
+                            }
+                        }
+                        else
+                            uDebugLogAdd($"Skipping proc {process.ProcessName} {process.Handle.ToInt32()} as it didn't match the selected window item");
                     }
                 }
                 catch (Exception ex)

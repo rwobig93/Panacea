@@ -38,11 +38,95 @@ namespace Panacea.Classes
             SM_CXFULLSCREEN = 16,
             SM_CYFULLSCREEN = 17
         }
+
+        public static class SWP
+        {
+            public static readonly int
+            NOSIZE = 0x0001,
+            NOMOVE = 0x0002,
+            NOZORDER = 0x0004,
+            NOREDRAW = 0x0008,
+            NOACTIVATE = 0x0010,
+            DRAWFRAME = 0x0020,
+            FRAMECHANGED = 0x0020,
+            SHOWWINDOW = 0x0040,
+            HIDEWINDOW = 0x0080,
+            NOCOPYBITS = 0x0100,
+            NOOWNERZORDER = 0x0200,
+            NOREPOSITION = 0x0200,
+            NOSENDCHANGING = 0x0400,
+            DEFERERASE = 0x2000,
+            ASYNCWINDOWPOS = 0x4000;
+        }
+
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(int smIndex);
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
+        public static extern bool SetWindowPos(IntPtr hwnd, int hWndInsertAfter, int x, int Y, int cx, int cy, int wFlags);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern int GetWindowText(IntPtr hWnd, StringBuilder strText, int maxCount);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern int GetWindowTextLength(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern bool EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);
+
+        // Delegate to filter which windows to include 
+        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+        /// <summary> Get the text for the window pointed to by hWnd </summary>
+        public static string GetWindowText(IntPtr hWnd)
+        {
+            int size = GetWindowTextLength(hWnd);
+            if (size > 0)
+            {
+                var builder = new StringBuilder(size + 1);
+                GetWindowText(hWnd, builder, builder.Capacity);
+                return builder.ToString();
+            }
+
+            return String.Empty;
+        }
+
+        /// <summary> Find all windows that match the given filter </summary>
+        /// <param name="filter"> A delegate that returns true for windows
+        ///    that should be returned and false for windows that should
+        ///    not be returned </param>
+        public static IEnumerable<IntPtr> FindWindows(EnumWindowsProc filter)
+        {
+            IntPtr found = IntPtr.Zero;
+            List<IntPtr> windows = new List<IntPtr>();
+
+            EnumWindows(delegate (IntPtr wnd, IntPtr param)
+            {
+                if (filter(wnd, param))
+                {
+                    // only add the windows that pass the filter
+                    windows.Add(wnd);
+                }
+
+                // but return true here so that we iterate all windows
+                return true;
+            }, IntPtr.Zero);
+
+            return windows;
+        }
+
+        /// <summary> Find all windows that contain the given title text </summary>
+        /// <param name="titleText"> The text that the window title must contain. </param>
+        public static IEnumerable<IntPtr> FindWindowsWithText(string titleText)
+        {
+            return FindWindows(delegate (IntPtr wnd, IntPtr param)
+            {
+                return GetWindowText(wnd).Contains(titleText);
+            });
+        }
 
         [DllImport("user32.dll")]
         public static extern IntPtr WindowFromPoint(Point point);
@@ -82,13 +166,41 @@ namespace Panacea.Classes
         public static extern IntPtr GetWindowDC(IntPtr hWnd);
 
         [DllImport("user32.dll")]
-        public static extern int GetWindowTextLength(IntPtr hWnd);
-
-        [DllImport("user32.dll")]
-        public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
-
-        [DllImport("user32.dll")]
         public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+        [DllImport("user32.dll", EntryPoint = "FindWindowEx", CharSet = CharSet.Auto)]
+        static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
+
+        public static List<IntPtr> GetAllChildrenWindowHandles(IntPtr hParent, int maxCount)
+        {
+            List<IntPtr> result = new List<IntPtr>();
+            int ct = 0;
+            IntPtr prevChild = IntPtr.Zero;
+            IntPtr currChild = IntPtr.Zero;
+            while (true && ct < maxCount)
+            {
+                currChild = FindWindowEx(hParent, prevChild, null, null);
+                if (currChild == IntPtr.Zero) break;
+                result.Add(currChild);
+                prevChild = currChild;
+                ++ct;
+            }
+            return result;
+        }
+
+        delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        static extern bool EnumThreadWindows(int dwThreadId, EnumThreadDelegate lpfn, IntPtr lParam);
+
+        public static IEnumerable<IntPtr> EnumerateProcessWindowHandles(int processId)
+        {
+            var handles = new List<IntPtr>();
+            foreach (ProcessThread thread in Process.GetProcessById(processId).Threads)
+                EnumThreadWindows(thread.Id,
+                    (hWnd, lParam) => { handles.Add(hWnd); return true; }, IntPtr.Zero);
+            return handles;
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct Win32Point
@@ -110,6 +222,52 @@ namespace Panacea.Classes
                 return Process.GetProcesses().ToList().Find(x => x.ProcessName == windowItem.WindowInfo.Name && x.MainModule.FileName == windowItem.WindowInfo.FileName && x.MainModule.ModuleName == windowItem.WindowInfo.ModName);
             else
                 return Process.GetProcesses().ToList().Find(x => x.ProcessName == windowItem.WindowInfo.Name && x.MainWindowTitle == windowItem.WindowInfo.Title && x.MainModule.FileName == windowItem.WindowInfo.FileName && x.MainModule.ModuleName == windowItem.WindowInfo.ModName);
+        }
+
+        public static List<Process> GetProcessListFromWinItem(WindowItem windowItem)
+        {
+            List<Process> procList = new List<Process>();
+            if (windowItem.WindowInfo.Title == "*")
+                foreach (var proc in Process.GetProcesses().ToList())
+                {
+                    if (proc.ProcessName == windowItem.WindowInfo.Name &&
+                        proc.MainModule.FileName == windowItem.WindowInfo.FileName &&
+                        proc.MainModule.ModuleName == windowItem.WindowInfo.ModName)
+                        procList.Add(proc);
+                }
+            else
+                foreach (var proc in Process.GetProcesses().ToList())
+                {
+                    if (proc.ProcessName == windowItem.WindowInfo.Name &&
+                        proc.MainWindowTitle == windowItem.WindowInfo.Title &&
+                        proc.MainModule.FileName == windowItem.WindowInfo.FileName &&
+                        proc.MainModule.ModuleName == windowItem.WindowInfo.ModName)
+                        procList.Add(proc);
+                }
+            return procList;
+        }
+
+        public static bool ProcIsWhatWeAreLookingFor(WindowItem windowItem, Process proc)
+        {
+            if (windowItem.WindowInfo.Title == "*")
+            {
+                if (proc.ProcessName == windowItem.WindowInfo.Name &&
+                    proc.MainModule.FileName == windowItem.WindowInfo.FileName &&
+                    proc.MainModule.ModuleName == windowItem.WindowInfo.ModName)
+                    return true;
+                else
+                    return false;
+            }
+            else
+            {
+                if (proc.ProcessName == windowItem.WindowInfo.Name &&
+                    proc.MainWindowTitle == windowItem.WindowInfo.Title &&
+                    proc.MainModule.FileName == windowItem.WindowInfo.FileName &&
+                    proc.MainModule.ModuleName == windowItem.WindowInfo.ModName)
+                    return true;
+                else
+                    return false;
+            }
         }
 
         public static Rectangle GetWindowRect(IntPtr hWnd)
