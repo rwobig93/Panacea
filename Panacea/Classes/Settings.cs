@@ -12,6 +12,20 @@ namespace Panacea.Classes
 {
     public class Settings: INotifyPropertyChanged
     {
+        #region INotifyPropertyChanged implementation
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName = null)
+        {
+            if (PropertyChanged != null)
+                PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
+
+        #region Private Properties
+
         private WindowDimensions _windowLocation { get; set; } = new WindowDimensions { Left = 0, Top = 0, Height = 251.309, Width = 454.455 };
         private List<WindowItem> _windowList { get; set; } = new List<WindowItem>();
         private List<WindowItem> _windowProfile1 { get; set; } = new List<WindowItem>();
@@ -27,6 +41,15 @@ namespace Panacea.Classes
         private EnterAction _toolboxEnterAction { get; set; } = EnterAction.DNSLookup;
         private bool _basicPing { get; set; }
         private WindowProfile _currentWinProfile { get; set; } = WindowProfile.Profile1;
+        private Version _currentVersion { get; set; } = null;
+        private Version _productionVersion { get; set; } = null;
+        private bool _updateAvailable { get; set; } = false;
+        private string _productionURI { get; set; } = null;
+
+        #endregion
+
+        #region Public Properties
+
         public WindowDimensions WindowLocation
         {
             get { return _windowLocation; }
@@ -126,17 +149,6 @@ namespace Panacea.Classes
                 OnPropertyChanged("CurrentWindowProfile");
             }
         }
-        #region INotifyPropertyChanged implementation
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string propertyName = null)
-        {
-            if (PropertyChanged != null)
-                PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        #endregion
         public void AddWindow(WindowItem windowItem)
         {
             _windowList.Add(windowItem);
@@ -149,7 +161,7 @@ namespace Panacea.Classes
         }
         public void UpdateWindowLocation(WindowItem windowItem, Process proc)
         {
-            var existingItem =_windowList.Find(x => x.WindowInfo.PrivateID == windowItem.WindowInfo.PrivateID);
+            var existingItem = _windowList.Find(x => x.WindowInfo.PrivateID == windowItem.WindowInfo.PrivateID);
             WindowInfo windowInfo = WindowInfo.GetWindowInfoFromProc(proc);
             if (proc == null)
                 Toolbox.uAddDebugLog("Update process was null");
@@ -198,6 +210,28 @@ namespace Panacea.Classes
             }
             Toolbox.uAddDebugLog("Finished changing window profile");
         }
+        public Version CurrentVersion
+        {
+            get { return _currentVersion; }
+            set { _currentVersion = value; }
+        }
+        public Version ProductionVersion
+        {
+            get { return _productionVersion; }
+            set { _productionVersion = value; }
+        }
+        public bool UpdateAvailable
+        {
+            get { return _updateAvailable; }
+            set { _updateAvailable = value; }
+        }
+        public string ProductionURI
+        {
+            get { return _productionURI; }
+            set { _productionURI = value; }
+        }
+
+        #endregion
     }
 
     public enum SettingsUpdate

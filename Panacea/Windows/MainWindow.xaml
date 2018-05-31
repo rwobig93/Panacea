@@ -227,6 +227,7 @@
             <Button x:Name="btnMenuWindows" Content="Windows" Click="btnMenuWindows_Click" Margin="-1,0,1,0"/>
             <Button x:Name="btnMenuNetwork" Content="Network" Click="btnMenuNetwork_Click" Margin="-1,0,1,0"/>
             <Button x:Name="btnMenuSettings" Content="Settings" Click="btnMenuSettings_Click" Margin="-1,0,1,0"/>
+            <Button x:Name="btnMenuUpdate" Content="Update" Click="btnMenuUpdate_Click" Margin="-1,0,1,0" IsEnabled="False"/>
         </StackPanel>
         <Grid x:Name="grdWindows" Margin="454,30,-454,20">
             <Grid.Background>

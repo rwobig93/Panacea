@@ -34,5 +34,6 @@ namespace Panacea.Classes
             EndPoint = new Point(0.5, 1),
             StartPoint = new Point(0.5, 0)
         };
+        public static string GitUpdateURIBase = $@"https://github.com/rwobig93/Panacea/releases/download";
     }
 }

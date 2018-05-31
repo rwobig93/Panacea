@@ -34,6 +34,7 @@ using System.Globalization;
 using NAudio.CoreAudioApi;
 using System.Collections;
 using System.Management;
+using System.Reflection;
 
 namespace Panacea
 {
@@ -45,19 +46,7 @@ namespace Panacea
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = this;
-            SubscribeToEvents();
-            SetupAppFiles();
-            uDebugLogAdd(string.Format("{0}##################################### Application Start #####################################{0}", Environment.NewLine));
-            DeSerializeSettings();
-            SetDefaultSettings();
-            SetWindowLocation();
-            SetupAudioDeviceList();
-            tSaveSettingsAuto();
-            InitializeMenuGrids();
-#if DEBUG
-            debugMode = true;
-#endif
+            Startup();
         }
 
         #region Globals
@@ -70,6 +59,7 @@ namespace Panacea
         private IntPtr LastFoundWindow = IntPtr.Zero;
         private HandleDisplay windowHandleDisplay = null;
         private Point mouseStartPoint = new Point(0,0);
+        private Octokit.GitHubClient gitClient = null;
         private bool audioRefreshing = false;
         private bool debugMode = false;
         private bool notificationPlaying = false;
@@ -770,6 +760,24 @@ namespace Panacea
 
         #region General
 
+        private void Startup()
+        {
+            #if DEBUG
+            debugMode = true;
+            #endif
+            DataContext = this;
+            SubscribeToEvents();
+            SetupAppFiles();
+            uDebugLogAdd(string.Format("{0}##################################### Application Start #####################################{0}", Environment.NewLine));
+            DeSerializeSettings();
+            SetDefaultSettings();
+            SetWindowLocation();
+            SetupAudioDeviceList();
+            tSaveSettingsAuto();
+            InitializeMenuGrids();
+            tCheckForUpdates();
+        }
+
         private void ToggleStatusSize()
         {
             try
@@ -1146,6 +1154,11 @@ namespace Panacea
         {
             Events.UpdateDebugStatus += Events_UpdateDebugStatus;
             WinAPIWrapper.MouseHook.OnMouseUp += MouseHook_OnMouseUp;
+        }
+
+        private Version GetVersionNumber()
+        {
+            return Assembly.GetExecutingAssembly().GetName().Version;
         }
 
         #endregion
@@ -2400,6 +2413,93 @@ namespace Panacea
             worker.RunWorkerAsync();
         }
 
+        private void tCheckForUpdates()
+        {
+            try
+            {
+                uDebugLogAdd("Checking for updates...");
+                if (gitClient == null)
+                {
+                    gitClient = new Octokit.GitHubClient(new Octokit.ProductHeaderValue("Panacea"));
+                    uDebugLogAdd("gitClient was null, created gitClient");
+                }
+                string executable = "Panacea.exe";
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (ws, we) =>
+                {
+                    try
+                    {
+                        Toolbox.settings.CurrentVersion = GetVersionNumber();
+                        uDebugLogAdd($"Current Version: {Toolbox.settings.CurrentVersion}");
+                        Task t = GetUpdate(executable);
+                        t.Start();
+                        while (!t.IsCompleted)
+                        {
+                            Thread.Sleep(500);
+                        }
+                        worker.ReportProgress(1);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                };
+                worker.ProgressChanged += (ps, pe) =>
+                {
+                    try
+                    {
+                        if (pe.ProgressPercentage == 1)
+                        {
+                            if (Toolbox.settings.CurrentVersion.CompareTo(Toolbox.settings.ProductionVersion) < 0)
+                            {
+                                uDebugLogAdd($"New version found: [c]{Toolbox.settings.CurrentVersion} [p]{Toolbox.settings.ProductionVersion}");
+                                ShowNotification("A new version is available, update when ready");
+                                Toolbox.settings.UpdateAvailable = true;
+                                btnMenuUpdate.IsEnabled = true;
+                                uDebugLogAdd("Enabled update button");
+                            }
+                            else
+                                uDebugLogAdd($"Current version is the same or newer than release: [c]{Toolbox.settings.CurrentVersion} [p]{Toolbox.settings.ProductionVersion}");
+                            SaveSettings();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                };
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public async Task GetUpdate(string exe)
+        {
+            try
+            {
+                var releases = await gitClient.Repository.Release.GetAll("rwobig93", "Panacea");
+                var recentRelease = releases.ToList().FindAll(x => x.Prerelease == true).OrderBy(x => x.TagName).First();
+                Version prodVersion = new Version(recentRelease.TagName);
+                Toolbox.settings.ProductionVersion = prodVersion;
+                uDebugLogAdd($"ProdVer: {Toolbox.settings.ProductionVersion}");
+                Toolbox.settings.ProductionURI = $@"{Defaults.GitUpdateURIBase}/{recentRelease.TagName}/{exe}";
+                uDebugLogAdd($"URI: {Toolbox.settings.ProductionURI}");
+                uDebugLogAdd($"Finished getting github recent version");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         #endregion
+
+        private void btnMenuUpdate_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
