@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Upstaller"
         mc:Ignorable="d"
-        Title="MainWindow" Height="133.309" MinHeight="202.309" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070" WindowStartupLocation="CenterScreen" d:DesignWidth="655.842">
+        Title="MainWindow" Height="133.309" MinHeight="202.309" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070" WindowStartupLocation="CenterScreen" d:DesignWidth="655.842" Loaded="mainWin_Loaded">
     <Grid x:Name="grdMain" Focusable="True">
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -25,7 +25,7 @@
             </Rectangle.Fill>
         </Rectangle>
         <TextBlock x:Name="lblTitle" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Upstaller" VerticalAlignment="Top" Height="30" Width="91" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Panel.ZIndex="100"/>
-        <TextBox Height="44" TextWrapping="Wrap" VerticalAlignment="Bottom" VerticalContentAlignment="Stretch" IsReadOnly="True" FontSize="10">
+        <TextBox x:Name="txtStatus" Height="44" TextWrapping="Wrap" VerticalAlignment="Bottom" VerticalContentAlignment="Stretch" IsReadOnly="True" FontSize="10">
             <TextBox.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1C1C1C" Offset="0"/>
@@ -51,7 +51,7 @@
                 </LinearGradientBrush>
             </ProgressBar.Background>
         </ProgressBar>
-        <TextBox HorizontalAlignment="Left" Height="21" Margin="10,35,0,0" TextWrapping="Wrap" Text="Click &quot;...&quot; to pick a location to install or paste the location here..." VerticalAlignment="Top" Width="516"/>
-        <Button Content="..." HorizontalAlignment="Left" Margin="531,35,0,0" VerticalAlignment="Top" Width="24" Height="21"/>
+        <TextBox x:Name="txtDirectory" HorizontalAlignment="Left" Height="21" Margin="10,35,0,0" TextWrapping="Wrap" Text="Click &quot;...&quot; to pick a location to install or paste the location here..." VerticalAlignment="Top" Width="516"/>
+        <Button x:Name="btnChangeDirectory" Content="..." HorizontalAlignment="Left" Margin="531,35,0,0" VerticalAlignment="Top" Width="24" Height="21"/>
     </Grid>
 </Window>

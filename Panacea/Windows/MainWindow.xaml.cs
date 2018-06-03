@@ -206,6 +206,11 @@ namespace Panacea
             }
         }
 
+        private void btnMenuUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateApplication();
+        }
+
         private void Events_UpdateDebugStatus(DebugUpdateArgs args)
         {
             try
@@ -1159,6 +1164,33 @@ namespace Panacea
         private Version GetVersionNumber()
         {
             return Assembly.GetExecutingAssembly().GetName().Version;
+        }
+
+        private void UpdateApplication()
+        {
+            try
+            {
+                uDebugLogAdd("Starting update process");
+                SaveSettings();
+                var upstaller = $"{Directory.GetCurrentDirectory()}\\Upstaller.exe";
+                uDebugLogAdd($"Upstaller dir: {upstaller}");
+                if (File.Exists(upstaller))
+                {
+                    uDebugLogAdd("Upstaller exists, starting the proc");
+                    Process proc = new Process() { StartInfo = new ProcessStartInfo() { FileName = upstaller } };
+                    proc.Start();
+                    uDebugLogAdd($"Started {proc.ProcessName}[{proc.Id}]");
+                }
+                else
+                {
+                    uDebugLogAdd("Upstaller doesn't exist in the current running directory, cancelling...");
+                    ShowNotification("Updater/Installer not found, please repair the application");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion
@@ -2175,7 +2207,7 @@ namespace Panacea
 
         #endregion
 
-        #region Threaded Methods
+        #region Threaded/Async Methods
 
         public void tCheckAudioDevices()
         {
@@ -2421,7 +2453,7 @@ namespace Panacea
                 if (gitClient == null)
                 {
                     gitClient = new Octokit.GitHubClient(new Octokit.ProductHeaderValue("Panacea"));
-                    uDebugLogAdd("gitClient was null, created gitClient");
+                    uDebugLogAdd("gitClient was null, initialized gitClient");
                 }
                 string executable = "Panacea.exe";
                 BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
@@ -2496,10 +2528,5 @@ namespace Panacea
         }
 
         #endregion
-
-        private void btnMenuUpdate_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
     }
 }

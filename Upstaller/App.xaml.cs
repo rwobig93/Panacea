@@ -13,5 +13,20 @@ namespace Upstaller
     /// </summary>
     public partial class App : Application
     {
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            bool argUpdate = false;
+            for (int i = 0; i != e.Args.Length; ++i)
+            {
+                if (e.Args[i].ToLower() == "/update")
+                {
+                    argUpdate = true;
+                }
+            }
+
+            MainWindow window = new Upstaller.MainWindow();
+            window.argUpdate = argUpdate;
+            window.Show();
+        }
     }
 }
