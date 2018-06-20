@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -36,11 +37,98 @@ namespace Upstaller
             try
             {
                 debugLog.Append($"{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {_type.ToString()}: {_log}{Environment.NewLine}");
+                if (debugLog.Length > 250)
+                    DumpDebugLog();
             }
             catch (Exception ex)
             {
                 LogException(ex);
             }
+        }
+
+        public static void DumpDebugLog()
+        {
+            string _dateNow = DateTime.Now.ToLocalTime().ToString("MM-dd-yy");
+            string _debugLocation = ($@"{Directory.GetCurrentDirectory()}\Logs\DebugLog_{_dateNow}.log");
+            try
+            {
+                if (!File.Exists(_debugLocation))
+                    using (StreamWriter _sw = new StreamWriter(_debugLocation))
+                        _sw.WriteLine(debugLog.ToString());
+                else
+                    using (StreamWriter _sw = File.AppendText(_debugLocation))
+                        _sw.WriteLine(debugLog.ToString());
+            }
+            catch (IOException) { SaveFileRetry(_debugLocation, debugLog.ToString()); return; }
+            catch (Exception ex)
+            {
+                LogFullException(ex);
+            }
+            finally
+            {
+                debugLog.Clear();
+            }
+        }
+        
+        private static void LogFullException(Exception ex, [CallerLineNumber] int lineNum = 0, [CallerMemberName] string caller = "", [CallerFilePath] string path = "")
+        {
+            try
+            {
+                Toolbox.LogException(ex, lineNum, caller, path);
+                Toolbox.uDebugLogAdd(string.Format("{0} at line {1} with type {2}", caller, lineNum, ex.GetType().Name), DebugType.EXCEPTION);
+            }
+            catch (Exception)
+            {
+                Random rand = new Random();
+                Toolbox.LogException(ex, lineNum, caller, path, rand.Next(816456489).ToString());
+                Toolbox.uDebugLogAdd(string.Format("{0} at line {1} with type {2}", caller, lineNum, ex.GetType().Name), DebugType.EXCEPTION);
+            }
+        }
+
+        public static void SaveFileRetry(string filePath, string writeString)
+        {
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += (sender, e) =>
+            {
+                try
+                {
+                    string newPath = $@"{filePath.Replace(".", "rt.")}";
+                    int tryAttempts = 10;
+                    for (int t = 1; t <= tryAttempts; t++)
+                    {
+                        try
+                        {
+                            using (StreamWriter sw = File.AppendText(filePath))
+                                sw.WriteLine(writeString);
+                            Toolbox.uDebugLogAdd($"Successfully saved to file after {t} attempts: {filePath}");
+                        }
+                        catch (IOException)
+                        {
+                            if (t == tryAttempts)
+                            {
+                                try
+                                {
+                                    Toolbox.uDebugLogAdd($"Max attempts reached saving to \"{filePath}\", now saving to {newPath}");
+                                    using (StreamWriter sw = File.AppendText(newPath))
+                                        sw.WriteLine(writeString);
+                                    return;
+                                }
+                                catch (IOException)
+                                {
+                                    Toolbox.uDebugLogAdd($"Saving to new file also failed, starting new retry method: {newPath}");
+                                    SaveFileRetry(newPath, writeString);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    FullExceptionLog(ex);
+                }
+            };
+            worker.RunWorkerAsync();
         }
     }
     

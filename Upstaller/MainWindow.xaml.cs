@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -87,6 +88,20 @@ namespace Upstaller
             VerifyInstallation();
             tCheckForUpdates();
             SetIdleDefault();
+            PanaceaStartDisable();
+        }
+
+        private void PanaceaStartDisable()
+        {
+            try
+            {
+                btnStartPanacea.IsEnabled = false;
+                uDebugLogAdd("Disabled Panacea Start Button");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void SetIdleDefault()
@@ -129,6 +144,7 @@ namespace Upstaller
                     txtLabelInstalled.Foreground = new SolidColorBrush(Colors.LawnGreen);
                     txtLabelInstalled.Text = "Installed";
                     uStatusUpdate("Found installed Panacea executable");
+                    PanaceaReadyToStart();
                 }
                 else
                 {
@@ -136,6 +152,7 @@ namespace Upstaller
                     txtLabelInstalled.Text = "Not Installed";
                     uStatusUpdate("Couldn't find Panacea executable, not installed");
                     ToggleFixMeButton(FixMeStatus.NotInstalled);
+                    PanaceaStartDisable();
                 }
             }
             catch (Exception ex)
@@ -342,7 +359,10 @@ namespace Upstaller
         {
             try
             {
-                this.Close();
+                // this.Close();
+                Toolbox.DumpDebugLog();
+                var thisProc = Process.GetCurrentProcess();
+                thisProc.Kill();
             }
             catch (Exception ex)
             {
@@ -395,6 +415,23 @@ namespace Upstaller
                 uStatusUpdate("Starting Panacea Installation");
                 PrepStagingArea();
                 DownloadWhatWeCameHereFor();
+                PutPanaceaInItsPlace();
+                VerifyInstallation();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void PutPanaceaInItsPlace()
+        {
+            try
+            {
+                FileInfo fi = new FileInfo($@"{currentDir}\TopSecret\Panacea.exe");
+                uDebugLogAdd($@"Moving Panacea.exe to it's place | Before: {fi.FullName}");
+                fi.MoveTo($@"{currentDir}\Panacea.exe");
+                uDebugLogAdd($@"Moved Panacea.exe to it's place | After: {fi.FullName}");
             }
             catch (Exception ex)
             {
@@ -411,7 +448,10 @@ namespace Upstaller
                 if (!currentDir.ToLower().EndsWith("panacea"))
                 {
                     uDebugLogAdd($"Directory didn't have Panacea in the name, preposterous. I fixed the glitch, before: {whereTheThingGoes}");
-                    whereTheThingGoes = $@"{currentDir}\Panacea";
+                    if (!Directory.Exists($@"{currentDir}\Panacea"))
+                        Directory.CreateDirectory($@"{currentDir}\Panacea");
+                    currentDir = $@"{currentDir}\Panacea";
+                    whereTheThingGoes = $@"{currentDir}";
                     uDebugLogAdd($"After: {whereTheThingGoes} | There, that's much better");
                 }
                 var stagingArea = $@"{whereTheThingGoes}\TopSecret";
@@ -480,7 +520,7 @@ namespace Upstaller
                 webClient.DownloadFileCompleted += (s2, e2) => { DownloadComplete(); };
                 uDebugLogAdd("Starting that download thang");
                 uStatusUpdate("Starting Panacea download...");
-                webClient.DownloadFileAsync(new Uri(productionURI), $@"{currentDir}\Panacea\TopSecret\Panacea.exe");
+                webClient.DownloadFileAsync(new Uri(productionURI), $@"{currentDir}\TopSecret\Panacea.exe");
             }
             catch (Exception ex)
             {
@@ -503,7 +543,7 @@ namespace Upstaller
 
         private void DownloadComplete()
         {
-            uDebugLogAdd($"Successfully downloaded Panacea to: {$@"{currentDir}\Panacea\Panacea.exe"}");
+            uDebugLogAdd($"Successfully downloaded Panacea to: {$@"{currentDir}\TopSecret\Panacea.exe"}");
             uStatusUpdate("Download finished!");
             SetIdleDefault();
         }
@@ -512,8 +552,27 @@ namespace Upstaller
         {
             try
             {
-                VerifyInstallationReqs();
+                uDebugLogAdd("Starting Panacea update process.");
                 BackupEverything();
+                VerifyInstallationReqs();
+                PrepStagingArea();
+                DownloadWhatWeCameHereFor();
+                PutPanaceaInItsPlace();
+                PanaceaReadyToStart();
+                uDebugLogAdd("Finished Panacea update process.");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void PanaceaReadyToStart()
+        {
+            try
+            {
+                btnStartPanacea.IsEnabled = true;
+                uDebugLogAdd("Panacea start button enabled");
             }
             catch (Exception ex)
             {
@@ -557,8 +616,10 @@ namespace Upstaller
         {
             try
             {
+                uDebugLogAdd("Starting backup of everything");
                 BackupData();
                 BackupOldClient();
+                uDebugLogAdd("Finished backing up everything");
             }
             catch (Exception ex)
             {
@@ -568,19 +629,166 @@ namespace Upstaller
 
         private void BackupOldClient()
         {
-            
+            try
+            {
+                uDebugLogAdd("Starting old client backup");
+                VerifyBackupDirectory();
+                CleanupBackupClient();
+                FileInfo fi = new FileInfo($@"{currentDir}\Panacea.exe");
+                uDebugLogAdd($@"Moving old client to it's new home, Before: {fi.FullName}");
+                fi.MoveTo($@"{currentDir}\Backup\Panacea.exe");
+                uDebugLogAdd($@"Finished old client backup, After: {fi.FullName}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void VerifyBackupDirectory()
+        {
+            try
+            {
+                var backupDir = $@"{currentDir}\Backup";
+                if (!Directory.Exists(backupDir))
+                {
+                    uDebugLogAdd($@"Backup dir didn't exist at {backupDir}, creating dir");
+                    Directory.CreateDirectory(backupDir);
+                    if (!Directory.Exists(backupDir))
+                    {
+                        uDebugLogAdd($@"I attempted creating the backup dir at {backupDir} but it never showed up to the party");
+                    }
+                    else
+                        uDebugLogAdd($"Backup dir created at {backupDir}");
+                }
+                else
+                    uDebugLogAdd($@"Backup dir exists at {backupDir}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void CleanupBackupClient()
+        {
+            try
+            {
+                if (File.Exists($@"{currentDir}\Backup\Panacea.exe"))
+                {
+                    uDebugLogAdd("Existing old client found, removing that sucka!");
+                    FileInfo fi = new FileInfo($@"{currentDir}\Backup\Panacea.exe");
+                    fi.Delete();
+                    uDebugLogAdd("Deleted old backed up client, it's gone, like for real");
+                }
+                else
+                    uDebugLogAdd("Old backup client not found, skipping...");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void BackupData()
         {
-            throw new NotImplementedException();
+            try
+            {
+                var dataDir = $@"{currentDir}\Data";
+                var backupDir = $@"{currentDir}\Backup";
+                var backupDataDir = $@"{currentDir}\Backup\Data";
+                if (!Directory.Exists(backupDir))
+                {
+                    Directory.CreateDirectory(backupDir);
+                    uDebugLogAdd("Backup dir didn't exist, created");
+                }
+                if (!Directory.Exists(backupDataDir))
+                {
+                    Directory.CreateDirectory(backupDataDir);
+                    uDebugLogAdd("Backup data dir didn't exist, created");
+                }
+                if (Directory.Exists(dataDir))
+                {
+                    uDebugLogAdd($@"Found existing data stored at {dataDir}");
+                    // CleanupOldBackupData();
+                    DirectoryInfo di = new DirectoryInfo(dataDir);
+                    foreach (var fi in di.EnumerateFiles())
+                    {
+                        uDebugLogAdd($"Copying file {fi.Name}");
+                        fi.CopyTo($@"{backupDataDir}\{fi.Name}", true);
+                        uDebugLogAdd($@"Copied data file to backup: {backupDataDir}\{fi.Name}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void CleanupOldBackupData()
+        {
+            try
+            {
+                var backupDataDir = $@"{currentDir}\Backup\Data";
+                DirectoryInfo di = new DirectoryInfo(backupDataDir);
+                foreach (var fi in di.EnumerateFiles())
+                {
+                    uDebugLogAdd($"Removing old backed up file: {fi.FullName}");
+                    fi.Delete();
+                    uDebugLogAdd("Deleted file");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void ChangeDirectoryAction()
         {
+            try
+            {
+                string chosenDir = currentDir;
+                PromptForDirChoosing(out chosenDir);
+                MoveOurJunkToNewDir();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveOurJunkToNewDir()
+        {
             throw new NotImplementedException();
         }
 
+        private void PromptForDirChoosing(out string newDir)
+        {
+            newDir = string.Empty;
+        }
+
         #endregion
+
+        private void btnStartPanacea_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var panacea = $@"{currentDir}\Panacea.exe";
+                if (File.Exists(panacea))
+                {
+                    Process.Start(panacea);
+                    uDebugLogAdd("Started Panacea.exe, closing this upstaller");
+                    CloseDisBisch();
+                }
+                else
+                    uDebugLogAdd($@"Couldn't find Panacea at {panacea}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
     }
 }

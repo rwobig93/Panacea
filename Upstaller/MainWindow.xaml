@@ -51,9 +51,10 @@
                 </LinearGradientBrush>
             </ProgressBar.Background>
         </ProgressBar>
-        <TextBox x:Name="txtDirectory" HorizontalAlignment="Left" Height="21" Margin="10,35,0,0" TextWrapping="Wrap" Text="Click &quot;...&quot; to pick a location to install or paste the location here..." VerticalAlignment="Top" Width="545"/>
+        <TextBox x:Name="txtDirectory" HorizontalAlignment="Left" Height="21" Margin="10,35,0,0" TextWrapping="Wrap" Text="You shouldn't be seeing me, i'm magic and i'm invisible" VerticalAlignment="Top" Width="545"/>
         <Button x:Name="btnChangeDirectory" Click="btnChangeDirectory_Click" Content="Change Install Directory" HorizontalAlignment="Left" Margin="410,61,0,0" VerticalAlignment="Top" Width="145" Height="22"/>
         <Button x:Name="btnClose" Click="btnClose_Click" Content="X" HorizontalAlignment="Right" Style="{StaticResource ButtonEdges}" VerticalAlignment="Top" Width="30" Height="30" Panel.ZIndex="500" BorderBrush="#FF707070"/>
         <Button x:Name="btnFixMe" Click="btnFixMe_Click" Content="FixMe" HorizontalAlignment="Left" Margin="10,60,0,0" VerticalAlignment="Top" Width="75" Height="23"/>
+        <Button x:Name="btnStartPanacea" Click="btnStartPanacea_Click" Content="Start Panacea" HorizontalAlignment="Left" Margin="90,60,0,0" VerticalAlignment="Top" Width="86" Height="23"/>
     </Grid>
 </Window>

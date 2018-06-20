@@ -207,6 +207,11 @@
             Delegated access to a third party
             </summary>
         </member>
+        <member name="F:Octokit.AuthenticationType.Bearer">
+            <summary>
+            Credential for GitHub App using signed JWT
+            </summary>
+        </member>
         <member name="T:Octokit.ActivitiesClient">
             <summary>
             A client for GitHub's Activity API.
@@ -1221,6 +1226,14 @@
              See the <a href="https://developer.github.com/v3/enterprise/search_indexing/">Enterprise Search Indexing API documentation</a> for more information.
             </remarks>
         </member>
+        <member name="P:Octokit.EnterpriseClient.PreReceiveEnvironment">
+             <summary>
+             A client for GitHub's Enterprise Pre-receive Environments API
+             </summary>
+             <remarks>
+             See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/">Enterprise Pre-receive Environments API documentation</a> for more information.
+            </remarks>
+        </member>
         <member name="T:Octokit.EnterpriseLdapClient">
              <summary>
              A client for GitHub's Enterprise LDAP API
@@ -1305,6 +1318,106 @@
             </remarks>
             <param name="newOrganization">A <see cref="T:Octokit.NewOrganization"/> instance describing the organization to be created</param>
             <returns>The <see cref="T:Octokit.Organization"/> created.</returns>
+        </member>
+        <member name="T:Octokit.EnterprisePreReceiveEnvironmentsClient">
+             <summary>
+             A client for GitHub's Enterprise Pre-receive Environments API
+             </summary>
+             <remarks>
+             See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/">Enterprise Pre-receive Environments API documentation</a> for more information.
+            </remarks>
+        </member>
+        <member name="M:Octokit.EnterprisePreReceiveEnvironmentsClient.#ctor(Octokit.IApiConnection)">
+            <summary>
+            Initializes a new instance of <see cref="T:Octokit.EnterprisePreReceiveEnvironmentsClient"/>.
+            </summary>
+            <param name="apiConnection">An API connection</param>
+        </member>
+        <member name="M:Octokit.EnterprisePreReceiveEnvironmentsClient.GetAll">
+            <summary>
+            Gets all <see cref="T:Octokit.PreReceiveEnvironment"/>s.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#list-pre-receive-environments">API documentation</a> for more information.
+            </remarks>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.EnterprisePreReceiveEnvironmentsClient.GetAll(Octokit.ApiOptions)">
+            <summary>
+            Gets all <see cref="T:Octokit.PreReceiveEnvironment"/>s.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#list-pre-receive-environments">API documentation</a> for more information.
+            </remarks>
+            <param name="options">Options for changing the API response</param>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.EnterprisePreReceiveEnvironmentsClient.Get(System.Int64)">
+            <summary>
+            Gets a single <see cref="T:Octokit.PreReceiveEnvironment"/>.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#get-a-single-pre-receive-environment">API documentation</a> for more information.
+            </remarks>
+            <param name="environmentId">The id of the pre-receive environment</param>
+            <exception cref="T:Octokit.NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.EnterprisePreReceiveEnvironmentsClient.Create(Octokit.NewPreReceiveEnvironment)">
+            <summary>
+            Creates a new <see cref="T:Octokit.PreReceiveEnvironment"/>.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#create-a-pre-receive-environment">API documentation</a> for more information.
+            </remarks>
+            <param name="newPreReceiveEnvironment">A description of the pre-receive environment to create</param>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.EnterprisePreReceiveEnvironmentsClient.Edit(System.Int64,Octokit.UpdatePreReceiveEnvironment)">
+            <summary>
+            Edits an existing <see cref="T:Octokit.PreReceiveEnvironment"/>.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#edit-a-pre-receive-environment">API documentation</a> for more information.
+            </remarks>
+            <param name="environmentId">The id of the pre-receive environment</param>
+            <param name="updatePreReceiveEnvironment">A description of the pre-receive environment to edit</param>
+            <exception cref="T:Octokit.NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.EnterprisePreReceiveEnvironmentsClient.Delete(System.Int64)">
+            <summary>
+            Deletes an existing <see cref="T:Octokit.PreReceiveEnvironment"/>.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#delete-a-pre-receive-environment">API documentation</a> for more information.
+            </remarks>
+            <param name="environmentId">The id of the pre-receive environment</param>
+            <exception cref="T:Octokit.NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.EnterprisePreReceiveEnvironmentsClient.DownloadStatus(System.Int64)">
+            <summary>
+            Gets the download status for an existing <see cref="T:Octokit.PreReceiveEnvironment"/>.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#get-a-pre-receive-environments-download-status">API documentation</a> for more information.
+            </remarks>
+            <param name="environmentId">The id of the pre-receive environment</param>
+            <exception cref="T:Octokit.NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.EnterprisePreReceiveEnvironmentsClient.TriggerDownload(System.Int64)">
+            <summary>
+            Triggers a new download of the <see cref="T:Octokit.PreReceiveEnvironment"/>'s tarball from the environment's <see cref="P:Octokit.PreReceiveEnvironment.ImageUrl"/>.
+            When the download is finished, the newly downloaded tarball will overwrite the existing environment.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#trigger-a-pre-receive-environment-download">API documentation</a> for more information.
+            </remarks>
+            <param name="environmentId">The id of the pre-receive environment</param>
+            <exception cref="T:Octokit.NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
         </member>
         <member name="T:Octokit.EnterpriseProbe">
             <summary>
@@ -1602,6 +1715,14 @@
              See the <a href="https://developer.github.com/v3/enterprise/search_indexing/">Enterprise Search Indexing API documentation</a> for more information.
             </remarks>
         </member>
+        <member name="P:Octokit.IEnterpriseClient.PreReceiveEnvironment">
+             <summary>
+             A client for GitHub's Enterprise Pre-receive Environments API
+             </summary>
+             <remarks>
+             See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/">Enterprise Pre-receive Environments API documentation</a> for more information.
+            </remarks>
+        </member>
         <member name="T:Octokit.IEnterpriseLdapClient">
              <summary>
              A client for GitHub's Enterprise LDAP API
@@ -1686,6 +1807,100 @@
             </remarks>
             <param name="newOrganization">A <see cref="T:Octokit.NewOrganization"/> instance describing the organization to be created</param>
             <returns>The <see cref="T:Octokit.Organization"/> created.</returns>
+        </member>
+        <member name="T:Octokit.IEnterprisePreReceiveEnvironmentsClient">
+             <summary>
+             A client for GitHub's Enterprise Pre-receive Environments API
+             </summary>
+             <remarks>
+             See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/">Enterprise Pre-receive Environments API documentation</a> for more information.
+            </remarks>
+        </member>
+        <member name="M:Octokit.IEnterprisePreReceiveEnvironmentsClient.GetAll">
+            <summary>
+            Gets all <see cref="T:Octokit.PreReceiveEnvironment"/>s.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#list-pre-receive-environments">API documentation</a> for more information.
+            </remarks>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.IEnterprisePreReceiveEnvironmentsClient.GetAll(Octokit.ApiOptions)">
+            <summary>
+            Gets all <see cref="T:Octokit.PreReceiveEnvironment"/>s.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#list-pre-receive-environments">API documentation</a> for more information.
+            </remarks>
+            <param name="options">Options for changing the API response</param>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.IEnterprisePreReceiveEnvironmentsClient.Get(System.Int64)">
+            <summary>
+            Gets a single <see cref="T:Octokit.PreReceiveEnvironment"/>.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#get-a-single-pre-receive-environment">API documentation</a> for more information.
+            </remarks>
+            <param name="environmentId">The id of the pre-receive environment</param>
+            <exception cref="T:Octokit.NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.IEnterprisePreReceiveEnvironmentsClient.Create(Octokit.NewPreReceiveEnvironment)">
+            <summary>
+            Creates a new <see cref="T:Octokit.PreReceiveEnvironment"/>.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#create-a-pre-receive-environment">API documentation</a> for more information.
+            </remarks>
+            <param name="newPreReceiveEnvironment">A description of the pre-receive environment to create</param>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.IEnterprisePreReceiveEnvironmentsClient.Edit(System.Int64,Octokit.UpdatePreReceiveEnvironment)">
+            <summary>
+            Edits an existing <see cref="T:Octokit.PreReceiveEnvironment"/>.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#edit-a-pre-receive-environment">API documentation</a> for more information.
+            </remarks>
+            <param name="environmentId">The id of the pre-receive environment</param>
+            <param name="updatePreReceiveEnvironment">A description of the pre-receive environment to edit</param>
+            <exception cref="T:Octokit.NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.IEnterprisePreReceiveEnvironmentsClient.Delete(System.Int64)">
+            <summary>
+            Deletes an existing <see cref="T:Octokit.PreReceiveEnvironment"/>.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#delete-a-pre-receive-environment">API documentation</a> for more information.
+            </remarks>
+            <param name="environmentId">The id of the pre-receive environment</param>
+            <exception cref="T:Octokit.NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.IEnterprisePreReceiveEnvironmentsClient.DownloadStatus(System.Int64)">
+            <summary>
+            Gets the download status for an existing <see cref="T:Octokit.PreReceiveEnvironment"/>.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#get-a-pre-receive-environments-download-status">API documentation</a> for more information.
+            </remarks>
+            <param name="environmentId">The id of the pre-receive environment</param>
+            <exception cref="T:Octokit.NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.IEnterprisePreReceiveEnvironmentsClient.TriggerDownload(System.Int64)">
+            <summary>
+            Triggers a new download of the <see cref="T:Octokit.PreReceiveEnvironment"/>'s tarball from the environment's <see cref="P:Octokit.PreReceiveEnvironment.ImageUrl"/>.
+            When the download is finished, the newly downloaded tarball will overwrite the existing environment.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/enterprise-admin/pre_receive_environments/#trigger-a-pre-receive-environment-download">API documentation</a> for more information.
+            </remarks>
+            <param name="environmentId">The id of the pre-receive environment</param>
+            <exception cref="T:Octokit.NotFoundException">Thrown when the specified <paramref name="environmentId"/> does not exist.</exception>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
         </member>
         <member name="T:Octokit.IEnterpriseProbe">
             <summary>
@@ -2550,6 +2765,58 @@
             Instantiates a new GitHub Git API client.
             </summary>
             <param name="apiConnection">An API connection</param>
+        </member>
+        <member name="T:Octokit.GitHubAppsClient">
+            <summary>
+            A client for GitHub Applications API. Provides the methods required to get GitHub applications and installations.
+            </summary>
+            <remarks>
+            See the <a href="http://developer.github.com/v3/apps/">GitHub Apps API documentation</a> for more information.
+            </remarks>
+        </member>
+        <member name="M:Octokit.GitHubAppsClient.Get(System.String)">
+            <summary>
+            Get a single GitHub App.
+            </summary>
+            <remarks>https://developer.github.com/v3/apps/#get-a-single-github-app</remarks>
+            <param name="slug">The URL-friendly name of your GitHub App. You can find this on the settings page for your GitHub App.</param>
+        </member>
+        <member name="M:Octokit.GitHubAppsClient.GetCurrent">
+            <summary>
+            Returns the GitHub App associated with the authentication credentials used (requires GitHubApp JWT token auth).
+            </summary>
+            <remarks>https://developer.github.com/v3/apps/#get-the-authenticated-github-app</remarks>
+        </member>
+        <member name="M:Octokit.GitHubAppsClient.GetAllInstallationsForCurrent">
+            <summary>
+            List installations of the authenticated GitHub App (requires GitHubApp JWT token auth).
+            </summary>
+            <remarks>https://developer.github.com/v3/apps/#find-installations</remarks>
+        </member>
+        <member name="M:Octokit.GitHubAppsClient.GetAllInstallationsForCurrent(Octokit.ApiOptions)">
+            <summary>
+            List installations of the authenticated GitHub App (requires GitHubApp JWT token auth).
+            </summary>
+            <param name="options">Options for changing the API response</param>
+            <remarks>https://developer.github.com/v3/apps/#find-installations</remarks>
+        </member>
+        <member name="M:Octokit.GitHubAppsClient.GetInstallation(System.Int64)">
+            <summary>
+            Get a single GitHub App Installation (requires GitHubApp JWT token auth).
+            </summary>
+            <remarks>https://developer.github.com/v3/apps/#get-a-single-installation</remarks>
+            <param name="installationId">The Id of the GitHub App Installation</param>
+        </member>
+        <member name="M:Octokit.GitHubAppsClient.CreateInstallationToken(System.Int64)">
+            <summary>
+            Create a time bound access token for a GitHubApp Installation that can be used to access other API endpoints (requires GitHubApp JWT token auth).
+            </summary>
+            <remarks>
+            https://developer.github.com/v3/apps/#create-a-new-installation-token
+            https://developer.github.com/apps/building-github-apps/authentication-options-for-github-apps/#authenticating-as-an-installation
+            https://developer.github.com/v3/apps/available-endpoints/
+            </remarks>
+            <param name="installationId">The Id of the GitHub App Installation</param>
         </member>
         <member name="T:Octokit.IActivitiesClient">
             <summary>
@@ -4058,6 +4325,58 @@
             <remarks>
             See the <a href="http://developer.github.com/v3/git/">Git API documentation</a> for more information.
             </remarks>
+        </member>
+        <member name="T:Octokit.IGitHubAppsClient">
+            <summary>
+            A client for GitHub Applications API. Provides the methods required to get GitHub applications and installations.
+            </summary>
+            <remarks>
+            See the <a href="http://developer.github.com/v3/apps/">GitHub Apps API documentation</a> for more information.
+            </remarks>
+        </member>
+        <member name="M:Octokit.IGitHubAppsClient.Get(System.String)">
+            <summary>
+            Get a single GitHub App.
+            </summary>
+            <remarks>https://developer.github.com/v3/apps/#get-a-single-github-app</remarks>
+            <param name="slug">The URL-friendly name of your GitHub App. You can find this on the settings page for your GitHub App.</param>
+        </member>
+        <member name="M:Octokit.IGitHubAppsClient.GetCurrent">
+            <summary>
+            Returns the GitHub App associated with the authentication credentials used (requires GitHubApp JWT token auth).
+            </summary>
+            <remarks>https://developer.github.com/v3/apps/#get-the-authenticated-github-app</remarks>
+        </member>
+        <member name="M:Octokit.IGitHubAppsClient.GetAllInstallationsForCurrent">
+            <summary>
+            List installations of the authenticated GitHub App (requires GitHubApp JWT token auth).
+            </summary>
+            <remarks>https://developer.github.com/v3/apps/#find-installations</remarks>
+        </member>
+        <member name="M:Octokit.IGitHubAppsClient.GetAllInstallationsForCurrent(Octokit.ApiOptions)">
+            <summary>
+            List installations of the authenticated GitHub App (requires GitHubApp JWT token auth).
+            </summary>
+            <param name="options">Options for changing the API response</param>
+            <remarks>https://developer.github.com/v3/apps/#find-installations</remarks>
+        </member>
+        <member name="M:Octokit.IGitHubAppsClient.GetInstallation(System.Int64)">
+            <summary>
+            Get a single GitHub App Installation (requires GitHubApp JWT token auth).
+            </summary>
+            <remarks>https://developer.github.com/v3/apps/#get-a-single-installation</remarks>
+            <param name="installationId">The Id of the GitHub App Installation</param>
+        </member>
+        <member name="M:Octokit.IGitHubAppsClient.CreateInstallationToken(System.Int64)">
+            <summary>
+            Create a time bound access token for a GitHubApp Installation that can be used to access other API endpoints (requires GitHubApp JWT token auth).
+            </summary>
+            <remarks>
+            https://developer.github.com/v3/apps/#create-a-new-installation-token
+            https://developer.github.com/apps/building-github-apps/authentication-options-for-github-apps/#authenticating-as-an-installation
+            https://developer.github.com/v3/apps/available-endpoints/
+            </remarks>
+            <param name="installationId">The Id of the GitHub App Installation</param>
         </member>
         <member name="T:Octokit.IIssueCommentReactionsClient">
             <summary>
@@ -6164,22 +6483,6 @@
             <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
             <returns>A list of the current user's <see cref="T:Octokit.Organization"/>s.</returns>
         </member>
-        <member name="M:Octokit.IOrganizationsClient.GetAll(System.String)">
-            <summary>
-            Returns all <see cref="T:Octokit.Organization" />s for the specified user.
-            </summary>
-            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
-            <returns>A list of the specified user's <see cref="T:Octokit.Organization"/>s.</returns>
-        </member>
-        <member name="M:Octokit.IOrganizationsClient.GetAll(System.String,Octokit.ApiOptions)">
-            <summary>
-            Returns all <see cref="T:Octokit.Organization" />s for the specified user.
-            </summary>
-            <param name="user">The login of the user</param>
-            <param name="options">Options for changing the API response</param>
-            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
-            <returns>A list of the specified user's <see cref="T:Octokit.Organization"/>s.</returns>
-        </member>
         <member name="M:Octokit.IOrganizationsClient.GetAllForUser(System.String)">
             <summary>
             Returns all <see cref="T:Octokit.Organization" />s for the specified user.
@@ -6386,7 +6689,7 @@
             See the <a href="https://developer.github.com/v3/projects/#list-repository-projects">API documentation</a> for more information.
             </remarks>
             <param name="owner">The owner of the repository</param>
-            <param name="repo">The name of the repository</param>
+            <param name="name">The name of the repository</param>
         </member>
         <member name="M:Octokit.IProjectsClient.GetAllForRepository(System.String,System.String,Octokit.ProjectRequest)">
             <summary>
@@ -6396,7 +6699,7 @@
             See the <a href="https://developer.github.com/v3/projects/#list-repository-projects">API documentation</a> for more information.
             </remarks>
             <param name="owner">The owner of the repository</param>
-            <param name="repo">The name of the repository</param>
+            <param name="name">The name of the repository</param>
             <param name="request">Used to filter the list of projects returned</param>
         </member>
         <member name="M:Octokit.IProjectsClient.GetAllForRepository(System.Int64)">
@@ -6426,7 +6729,7 @@
             See the <a href="https://developer.github.com/v3/projects/#list-repository-projects">API documentation</a> for more information.
             </remarks>
             <param name="owner">The owner of the repository</param>
-            <param name="repo">The name of the repository</param>
+            <param name="name">The name of the repository</param>
             <param name="options">Options for changing the API response</param>
         </member>
         <member name="M:Octokit.IProjectsClient.GetAllForRepository(System.String,System.String,Octokit.ProjectRequest,Octokit.ApiOptions)">
@@ -6437,7 +6740,7 @@
             See the <a href="https://developer.github.com/v3/projects/#list-repository-projects">API documentation</a> for more information.
             </remarks>
             <param name="owner">The owner of the repository</param>
-            <param name="repo">The name of the repository</param>
+            <param name="name">The name of the repository</param>
             <param name="request">Used to filter the list of projects returned</param>
             <param name="options">Options for changing the API response</param>
         </member>
@@ -7086,11 +7389,6 @@
             See the <a href="http://developer.github.com/v3/activity/notifications/">Pull Requests API documentation</a> for more information.
             </remarks>
         </member>
-        <member name="P:Octokit.IPullRequestsClient.Comment">
-            <summary>
-            Client for managing review comments.
-            </summary>
-        </member>
         <member name="P:Octokit.IPullRequestsClient.Review">
             <summary>
             Client for managing reviews.
@@ -7379,7 +7677,7 @@
             </remarks>
             <param name="owner">The owner of the repository</param>
             <param name="name">The name of the repository</param>
-            <param name="reference">The name of the reference</param>
+            <param name="reference">The canonical name of the reference without the 'refs/' prefix. e.g. "heads/master" or "tags/release-1"</param>
             <returns></returns>
         </member>
         <member name="M:Octokit.IReferencesClient.Get(System.Int64,System.String)">
@@ -7390,7 +7688,7 @@
             http://developer.github.com/v3/git/refs/#get-a-reference
             </remarks>
             <param name="repositoryId">The Id of the repository</param>
-            <param name="reference">The name of the reference</param>
+            <param name="reference">The canonical name of the reference without the 'refs/' prefix. e.g. "heads/master" or "tags/release-1"</param>
             <returns></returns>
         </member>
         <member name="M:Octokit.IReferencesClient.GetAll(System.String,System.String)">
@@ -7517,7 +7815,7 @@
             </remarks>
             <param name="owner">The owner of the repository</param>
             <param name="name">The name of the repository</param>
-            <param name="reference">The name of the reference</param>
+            <param name="reference">The canonical name of the reference without the 'refs/' prefix. e.g. "heads/master" or "tags/release-1"</param>
             <param name="referenceUpdate">The updated reference data</param>
             <returns></returns>
         </member>
@@ -7529,7 +7827,7 @@
             http://developer.github.com/v3/git/refs/#update-a-reference
             </remarks>
             <param name="repositoryId">The Id of the repository</param>
-            <param name="reference">The name of the reference</param>
+            <param name="reference">The canonical name of the reference without the 'refs/' prefix. e.g. "heads/master" or "tags/release-1"</param>
             <param name="referenceUpdate">The updated reference data</param>
             <returns></returns>
         </member>
@@ -7542,7 +7840,7 @@
             </remarks>
             <param name="owner">The owner of the repository</param>
             <param name="name">The name of the repository</param>
-            <param name="reference">The name of the reference</param>
+            <param name="reference">The canonical name of the reference without the 'refs/' prefix. e.g. "heads/master" or "tags/release-1"</param>
             <returns></returns>
         </member>
         <member name="M:Octokit.IReferencesClient.Delete(System.Int64,System.String)">
@@ -7553,7 +7851,7 @@
             http://developer.github.com/v3/git/refs/#delete-a-reference
             </remarks>
             <param name="repositoryId">The Id of the repository</param>
-            <param name="reference">The name of the reference</param>
+            <param name="reference">The canonical name of the reference without the 'refs/' prefix. e.g. "heads/master" or "tags/release-1"</param>
             <returns></returns>
         </member>
         <member name="T:Octokit.IReleasesClient">
@@ -7620,6 +7918,18 @@
             <param name="id">The id of the release</param>
             <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
         </member>
+        <member name="M:Octokit.IReleasesClient.Get(System.String,System.String,System.String)">
+            <summary>
+            Gets a single <see cref="T:Octokit.Release"/> for the specified repository.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/repos/releases/#get-a-release-by-tag-name">API documentation</a> for more information.
+            </remarks>
+            <param name="owner">The repository's owner</param>
+            <param name="name">The repository's name</param>
+            <param name="tag">The tag of the release</param>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
         <member name="M:Octokit.IReleasesClient.Get(System.Int64,System.Int32)">
             <summary>
             Gets a single <see cref="T:Octokit.Release"/> for the specified repository.
@@ -7629,6 +7939,17 @@
             </remarks>
             <param name="repositoryId">The Id of the repository</param>
             <param name="id">The id of the release</param>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.IReleasesClient.Get(System.Int64,System.String)">
+            <summary>
+            Gets a single <see cref="T:Octokit.Release"/> for the specified repository.
+            </summary>
+            <remarks>
+            See the <a href="http://developer.github.com/v3/repos/releases/#get-a-release-by-tag-name">API documentation</a> for more information.
+            </remarks>
+            <param name="repositoryId">The Id of the repository</param>
+            <param name="tag">The tag of the release</param>
             <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
         </member>
         <member name="M:Octokit.IReleasesClient.GetLatest(System.String,System.String)">
@@ -8844,27 +9165,6 @@
             <param name="repositoryId">The Id of the repository</param>
             <param name="branch">The name of the branch</param>
         </member>
-        <member name="M:Octokit.IRepositoryBranchesClient.GetRequiredStatusChecksContexts(System.String,System.String,System.String)">
-            <summary>
-            Get the required status checks contexts for the specified branch
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/repos/branches/#list-required-status-checks-contexts-of-protected-branch">API documentation</a> for more details
-            </remarks>
-            <param name="owner">The owner of the repository</param>
-            <param name="name">The name of the repository</param>
-            <param name="branch">The name of the branch</param>
-        </member>
-        <member name="M:Octokit.IRepositoryBranchesClient.GetRequiredStatusChecksContexts(System.Int64,System.String)">
-            <summary>
-            Get the required status checks contexts for the specified branch
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/repos/branches/#list-required-status-checks-contexts-of-protected-branch">API documentation</a> for more details
-            </remarks>
-            <param name="repositoryId">The Id of the repository</param>
-            <param name="branch">The name of the branch</param>
-        </member>
         <member name="M:Octokit.IRepositoryBranchesClient.GetAllRequiredStatusChecksContexts(System.String,System.String,System.String)">
             <summary>
             Get the required status checks contexts for the specified branch
@@ -8986,6 +9286,7 @@
             <param name="owner">The owner of the repository</param>
             <param name="name">The name of the repository</param>
             <param name="branch">The name of the branch</param>
+            <param name="update">The required pull request review settings</param>
         </member>
         <member name="M:Octokit.IRepositoryBranchesClient.UpdateReviewEnforcement(System.Int64,System.String,Octokit.BranchProtectionRequiredReviewsUpdate)">
             <summary>
@@ -8996,6 +9297,7 @@
             </remarks>
             <param name="repositoryId">The Id of the repository</param>
             <param name="branch">The name of the branch</param>
+            <param name="update">The required pull request review settings</param>
         </member>
         <member name="M:Octokit.IRepositoryBranchesClient.RemoveReviewEnforcement(System.String,System.String,System.String)">
             <summary>
@@ -9123,27 +9425,6 @@
             <param name="repositoryId">The Id of the repository</param>
             <param name="branch">The name of the branch</param>
         </member>
-        <member name="M:Octokit.IRepositoryBranchesClient.GetProtectedBranchTeamRestrictions(System.String,System.String,System.String)">
-            <summary>
-            Get team restrictions for the specified branch (applies only to Organization owned repositories)
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/repos/branches/#list-team-restrictions-of-protected-branch">API documentation</a> for more details
-            </remarks>
-            <param name="owner">The owner of the repository</param>
-            <param name="name">The name of the repository</param>
-            <param name="branch">The name of the branch</param>
-        </member>
-        <member name="M:Octokit.IRepositoryBranchesClient.GetProtectedBranchTeamRestrictions(System.Int64,System.String)">
-            <summary>
-            Get team restrictions for the specified branch (applies only to Organization owned repositories)
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/repos/branches/#list-team-restrictions-of-protected-branch">API documentation</a> for more details
-            </remarks>
-            <param name="repositoryId">The Id of the repository</param>
-            <param name="branch">The name of the branch</param>
-        </member>
         <member name="M:Octokit.IRepositoryBranchesClient.GetAllProtectedBranchTeamRestrictions(System.String,System.String,System.String)">
             <summary>
             Get team restrictions for the specified branch (applies only to Organization owned repositories)
@@ -9233,27 +9514,6 @@
             <param name="repositoryId">The Id of the repository</param>
             <param name="branch">The name of the branch</param>
             <param name="teams">List of teams to remove</param>
-        </member>
-        <member name="M:Octokit.IRepositoryBranchesClient.GetProtectedBranchUserRestrictions(System.String,System.String,System.String)">
-            <summary>
-            Get user restrictions for the specified branch (applies only to Organization owned repositories)
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/repos/branches/#list-user-restrictions-of-protected-branch">API documentation</a> for more details
-            </remarks>
-            <param name="owner">The owner of the repository</param>
-            <param name="name">The name of the repository</param>
-            <param name="branch">The name of the branch</param>
-        </member>
-        <member name="M:Octokit.IRepositoryBranchesClient.GetProtectedBranchUserRestrictions(System.Int64,System.String)">
-            <summary>
-            Get user restrictions for the specified branch (applies only to Organization owned repositories)
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/repos/branches/#list-user-restrictions-of-protected-branch">API documentation</a> for more details
-            </remarks>
-            <param name="repositoryId">The Id of the repository</param>
-            <param name="branch">The name of the branch</param>
         </member>
         <member name="M:Octokit.IRepositoryBranchesClient.GetAllProtectedBranchUserRestrictions(System.String,System.String,System.String)">
             <summary>
@@ -10458,49 +10718,11 @@
             See the <a href="https://developer.github.com/v3/repos/traffic/">Repository Traffic API documentation</a> for more information.
             </remarks>
         </member>
-        <member name="M:Octokit.IRepositoryTrafficClient.GetReferrers(System.String,System.String)">
-            <summary>
-            List the top 10 referrers over the last 14 days
-            </summary>
-            <remarks>https://developer.github.com/v3/repos/traffic/#list-referrers</remarks>
-            <param name="owner">The owner of the repository</param>
-            <param name="name">The name of the repository</param>
-        </member>
-        <member name="M:Octokit.IRepositoryTrafficClient.GetReferrers(System.Int64)">
-            <summary>
-            List the top 10 referrers over the last 14 days
-            </summary>
-            <remarks>https://developer.github.com/v3/repos/traffic/#list-referrers</remarks>
-            <param name="repositoryId">The owner of the repository</param>
-        </member>
-        <member name="M:Octokit.IRepositoryTrafficClient.GetAllReferrers(System.String,System.String)">
-            <summary>
-            List the top 10 referrers over the last 14 days
-            </summary>
-            <remarks>https://developer.github.com/v3/repos/traffic/#list-referrers</remarks>
-            <param name="owner">The owner of the repository</param>
-            <param name="name">The name of the repository</param>
-        </member>
         <member name="M:Octokit.IRepositoryTrafficClient.GetAllReferrers(System.Int64)">
             <summary>
             List the top 10 referrers over the last 14 days
             </summary>
             <remarks>https://developer.github.com/v3/repos/traffic/#list-referrers</remarks>
-            <param name="repositoryId">The owner of the repository</param>
-        </member>
-        <member name="M:Octokit.IRepositoryTrafficClient.GetPaths(System.String,System.String)">
-            <summary>
-            List the top 10 popular contents over the last 14 days
-            </summary>
-            <remarks>https://developer.github.com/v3/repos/traffic/#list-paths</remarks>
-            <param name="owner">The owner of the repository</param>
-            <param name="name">The name of the repository</param>
-        </member>
-        <member name="M:Octokit.IRepositoryTrafficClient.GetPaths(System.Int64)">
-            <summary>
-            List the top 10 popular contents over the last 14 days
-            </summary>
-            <remarks>https://developer.github.com/v3/repos/traffic/#list-paths</remarks>
             <param name="repositoryId">The owner of the repository</param>
         </member>
         <member name="M:Octokit.IRepositoryTrafficClient.GetAllPaths(System.String,System.String)">
@@ -10591,6 +10813,14 @@
             </summary>
             <param name="search"></param>
             <returns>List of files</returns>
+        </member>
+        <member name="M:Octokit.ISearchClient.SearchLabels(Octokit.SearchLabelsRequest)">
+            <summary>
+            search labels
+            https://developer.github.com/v3/search/#search-labels
+            </summary>
+            <param name="search"></param>
+            <returns>List of labels</returns>
         </member>
         <member name="T:Octokit.IssueCommentReactionsClient">
             <summary>
@@ -12161,19 +12391,20 @@
             <summary>
             Returns all child teams of the given team.
             </summary>
-            <param name="id">The team identifier</param>
             <remarks>
             https://developer.github.com/v3/orgs/teams/#list-child-teams
             </remarks>
+            <param name="id">The team identifier</param>
         </member>
         <member name="M:Octokit.ITeamsClient.GetAllChildTeams(System.Int32,Octokit.ApiOptions)">
             <summary>
             Returns all child teams of the given team.
             </summary>
-            <param name="id">The team identifier</param>
             <remarks>
             https://developer.github.com/v3/orgs/teams/#list-child-teams
             </remarks>
+            <param name="id">The team identifier</param>
+            <param name="options">Options to change API behaviour.</param>
         </member>
         <member name="M:Octokit.ITeamsClient.GetAllMembers(System.Int32)">
             <summary>
@@ -12236,16 +12467,6 @@
             <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
             <returns></returns>
         </member>
-        <member name="M:Octokit.ITeamsClient.AddMembership(System.Int32,System.String)">
-            <summary>
-            Adds a <see cref="T:Octokit.User"/> to a <see cref="T:Octokit.Team"/>.
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/orgs/teams/#add-or-update-team-membership">API documentation</a> for more information.
-            </remarks>
-            <param name="id">The team identifier.</param>
-            <param name="login">The user to add to the team.</param>
-        </member>
         <member name="M:Octokit.ITeamsClient.AddOrEditMembership(System.Int32,System.String,Octokit.UpdateTeamMembership)">
             <summary>
             Adds a <see cref="T:Octokit.User"/> to a <see cref="T:Octokit.Team"/>.
@@ -12267,14 +12488,6 @@
             <param name="id">The team identifier.</param>
             <param name="login">The user to remove from the team.</param>
             <returns><see langword="true"/> if the user was removed from the team; <see langword="false"/> otherwise.</returns>
-        </member>
-        <member name="M:Octokit.ITeamsClient.GetMembership(System.Int32,System.String)">
-            <summary>
-            Gets whether the user with the given <paramref name="login"/> 
-            is a member of the team with the given <paramref name="id"/>.
-            </summary>
-            <param name="id">The team to check.</param>
-            <param name="login">The user to check.</param>
         </member>
         <member name="M:Octokit.ITeamsClient.GetMembershipDetails(System.Int32,System.String)">
             <summary>
@@ -14037,23 +14250,6 @@
             <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
             <returns>A list of the current user's <see cref="T:Octokit.Organization"/>s.</returns>
         </member>
-        <member name="M:Octokit.OrganizationsClient.GetAll(System.String)">
-            <summary>
-            Returns all <see cref="T:Octokit.Organization" />s for the specified user.
-            </summary>
-            <param name="user">The login of the user</param>
-            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
-            <returns>A list of the specified user's <see cref="T:Octokit.Organization"/>s.</returns>
-        </member>
-        <member name="M:Octokit.OrganizationsClient.GetAll(System.String,Octokit.ApiOptions)">
-            <summary>
-            Returns all <see cref="T:Octokit.Organization" />s for the specified user.
-            </summary>
-            <param name="user">The login of the user</param>
-            <param name="options">Options for changing the API response</param>
-            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
-            <returns>A list of the specified user's <see cref="T:Octokit.Organization"/>s.</returns>
-        </member>
         <member name="M:Octokit.OrganizationsClient.GetAllForUser(System.String)">
             <summary>
             Returns all <see cref="T:Octokit.Organization" />s for the specified user.
@@ -14261,7 +14457,7 @@
             See the <a href="https://developer.github.com/v3/projects/#list-repository-projects">API documentation</a> for more information.
             </remarks>
             <param name="owner">The owner of the repository</param>
-            <param name="repo">The name of the repository</param>
+            <param name="name">The name of the repository</param>
         </member>
         <member name="M:Octokit.ProjectsClient.GetAllForRepository(System.String,System.String,Octokit.ApiOptions)">
             <summary>
@@ -14271,7 +14467,7 @@
             See the <a href="https://developer.github.com/v3/projects/#list-repository-projects">API documentation</a> for more information.
             </remarks>
             <param name="owner">The owner of the repository</param>
-            <param name="repo">The name of the repository</param>
+            <param name="name">The name of the repository</param>
             <param name="options">Options for changing the API response</param>
         </member>
         <member name="M:Octokit.ProjectsClient.GetAllForRepository(System.String,System.String,Octokit.ProjectRequest)">
@@ -14282,7 +14478,7 @@
             See the <a href="https://developer.github.com/v3/projects/#list-repository-projects">API documentation</a> for more information.
             </remarks>
             <param name="owner">The owner of the repository</param>
-            <param name="repo">The name of the repository</param>
+            <param name="name">The name of the repository</param>
             <param name="request">Used to filter the list of projects returned</param>
         </member>
         <member name="M:Octokit.ProjectsClient.GetAllForRepository(System.String,System.String,Octokit.ProjectRequest,Octokit.ApiOptions)">
@@ -14293,7 +14489,7 @@
             See the <a href="https://developer.github.com/v3/projects/#list-repository-projects">API documentation</a> for more information.
             </remarks>
             <param name="owner">The owner of the repository</param>
-            <param name="repo">The name of the repository</param>
+            <param name="name">The name of the repository</param>
             <param name="request">Used to filter the list of projects returned</param>
             <param name="options">Options for changing the API response</param>
         </member>
@@ -14961,11 +15157,6 @@
             See the <a href="https://developer.github.com/v3/pulls/">Pull Requests API documentation</a> for more information.
             </remarks>
         </member>
-        <member name="P:Octokit.PullRequestsClient.Comment">
-            <summary>
-            Client for managing review comments.
-            </summary>
-        </member>
         <member name="P:Octokit.PullRequestsClient.Review">
             <summary>
             Client for managing reviews.
@@ -15258,7 +15449,7 @@
             </remarks>
             <param name="owner">The owner of the repository</param>
             <param name="name">The name of the repository</param>
-            <param name="reference">The name of the reference</param>
+            <param name="reference">The canonical name of the reference without the 'refs/' prefix. e.g. "heads/master" or "tags/release-1"</param>
             <returns></returns>
         </member>
         <member name="M:Octokit.ReferencesClient.Get(System.Int64,System.String)">
@@ -15269,7 +15460,7 @@
             http://developer.github.com/v3/git/refs/#get-a-reference
             </remarks>
             <param name="repositoryId">The Id of the repository</param>
-            <param name="reference">The name of the reference</param>
+            <param name="reference">The canonical name of the reference without the 'refs/' prefix. e.g. "heads/master" or "tags/release-1"</param>
             <returns></returns>
         </member>
         <member name="M:Octokit.ReferencesClient.GetAll(System.String,System.String)">
@@ -15396,7 +15587,7 @@
             </remarks>
             <param name="owner">The owner of the repository</param>
             <param name="name">The name of the repository</param>
-            <param name="reference">The name of the reference</param>
+            <param name="reference">The canonical name of the reference without the 'refs/' prefix. e.g. "heads/master" or "tags/release-1"</param>
             <param name="referenceUpdate">The updated reference data</param>
             <returns></returns>
         </member>
@@ -15408,7 +15599,7 @@
             http://developer.github.com/v3/git/refs/#update-a-reference
             </remarks>
             <param name="repositoryId">The Id of the repository</param>
-            <param name="reference">The name of the reference</param>
+            <param name="reference">The canonical name of the reference without the 'refs/' prefix. e.g. "heads/master" or "tags/release-1"</param>
             <param name="referenceUpdate">The updated reference data</param>
             <returns></returns>
         </member>
@@ -15421,7 +15612,7 @@
             </remarks>
             <param name="owner">The owner of the repository</param>
             <param name="name">The name of the repository</param>
-            <param name="reference">The name of the reference</param>
+            <param name="reference">The canonical name of the reference without the 'refs/' prefix. e.g. "heads/master" or "tags/release-1"</param>
             <returns></returns>
         </member>
         <member name="M:Octokit.ReferencesClient.Delete(System.Int64,System.String)">
@@ -15432,7 +15623,7 @@
             http://developer.github.com/v3/git/refs/#delete-a-reference
             </remarks>
             <param name="repositoryId">The Id of the repository</param>
-            <param name="reference">The name of the reference</param>
+            <param name="reference">The canonical name of the reference without the 'refs/' prefix. e.g. "heads/master" or "tags/release-1"</param>
             <returns></returns>
         </member>
         <member name="T:Octokit.ReleasesClient">
@@ -15505,6 +15696,18 @@
             <param name="id">The id of the release</param>
             <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
         </member>
+        <member name="M:Octokit.ReleasesClient.Get(System.String,System.String,System.String)">
+            <summary>
+            Gets a single <see cref="T:Octokit.Release"/> for the specified repository.
+            </summary>
+            <remarks>
+            See the <a href="https://developer.github.com/v3/repos/releases/#get-a-release-by-tag-name">API documentation</a> for more information.
+            </remarks>
+            <param name="owner">The repository's owner</param>
+            <param name="name">The repository's name</param>
+            <param name="tag">The tag of the release</param>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
         <member name="M:Octokit.ReleasesClient.Get(System.Int64,System.Int32)">
             <summary>
             Gets a single <see cref="T:Octokit.Release"/> for the specified repository.
@@ -15514,6 +15717,17 @@
             </remarks>
             <param name="repositoryId">The Id of the repository</param>
             <param name="id">The id of the release</param>
+            <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
+        </member>
+        <member name="M:Octokit.ReleasesClient.Get(System.Int64,System.String)">
+            <summary>
+            Gets a single <see cref="T:Octokit.Release"/> for the specified repository.
+            </summary>
+            <remarks>
+            See the <a href="http://developer.github.com/v3/repos/releases/#get-a-release-by-tag-name">API documentation</a> for more information.
+            </remarks>
+            <param name="repositoryId">The Id of the repository</param>
+            <param name="tag">The tag of the release</param>
             <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
         </member>
         <member name="M:Octokit.ReleasesClient.GetLatest(System.String,System.String)">
@@ -16734,27 +16948,6 @@
             <param name="repositoryId">The Id of the repository</param>
             <param name="branch">The name of the branch</param>
         </member>
-        <member name="M:Octokit.RepositoryBranchesClient.GetRequiredStatusChecksContexts(System.String,System.String,System.String)">
-            <summary>
-            Get the required status checks contexts for the specified branch
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/repos/branches/#list-required-status-checks-contexts-of-protected-branch">API documentation</a> for more details
-            </remarks>
-            <param name="owner">The owner of the repository</param>
-            <param name="name">The name of the repository</param>
-            <param name="branch">The name of the branch</param>
-        </member>
-        <member name="M:Octokit.RepositoryBranchesClient.GetRequiredStatusChecksContexts(System.Int64,System.String)">
-            <summary>
-            Get the required status checks contexts for the specified branch
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/repos/branches/#list-required-status-checks-contexts-of-protected-branch">API documentation</a> for more details
-            </remarks>
-            <param name="repositoryId">The Id of the repository</param>
-            <param name="branch">The name of the branch</param>
-        </member>
         <member name="M:Octokit.RepositoryBranchesClient.GetAllRequiredStatusChecksContexts(System.String,System.String,System.String)">
             <summary>
             Get the required status checks contexts for the specified branch
@@ -16876,6 +17069,7 @@
             <param name="owner">The owner of the repository</param>
             <param name="name">The name of the repository</param>
             <param name="branch">The name of the branch</param>
+            <param name="update">The required pull request review settings</param>
         </member>
         <member name="M:Octokit.RepositoryBranchesClient.UpdateReviewEnforcement(System.Int64,System.String,Octokit.BranchProtectionRequiredReviewsUpdate)">
             <summary>
@@ -16886,6 +17080,7 @@
             </remarks>
             <param name="repositoryId">The Id of the repository</param>
             <param name="branch">The name of the branch</param>
+            <param name="update">The required pull request review settings</param>
         </member>
         <member name="M:Octokit.RepositoryBranchesClient.RemoveReviewEnforcement(System.String,System.String,System.String)">
             <summary>
@@ -17013,27 +17208,6 @@
             <param name="repositoryId">The Id of the repository</param>
             <param name="branch">The name of the branch</param>
         </member>
-        <member name="M:Octokit.RepositoryBranchesClient.GetProtectedBranchTeamRestrictions(System.String,System.String,System.String)">
-            <summary>
-            Get team restrictions for the specified branch (applies only to Organization owned repositories)
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/repos/branches/#list-team-restrictions-of-protected-branch">API documentation</a> for more details
-            </remarks>
-            <param name="owner">The owner of the repository</param>
-            <param name="name">The name of the repository</param>
-            <param name="branch">The name of the branch</param>
-        </member>
-        <member name="M:Octokit.RepositoryBranchesClient.GetProtectedBranchTeamRestrictions(System.Int64,System.String)">
-            <summary>
-            Get team restrictions for the specified branch (applies only to Organization owned repositories)
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/repos/branches/#list-team-restrictions-of-protected-branch">API documentation</a> for more details
-            </remarks>
-            <param name="repositoryId">The Id of the repository</param>
-            <param name="branch">The name of the branch</param>
-        </member>
         <member name="M:Octokit.RepositoryBranchesClient.GetAllProtectedBranchTeamRestrictions(System.String,System.String,System.String)">
             <summary>
             Get team restrictions for the specified branch (applies only to Organization owned repositories)
@@ -17123,27 +17297,6 @@
             <param name="repositoryId">The Id of the repository</param>
             <param name="branch">The name of the branch</param>
             <param name="teams">List of teams to remove</param>
-        </member>
-        <member name="M:Octokit.RepositoryBranchesClient.GetProtectedBranchUserRestrictions(System.String,System.String,System.String)">
-            <summary>
-            Get user restrictions for the specified branch (applies only to Organization owned repositories)
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/repos/branches/#list-user-restrictions-of-protected-branch">API documentation</a> for more details
-            </remarks>
-            <param name="owner">The owner of the repository</param>
-            <param name="name">The name of the repository</param>
-            <param name="branch">The name of the branch</param>
-        </member>
-        <member name="M:Octokit.RepositoryBranchesClient.GetProtectedBranchUserRestrictions(System.Int64,System.String)">
-            <summary>
-            Get user restrictions for the specified branch (applies only to Organization owned repositories)
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/repos/branches/#list-user-restrictions-of-protected-branch">API documentation</a> for more details
-            </remarks>
-            <param name="repositoryId">The Id of the repository</param>
-            <param name="branch">The name of the branch</param>
         </member>
         <member name="M:Octokit.RepositoryBranchesClient.GetAllProtectedBranchUserRestrictions(System.String,System.String,System.String)">
             <summary>
@@ -18353,21 +18506,6 @@
             See the <a href="https://developer.github.com/v3/repos/pages/#request-a-page-build">API documentation</a> for more information.
             </remarks>
         </member>
-        <member name="M:Octokit.RepositoryTrafficClient.GetPaths(System.Int64)">
-            <summary>
-            List the top 10 popular contents over the last 14 days
-            </summary>
-            <remarks>https://developer.github.com/v3/repos/traffic/#list-paths</remarks>
-            <param name="repositoryId">The owner of the repository</param>
-        </member>
-        <member name="M:Octokit.RepositoryTrafficClient.GetPaths(System.String,System.String)">
-            <summary>
-            List the top 10 popular contents over the last 14 days
-            </summary>
-            <remarks>https://developer.github.com/v3/repos/traffic/#list-paths</remarks>
-            <param name="owner">The owner of the repository</param>
-            <param name="name">The name of the repository</param>
-        </member>
         <member name="M:Octokit.RepositoryTrafficClient.GetAllPaths(System.Int64)">
             <summary>
             List the top 10 popular contents over the last 14 days
@@ -18380,21 +18518,6 @@
             List the top 10 popular contents over the last 14 days
             </summary>
             <remarks>https://developer.github.com/v3/repos/traffic/#list-paths</remarks>
-            <param name="owner">The owner of the repository</param>
-            <param name="name">The name of the repository</param>
-        </member>
-        <member name="M:Octokit.RepositoryTrafficClient.GetReferrers(System.Int64)">
-            <summary>
-            List the top 10 referrers over the last 14 days
-            </summary>
-            <remarks>https://developer.github.com/v3/repos/traffic/#list-referrers</remarks>
-            <param name="repositoryId">The owner of the repository</param>
-        </member>
-        <member name="M:Octokit.RepositoryTrafficClient.GetReferrers(System.String,System.String)">
-            <summary>
-            List the top 10 referrers over the last 14 days
-            </summary>
-            <remarks>https://developer.github.com/v3/repos/traffic/#list-referrers</remarks>
             <param name="owner">The owner of the repository</param>
             <param name="name">The name of the repository</param>
         </member>
@@ -18492,6 +18615,14 @@
             </summary>
             <param name="search"></param>
             <returns>List of files</returns>
+        </member>
+        <member name="M:Octokit.SearchClient.SearchLabels(Octokit.SearchLabelsRequest)">
+            <summary>
+            search labels
+            https://developer.github.com/v3/search/#search-labels
+            </summary>
+            <param name="search"></param>
+            <returns>List of labels</returns>
         </member>
         <member name="T:Octokit.StarredClient">
             <summary>
@@ -18992,10 +19123,11 @@
             <summary>
             Returns all child teams of the given team.
             </summary>
-            <param name="id">The team identifier</param>
             <remarks>
             https://developer.github.com/v3/orgs/teams/#list-child-teams
             </remarks>
+            <param name="id">The team identifier</param>
+            <param name="options">Options to change API behaviour.</param>
         </member>
         <member name="M:Octokit.TeamsClient.GetAllMembers(System.Int32)">
             <summary>
@@ -19037,14 +19169,6 @@
             <param name="request">The request filter</param>
             <param name="options">Options to change API behaviour.</param>
         </member>
-        <member name="M:Octokit.TeamsClient.GetMembership(System.Int32,System.String)">
-            <summary>
-            Gets whether the user with the given <paramref name="login"/> 
-            is a member of the team with the given <paramref name="id"/>.
-            </summary>
-            <param name="id">The team to check.</param>
-            <param name="login">The user to check.</param>
-        </member>
         <member name="M:Octokit.TeamsClient.GetMembershipDetails(System.Int32,System.String)">
             <summary>
             Gets whether the user with the given <paramref name="login"/> 
@@ -19077,16 +19201,6 @@
             </summary>
             <exception cref="T:Octokit.ApiException">Thrown when a general API error occurs.</exception>
             <returns></returns>
-        </member>
-        <member name="M:Octokit.TeamsClient.AddMembership(System.Int32,System.String)">
-            <summary>
-            Adds a <see cref="T:Octokit.User"/> to a <see cref="T:Octokit.Team"/>.
-            </summary>
-            <remarks>
-            See the <a href="https://developer.github.com/v3/orgs/teams/#add-or-update-team-membership">API documentation</a> for more information.
-            </remarks>
-            <param name="id">The team identifier.</param>
-            <param name="login">The user to add to the team.</param>
         </member>
         <member name="M:Octokit.TeamsClient.AddOrEditMembership(System.Int32,System.String,Octokit.UpdateTeamMembership)">
             <summary>
@@ -20531,6 +20645,14 @@
             Refer to the API documentation for more information: https://developer.github.com/v3/git/
             </remarks>
         </member>
+        <member name="P:Octokit.GitHubClient.GitHubApps">
+            <summary>
+            Access GitHub's Apps API.
+            </summary>
+            <remarks>
+            Refer to the API documentation for more information: https://developer.github.com/v3/apps/
+            </remarks>
+        </member>
         <member name="P:Octokit.GitHubClient.Search">
             <summary>
             Access GitHub's Search API.
@@ -20698,19 +20820,6 @@
             <param name="organization">The name of the organization</param>
             <returns></returns>
         </member>
-        <member name="M:Octokit.ApiUrls.Organizations">
-            <summary>
-            Returns the <see cref="T:System.Uri"/> that returns all of the organizations for the currently logged in user.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Octokit.ApiUrls.Organizations(System.String)">
-            <summary>
-            Returns the <see cref="T:System.Uri"/> that returns all of the organizations for the specified login.
-            </summary>
-            <param name="login">The login for the user</param>
-            <returns></returns>
-        </member>
         <member name="M:Octokit.ApiUrls.UserOrganizations">
             <summary>
             Returns the <see cref="T:System.Uri"/> that returns all of the organizations for the currently logged in user.
@@ -20797,6 +20906,15 @@
             <param name="id">The id of the release</param>
             <returns></returns>
         </member>
+        <member name="M:Octokit.ApiUrls.Releases(System.String,System.String,System.String)">
+            <summary>
+            Returns the <see cref="T:System.Uri"/> that returns a single release for the specified repository
+            </summary>
+            <param name="owner">The owner of the repository</param>
+            <param name="name">The name of the repository</param>
+            <param name="tag">The tag of the release</param>
+            <returns></returns>
+        </member>
         <member name="M:Octokit.ApiUrls.LatestRelease(System.String,System.String)">
             <summary>
             Returns the <see cref="T:System.Uri"/> that returns the latest release for the specified repository
@@ -20850,6 +20968,33 @@
             Returns the <see cref="T:System.Uri"/> for the specified notification's subscription status.
             </summary>
             <param name="id">The Id of the notification.</param>
+        </member>
+        <member name="M:Octokit.ApiUrls.AccessTokens(System.Int64)">
+            <summary>
+            Returns the <see cref="T:System.Uri"/> for creating a new installation token.
+            </summary>
+            <param name="installationId">The Id of the GitHub App installation.</param>
+        </member>
+        <member name="M:Octokit.ApiUrls.App">
+            <summary>
+            Returns the <see cref="T:System.Uri"/> that creates a github app.
+            </summary>
+        </member>
+        <member name="M:Octokit.ApiUrls.App(System.String)">
+            <summary>
+            Returns the <see cref="T:System.Uri"/> that creates a github app.
+            </summary>
+        </member>
+        <member name="M:Octokit.ApiUrls.Installations">
+            <summary>
+            Returns the <see cref="T:System.Uri"/> that returns all the installations of the authenticated application.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Octokit.ApiUrls.Installation(System.Int64)">
+            <summary>
+            Returns the <see cref="T:System.Uri"/> that returns a single installation of the authenticated application.
+            </summary>
             <returns></returns>
         </member>
         <member name="M:Octokit.ApiUrls.Issues">
@@ -21894,6 +22039,12 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:Octokit.ApiUrls.SearchLabels">
+            <summary>
+            Creates the relative <see cref="T:System.Uri"/> for searching labels
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Octokit.ApiUrls.RepositoryContributors(System.String,System.String)">
             <summary>
             Returns the <see cref="T:System.Uri"/> for repository contributors.
@@ -22308,6 +22459,30 @@
             <param name="name">Name of the repository</param>
             <returns>The <see cref="T:System.Uri"/> for the punch card for the given repository</returns>
         </member>
+        <member name="M:Octokit.ApiUrls.AdminPreReceiveEnvironments">
+            <summary>
+            Creates the <see cref="T:System.Uri"/> for pre-receive environments.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Octokit.ApiUrls.AdminPreReceiveEnvironments(System.Int64)">
+            <summary>
+            Creates the <see cref="T:System.Uri"/> for pre-receive environments.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Octokit.ApiUrls.AdminPreReceiveEnvironmentDownload(System.Int64)">
+            <summary>
+            Creates the <see cref="T:System.Uri"/> for pre-receive environment download status.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Octokit.ApiUrls.AdminPreReceiveEnvironmentDownloadStatus(System.Int64)">
+            <summary>
+            Creates the <see cref="T:System.Uri"/> for pre-receive environment download status.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Octokit.ApiUrls.UserAdministrationSiteAdmin(System.String)">
             <summary>
             Creates the relative <see cref="T:System.Uri"/> for altering administration status of a user.
@@ -22715,6 +22890,14 @@
             </summary>
             <param name="repositoryId">The Id of the repository</param>
             <param name="id">The id of the release</param>
+            <returns>The <see cref="T:System.Uri"/> that returns a single release for the specified repository</returns>
+        </member>
+        <member name="M:Octokit.ApiUrls.Releases(System.Int64,System.String)">
+            <summary>
+            Returns the <see cref="T:System.Uri"/> that returns a single release for the specified repository
+            </summary>
+            <param name="repositoryId">The Id of the repository</param>
+            <param name="tag">The tag of the release</param>
             <returns>The <see cref="T:System.Uri"/> that returns a single release for the specified repository</returns>
         </member>
         <member name="M:Octokit.ApiUrls.RepoBranch(System.Int64,System.String)">
@@ -24436,7 +24619,7 @@
             <param name="uri">URI endpoint to send request to</param>
             <returns><seealso cref="T:Octokit.IResponse"/> representing the received HTTP response</returns>
         </member>
-        <member name="M:Octokit.IConnection.Post``1(System.Uri,System.Object,System.String,System.String)">
+        <member name="M:Octokit.IConnection.Post``1(System.Uri,System.Object,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
             <summary>
             Performs an asynchronous HTTP POST request.
             Attempts to map the response body to an object of type <typeparamref name="T"/>
@@ -24446,6 +24629,7 @@
             <param name="body">The object to serialize as the body of the request</param>
             <param name="accepts">Specifies accepted response media types.</param>
             <param name="contentType">Specifies the media type of the request body</param>
+            <param name="parameters">Extra parameters for authentication.</param>
             <returns><seealso cref="T:Octokit.IResponse"/> representing the received HTTP response</returns>
         </member>
         <member name="M:Octokit.IConnection.Post``1(System.Uri,System.Object,System.String,System.String,System.String)">
@@ -24798,6 +24982,14 @@
             Refer to the API documentation for more information: https://developer.github.com/v3/activity/
             </remarks>
         </member>
+        <member name="P:Octokit.IGitHubClient.GitHubApps">
+            <summary>
+            Access GitHub's Application API.
+            </summary>
+            <remarks>
+            Refer to the API documentation for more information: https://developer.github.com/v3/apps/
+            </remarks>
+        </member>
         <member name="P:Octokit.IGitHubClient.Issue">
             <summary>
             Access GitHub's Issue API.
@@ -25068,6 +25260,11 @@
             Add qualifiers onto the search term
             </summary>
         </member>
+        <member name="M:Octokit.BaseSearchRequest.AdditionalParameters">
+            <summary>
+            Any additional parameters required by the derived class
+            </summary>
+        </member>
         <member name="P:Octokit.BaseSearchRequest.Parameters">
             <summary>
             Get the query parameters that will be appending onto the search
@@ -25122,14 +25319,6 @@
             <summary>
             Create a BranchProtection update request
             </summary>
-            <param name="enforceAdmins">Specifies whether the protections applied to this branch also apply to repository admins</param>
-        </member>
-        <member name="M:Octokit.BranchProtectionSettingsUpdate.#ctor(Octokit.BranchProtectionRequiredStatusChecksUpdate,Octokit.BranchProtectionPushRestrictionsUpdate,System.Boolean)">
-            <summary>
-            Create a BranchProtection update request
-            </summary>
-            <param name="requiredStatusChecks">Specifies the requested status check settings. Pass null to disable status checks</param>
-            <param name="restrictions">Specifies the requested push access restrictions (applies only to Organization owned repositories). Pass null to disable push access restrictions</param>
             <param name="enforceAdmins">Specifies whether the protections applied to this branch also apply to repository admins</param>
         </member>
         <member name="M:Octokit.BranchProtectionSettingsUpdate.#ctor(Octokit.BranchProtectionRequiredStatusChecksUpdate,Octokit.BranchProtectionRequiredReviewsUpdate,System.Boolean)">
@@ -25611,6 +25800,43 @@
             The organization's display name
             </summary>
         </member>
+        <member name="T:Octokit.NewPreReceiveEnvironment">
+            <summary>
+            Describes a new pre-receive environment.
+            </summary>
+        </member>
+        <member name="M:Octokit.NewPreReceiveEnvironment.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Octokit.NewPreReceiveEnvironment"/> class.
+            </summary>
+            <param name="name">The name of the environment as displayed in the UI.</param>
+            <param name="imageUrl">URL to the tarball that will be downloaded and extracted.</param>
+        </member>
+        <member name="P:Octokit.NewPreReceiveEnvironment.Name">
+            <summary>
+            The name of the environment as displayed in the UI.
+            </summary>
+        </member>
+        <member name="P:Octokit.NewPreReceiveEnvironment.ImageUrl">
+            <summary>
+            URL to the tarball that will be downloaded and extracted.
+            </summary>
+        </member>
+        <member name="T:Octokit.UpdatePreReceiveEnvironment">
+            <summary>
+            Describes an update to an existing pre-receive environment.
+            </summary>
+        </member>
+        <member name="P:Octokit.UpdatePreReceiveEnvironment.Name">
+            <summary>
+            The name of the environment as displayed in the UI.
+            </summary>
+        </member>
+        <member name="P:Octokit.UpdatePreReceiveEnvironment.ImageUrl">
+            <summary>
+            URL to the tarball that will be downloaded and extracted.
+            </summary>
+        </member>
         <member name="T:Octokit.GistFileUpdate">
             <summary>
             Used as part of a <see cref="T:Octokit.GistUpdate" /> to update the name or contents of an existing gist file
@@ -25890,14 +26116,6 @@
             Details about the issue.
             </summary>
         </member>
-        <member name="P:Octokit.IssueUpdate.Assignee">
-            <summary>
-            Login for the user that this issue should be assigned to.
-            </summary>
-            <remarks>
-            Only users with push access can set the assignee for new issues. The assignee is silently dropped otherwise.
-            </remarks>
-        </member>
         <member name="P:Octokit.IssueUpdate.Assignees">
             <summary>
             List of logins for the multiple users that this issue should be assigned to
@@ -25982,6 +26200,11 @@
         <member name="P:Octokit.LabelUpdate.Color">
             <summary>
             Color of the label (required).
+            </summary>
+        </member>
+        <member name="P:Octokit.LabelUpdate.Description">
+            <summary>
+            A short description of the label (optional).
             </summary>
         </member>
         <member name="T:Octokit.MarkAsReadRequest">
@@ -26559,14 +26782,6 @@
             Details about the issue.
             </summary>
         </member>
-        <member name="P:Octokit.NewIssue.Assignee">
-            <summary>
-            Login for the user that this issue should be assigned to.
-            </summary>
-            <remarks>
-            Only users with push access can set the assignee for new issues. The assignee is silently dropped otherwise.
-            </remarks>
-        </member>
         <member name="P:Octokit.NewIssue.Assignees">
             <summary>
             List of logins for the multiple users that this issue should be assigned to
@@ -26608,10 +26823,22 @@
             <summary>
             Name of the label (required).
             </summary>
+            <remarks>
+            Emoji can be added to label names, using either native emoji or colon-style markup. For example,
+            typing :strawberry: will render the emoji for strawberry. For a full list of available emoji and codes, see http://emoji-cheat-sheet.com/.
+            </remarks>
         </member>
         <member name="P:Octokit.NewLabel.Color">
             <summary>
             Color of the label (required).
+            </summary>
+            <remarks>
+            The hexadecimal color code for the label, without the leading #.
+            </remarks>
+        </member>
+        <member name="P:Octokit.NewLabel.Description">
+            <summary>
+            A short description of the label (optional).
             </summary>
         </member>
         <member name="T:Octokit.NewMerge">
@@ -26767,6 +26994,11 @@
         <member name="P:Octokit.NewPullRequest.Head">
             <summary>
             The branch (or git ref) where your changes are implemented (required).
+            </summary>
+        </member>
+        <member name="P:Octokit.NewPullRequest.MaintainerCanModify">
+            <summary>
+            Whether maintainers of the base repository can push to the HEAD branch (optional).
             </summary>
         </member>
         <member name="P:Octokit.NewPullRequest.Body">
@@ -27866,6 +28098,11 @@
             The base branch of the pull request.
             </summary>
         </member>
+        <member name="P:Octokit.PullRequestUpdate.MaintainerCanModify">
+            <summary>
+            Whether maintainers of the base repository can push to the HEAD branch.
+            </summary>
+        </member>
         <member name="T:Octokit.ReferenceUpdate">
             <summary>
             Upsed to update a Git reference.
@@ -28684,6 +28921,11 @@
             https://help.github.com/articles/searching-issues/#search-within-a-users-or-organizations-repositories
             </remarks>
         </member>
+        <member name="P:Octokit.SearchIssuesRequest.Milestone">
+            <summary>
+            Gets or sets the milestone to filter issues based on
+            </summary>
+        </member>
         <member name="F:Octokit.IssueSearchSort.Comments">
             <summary>
             search by number of comments
@@ -28802,6 +29044,53 @@
             <remarks>
             https://help.github.com/articles/searching-issues/#search-based-on-branch-names
             </remarks>
+        </member>
+        <member name="P:Octokit.SearchIssuesRequestExclusions.Milestone">
+            <summary>
+            Excludes issues which target the specified milestone.
+            </summary>
+            <remarks>
+            https://help.github.com/articles/searching-issues-and-pull-requests/#search-by-milestone-on-an-issue-or-pull-request
+            </remarks>
+        </member>
+        <member name="T:Octokit.SearchLabelsRequest">
+            <summary>
+            Search labels
+            https://developer.github.com/v3/search/#search-labels
+            </summary>
+        </member>
+        <member name="M:Octokit.SearchLabelsRequest.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Octokit.SearchLabelsRequest"/> class.
+            </summary>
+        </member>
+        <member name="M:Octokit.SearchLabelsRequest.#ctor(System.String,System.Int64)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Octokit.SearchLabelsRequest"/> class.
+            </summary>
+            <param name="term">The search term.</param>
+            <param name="repositoryId">The repository to search in</param>
+        </member>
+        <member name="P:Octokit.SearchLabelsRequest.SortField">
+            <summary>
+            Optional Sort field. One of created or updated.
+            If not provided, results are sorted by best match.
+            </summary>
+        </member>
+        <member name="P:Octokit.SearchLabelsRequest.RepositoryId">
+            <summary>
+            The repository to search in
+            </summary>
+        </member>
+        <member name="F:Octokit.LabelSearchSort.Created">
+            <summary>
+            search by created
+            </summary>
+        </member>
+        <member name="F:Octokit.LabelSearchSort.Updated">
+            <summary>
+            search by last updated
+            </summary>
         </member>
         <member name="T:Octokit.SearchQualifierOperator">
             <summary>
@@ -29303,13 +29592,6 @@
             </summary>
             <param name="name">The updated team name.</param>
         </member>
-        <member name="M:Octokit.UpdateTeam.#ctor(System.String,Octokit.Permission)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Octokit.UpdateTeam"/> class.
-            </summary>
-            <param name="name">The updated team name.</param>
-            <param name="permission">The permission.</param>
-        </member>
         <member name="P:Octokit.UpdateTeam.Name">
             <summary>
             The name of the team (required).
@@ -29400,6 +29682,16 @@
         <member name="P:Octokit.UserUpdate.Hireable">
             <summary>
             Tells if this user is currently hireable.
+            </summary>
+        </member>
+        <member name="P:Octokit.AccessToken.Token">
+            <summary>
+            The access token
+            </summary>
+        </member>
+        <member name="P:Octokit.AccessToken.ExpiresAt">
+            <summary>
+            The expiration date
             </summary>
         </member>
         <member name="T:Octokit.Account">
@@ -30026,6 +30318,11 @@
             The date the repository comment was last updated.
             </summary>
         </member>
+        <member name="P:Octokit.CommitComment.Reactions">
+            <summary>
+            The reaction summary for this comment.
+            </summary>
+        </member>
         <member name="T:Octokit.RepositoryContentInfo">
             <summary>
             Information about a file in a repository. It does not include the contents of the file.
@@ -30311,6 +30608,92 @@
             <summary>
             Primary email address and is private
             </summary> 
+        </member>
+        <member name="T:Octokit.PreReceiveEnvironment">
+            <summary>
+            Describes a pre-receive environment.
+            </summary>
+        </member>
+        <member name="P:Octokit.PreReceiveEnvironment.Id">
+            <summary>
+            Identifier for the pre-receive environment.
+            </summary>
+        </member>
+        <member name="P:Octokit.PreReceiveEnvironment.Name">
+            <summary>
+            The name of the environment as displayed in the UI.
+            </summary>
+        </member>
+        <member name="P:Octokit.PreReceiveEnvironment.Url">
+            <summary>
+            URL to the pre-receive environment.
+            </summary>
+        </member>
+        <member name="P:Octokit.PreReceiveEnvironment.ImageUrl">
+            <summary>
+            URL to the tarball that will be downloaded and extracted.
+            </summary>
+        </member>
+        <member name="P:Octokit.PreReceiveEnvironment.HtmlUrl">
+            <summary>
+            UI URL to the pre-receive environment.
+            </summary>
+        </member>
+        <member name="P:Octokit.PreReceiveEnvironment.DefaultEnvironment">
+            <summary>
+            Whether this is the default environment that ships with GitHub Enterprise.
+            </summary>
+        </member>
+        <member name="P:Octokit.PreReceiveEnvironment.CreatedAt">
+            <summary>
+            The time when the pre-receive environment was created.
+            </summary>
+        </member>
+        <member name="P:Octokit.PreReceiveEnvironment.HooksCount">
+            <summary>
+            The number of pre-receive hooks that use this environment.
+            </summary>
+        </member>
+        <member name="P:Octokit.PreReceiveEnvironment.Download">
+            <summary>
+            This environment's download status.
+            </summary>
+        </member>
+        <member name="M:Octokit.PreReceiveEnvironment.ToUpdate">
+            <summary>
+            Prepares an <see cref="T:Octokit.UpdatePreReceiveEnvironment"/> for use when updating a pre-receive environment.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Octokit.PreReceiveEnvironmentDownload">
+            <summary>
+            Describes the current download state of a pre-receive environment image.
+            </summary>
+        </member>
+        <member name="P:Octokit.PreReceiveEnvironmentDownload.Url">
+            <summary>
+            URL to the download status for a pre-receive environment.
+            </summary>
+        </member>
+        <member name="P:Octokit.PreReceiveEnvironmentDownload.State">
+            <summary>
+            The state of the most recent download.
+            </summary>
+        </member>
+        <member name="P:Octokit.PreReceiveEnvironmentDownload.Message">
+            <summary>
+            On failure, this will have any error messages produced.
+            </summary>
+        </member>
+        <member name="P:Octokit.PreReceiveEnvironmentDownload.DownloadedAt">
+            <summary>
+            The time when the most recent download started.
+            </summary>
+        </member>
+        <member name="T:Octokit.PreReceiveEnvironmentDownloadState">
+            <summary>
+            The state of the most recent download.
+            </summary>
         </member>
         <member name="P:Octokit.EventInfo.Id">
             <summary>
@@ -30813,6 +31196,51 @@
             The <see cref="T:System.DateTimeOffset"/> the version was created.
             </summary>
         </member>
+        <member name="T:Octokit.GitHubApp">
+            <summary>
+            Represents a GitHub application.
+            </summary>
+        </member>
+        <member name="P:Octokit.GitHubApp.Id">
+            <summary>
+            The Id of the GitHub App.
+            </summary>
+        </member>
+        <member name="P:Octokit.GitHubApp.Name">
+            <summary>
+            The Name of the GitHub App.
+            </summary>
+        </member>
+        <member name="P:Octokit.GitHubApp.Owner">
+            <summary>
+            The Owner of the GitHub App.
+            </summary>
+        </member>
+        <member name="P:Octokit.GitHubApp.Description">
+            <summary>
+            The Description of the GitHub App.
+            </summary>
+        </member>
+        <member name="P:Octokit.GitHubApp.ExternalUrl">
+            <summary>
+            The URL to the GitHub App's external website.
+            </summary>
+        </member>
+        <member name="P:Octokit.GitHubApp.HtmlUrl">
+            <summary>
+            The URL to view the GitHub App on GitHub
+            </summary>
+        </member>
+        <member name="P:Octokit.GitHubApp.CreatedAt">
+            <summary>
+            Date the GitHub App was created.
+            </summary>
+        </member>
+        <member name="P:Octokit.GitHubApp.UpdatedAt">
+            <summary>
+            Date the GitHub App was last updated.
+            </summary>
+        </member>
         <member name="T:Octokit.GitHubCommit">
             <summary>
             An enhanced git commit containing links to additional resources
@@ -30942,6 +31370,142 @@
             The repository associated with this reference.
             </summary>
         </member>
+        <member name="T:Octokit.Installation">
+            <summary>
+            Represents an application installation.
+            </summary>
+            <remarks>
+            For more information see https://developer.github.com/v3/apps/#find-installations
+            </remarks>
+        </member>
+        <member name="P:Octokit.Installation.Account">
+            <summary>
+            The user who owns the Installation.
+            </summary>
+        </member>
+        <member name="P:Octokit.Installation.HtmlUrl">
+            <summary>
+            The URL to view the Installation on GitHub.
+            </summary>
+        </member>
+        <member name="P:Octokit.Installation.AppId">
+            <summary>
+            The Id of the associated GitHub App.
+            </summary>
+        </member>
+        <member name="P:Octokit.Installation.TargetId">
+            <summary>
+            The Id of the User/Organization the Installation is installed in
+            </summary>
+        </member>
+        <member name="P:Octokit.Installation.TargetType">
+            <summary>
+            The type of the target (User or Organization)
+            </summary>
+        </member>
+        <member name="P:Octokit.Installation.Permissions">
+            <summary>
+            The Permissions granted to the Installation
+            </summary>
+        </member>
+        <member name="P:Octokit.Installation.Events">
+            <summary>
+            The Events subscribed to by the Installation
+            </summary>
+        </member>
+        <member name="P:Octokit.Installation.SingleFileName">
+            <summary>
+            The single file the GitHub App can managem (when Permissions.SingleFile is set to read or write)
+            </summary>
+        </member>
+        <member name="P:Octokit.Installation.RepositorySelection">
+            <summary>
+            The choice of repositories the installation is on. Can be either "selected" or "all".
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationId.Id">
+            <summary>
+            The Installation Id.
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationPermissions.Metadata">
+            <summary>
+            Repository metadata
+            Search repositories, list collaborators, and access repository metadata.
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationPermissions.Administration">
+            <summary>
+            Repository administration
+            Repository creation, deletion, settings, teams, and collaborators.
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationPermissions.Statuses">
+            <summary>
+            Commit statuses
+            Commit statuses.
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationPermissions.Deployments">
+            <summary>
+            Deployments
+            Deployments and deployment statuses.
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationPermissions.Issues">
+            <summary>
+            Issues
+            Issues and related comments, assignees, labels, and milestones.
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationPermissions.Pages">
+            <summary>
+            Pages
+            Retrieve Pages statuses, configuration, and builds, as well as create new builds.
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationPermissions.PullRequests">
+            <summary>
+            Pull requests
+            Pull requests and related comments, assignees, labels, milestones, and merges.
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationPermissions.Contents">
+            <summary>
+            Repository contents
+            Repository contents, commits, branches, downloads, releases, and merges.
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationPermissions.SingleFile">
+            <summary>
+            Single file
+            Manage just a single file.
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationPermissions.RepositoryProjects">
+            <summary>
+            Repository projects
+            Manage repository projects, columns, and cards.
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationPermissions.Members">
+            <summary>
+            Organization members (only applicable when installed for an Organization )
+            Organization members and teams.
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationPermissions.OrganizationProjects">
+            <summary>
+            Organization projects (only applicable when installed for an Organization )
+            Manage organization projects, columns, and cards.
+            </summary>
+        </member>
+        <member name="P:Octokit.InstallationPermissions.TeamDiscussions">
+            <summary>
+            Team discussions (only applicable when installed for an Organization )
+            Team discussions.
+            </summary>
+        </member>
         <member name="P:Octokit.Issue.Id">
             <summary>
             The internal Id for this issue (not the issue number)
@@ -31047,6 +31611,11 @@
             The repository the issue comes from.
             </summary>
         </member>
+        <member name="P:Octokit.Issue.Reactions">
+            <summary>
+            The reaction summary for this issue.
+            </summary>
+        </member>
         <member name="P:Octokit.IssueComment.Id">
             <summary>
             The issue comment Id.
@@ -31080,6 +31649,11 @@
         <member name="P:Octokit.IssueComment.User">
             <summary>
             The user that created the issue comment.
+            </summary>
+        </member>
+        <member name="P:Octokit.IssueComment.Reactions">
+            <summary>
+            The reaction summary for this comment.
             </summary>
         </member>
         <member name="F:Octokit.IssueCommentSort.Created">
@@ -31155,6 +31729,16 @@
         <member name="P:Octokit.Label.Color">
             <summary>
             Color of the label
+            </summary>
+        </member>
+        <member name="P:Octokit.Label.Description">
+            <summary>
+            Description of the label
+            </summary>
+        </member>
+        <member name="P:Octokit.Label.Default">
+            <summary>
+            Is default label
             </summary>
         </member>
         <member name="P:Octokit.License.HtmlUrl">
@@ -31915,6 +32499,11 @@
             If the issue is locked or not
             </summary>
         </member>
+        <member name="P:Octokit.PullRequest.MaintainerCanModify">
+            <summary>
+            Whether maintainers of the base repository can push to the HEAD branch
+            </summary>
+        </member>
         <member name="P:Octokit.PullRequest.RequestedReviewers">
             <summary>
             Users requested for review
@@ -32092,6 +32681,11 @@
         <member name="P:Octokit.PullRequestReviewComment.PullRequestUrl">
             <summary>
             The URL for the pull request via the API.
+            </summary>
+        </member>
+        <member name="P:Octokit.PullRequestReviewComment.Reactions">
+            <summary>
+            The reaction summary for this comment.
             </summary>
         </member>
         <member name="P:Octokit.PullRequestReviewComment.InReplyToId">
