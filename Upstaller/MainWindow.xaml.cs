@@ -14,6 +14,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -750,8 +751,12 @@ namespace Upstaller
             try
             {
                 string chosenDir = currentDir;
+                if (!AskPermission($"This will close any open instances of Panacea,{Environment.NewLine}do you want to continue?"))
+                    return;
+                ClosePanaceaInstances();
                 PromptForDirChoosing(out chosenDir);
-                MoveOurJunkToNewDir();
+                MoveOurJunkToNewDir(chosenDir);
+                VerifyInstallation();
             }
             catch (Exception ex)
             {
@@ -759,7 +764,65 @@ namespace Upstaller
             }
         }
 
-        private void MoveOurJunkToNewDir()
+        private void ClosePanaceaInstances()
+        {
+            try
+            {
+                uDebugLogAdd("Starting Panacea process slaughter");
+                foreach (var proc in Process.GetProcessesByName("Panacea"))
+                {
+                    uDebugLogAdd($"Killing process [{proc.Id}]{proc.ProcessName}");
+                    proc.Kill();
+                    uDebugLogAdd("Killed process");
+                }
+                uDebugLogAdd("Finished Panacea process slaughter");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private bool AskPermission(string v)
+        {
+            bool answer = false;
+            try
+            {
+                uDebugLogAdd($"Asking user question: {v}");
+                if (Prompt.YesNo(v) == Prompt.PromptResponse.Yes)
+                {
+                    answer = true;
+                    uDebugLogAdd($"User answered yes to: {v}");
+                }
+                else
+                    uDebugLogAdd($"User answered no to: {v}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+            return answer;
+        }
+
+        private void MoveOurJunkToNewDir(string newDir)
+        {
+            try
+            {
+                MoveTheThingsToTheirNewHome(newDir);
+                SetupPlanAfterIClose();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void SetupPlanAfterIClose()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void MoveTheThingsToTheirNewHome(string newDir)
         {
             throw new NotImplementedException();
         }
@@ -767,6 +830,25 @@ namespace Upstaller
         private void PromptForDirChoosing(out string newDir)
         {
             newDir = string.Empty;
+            try
+            {
+                uDebugLogAdd("Prompting user for folder directory");
+                using (var dialog = new FolderBrowserDialog())
+                {
+                    var result = dialog.ShowDialog();
+                    if (result == System.Windows.Forms.DialogResult.OK)
+                    {
+                        uDebugLogAdd("Dialog result was ok");
+                        newDir = dialog.SelectedPath;
+                        uDebugLogAdd($"Path chosen: {newDir}");
+                    }
+                }
+                uDebugLogAdd("Finished prompting user for folder directory");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion
