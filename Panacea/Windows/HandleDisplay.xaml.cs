@@ -118,7 +118,6 @@ namespace Panacea.Windows
             try
             {
                 AddProcessToWinList();
-                SendUserUpdateNotification("Added Selected Process");
             }
             catch (Exception ex)
             {
@@ -293,6 +292,7 @@ namespace Panacea.Windows
                 else
                     Toolbox.settings.AddWindow(WindowItem.Create(selProc));
                 uDebugLogAdd("Added process to window list");
+                SendUserUpdateNotification($"Added entry for this process: {selProc.ProcessName} ");
                 //lbProcList.Items.Remove(selProc);
                 //uDebugLogAdd("Removed existing selected item from the window list");
             }
@@ -361,7 +361,7 @@ namespace Panacea.Windows
                 {
                     From = 1.0,
                     To = 0.0,
-                    Duration = TimeSpan.FromSeconds(.3)
+                    Duration = TimeSpan.FromSeconds(2)
                 };
                 BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
                 worker.DoWork += (ws, we) =>

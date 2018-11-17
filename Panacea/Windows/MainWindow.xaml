@@ -7,7 +7,7 @@
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         mc:Ignorable="d"
-        Title="MainWindow" Height="251.309" MinHeight="251.309" Width="454.455" MinWidth="454.455" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070"
+        Title="MainWindow" Height="251.309" MinHeight="251.309" Width="570.455" MinWidth="570.455" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070"
         MouseDown="winMain_MouseDown" Loaded="winMain_Loaded" Closing="winMain_Closing" Closed="winMain_Closed" Background="{x:Null}">
     <Window.Resources>
         <Style x:Key="ButtonControlFore">
@@ -161,8 +161,8 @@
                 <GradientStop Color="#FF191919" Offset="0.84"/>
             </LinearGradientBrush>
         </Grid.Background>
-        <Rectangle x:Name="rectBorder" Stroke="#FF707070" Panel.ZIndex="99" d:IsLocked="True"/>
-        <Rectangle x:Name="rectTitle" Height="30" Stroke="#FF707070" VerticalAlignment="Top" Panel.ZIndex="99" d:IsLocked="True">
+        <Rectangle x:Name="rectBorder" Stroke="#FF707070" Panel.ZIndex="99"/>
+        <Rectangle x:Name="rectTitle" Height="30" Stroke="#FF707070" VerticalAlignment="Top" Panel.ZIndex="99">
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1C1C1C" Offset="0"/>
@@ -170,9 +170,9 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <TextBlock x:Name="lblTitle" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Panacea" VerticalAlignment="Top" Height="30" Width="91" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Panel.ZIndex="100" d:IsLocked="True"/>
-        <Grid x:Name="grdNotification" Height="30" VerticalAlignment="Top" Panel.ZIndex="50" d:IsLocked="True">
-            <TextBlock x:Name="lblNotification" TextWrapping="Wrap" Foreground="#FF368DB6" TextAlignment="Center" FontSize="16" Margin="0,30,0,0" Height="45" VerticalAlignment="Top" d:IsLocked="True">
+        <TextBlock x:Name="lblTitle" MouseDown="lblTitle_MouseDown" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Panacea" VerticalAlignment="Top" Height="30" Width="91" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Panel.ZIndex="100"/>
+        <Grid x:Name="grdNotification" Height="30" VerticalAlignment="Top" Panel.ZIndex="50">
+            <TextBlock x:Name="lblNotification" TextWrapping="Wrap" Foreground="#FF368DB6" TextAlignment="Center" FontSize="16" Margin="0,30,0,0" Height="45" VerticalAlignment="Top">
                 <TextBlock.Background>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                         <GradientStop Color="Black" Offset="0"/>
@@ -183,8 +183,8 @@
             </TextBlock>
             <Rectangle Stroke="#FF368DB6" Margin="1,1,1,0"/>
         </Grid>
-        <Button x:Name="btnExit" Click="btnExit_Click" Style="{StaticResource ExitButton}" Content="X" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" FontSize="18" d:IsLocked="True"/>
-        <TextBox x:Name="txtStatus" src:TextBoxBehaviour.ScrollOnTextChanged="True" Height="20" VerticalAlignment="Bottom" BorderBrush="#FF707070" Foreground="#FF8D8D8D" IsReadOnly="True" SelectionBrush="#FF444444" VerticalContentAlignment="Stretch" FontSize="13" Panel.ZIndex="97" d:IsLocked="True">
+        <Button x:Name="btnExit" Click="btnExit_Click" Style="{StaticResource ExitButton}" Content="X" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" FontSize="18"/>
+        <TextBox x:Name="txtStatus" src:TextBoxBehaviour.ScrollOnTextChanged="True" Height="20" VerticalAlignment="Bottom" BorderBrush="#FF707070" Foreground="#FF8D8D8D" IsReadOnly="True" SelectionBrush="#FF444444" VerticalContentAlignment="Stretch" FontSize="13" Panel.ZIndex="97">
             <TextBox.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1C1C1C" Offset="0"/>
@@ -192,9 +192,9 @@
                 </LinearGradientBrush>
             </TextBox.Background>
         </TextBox>
-        <Button x:Name="btnStatusToggle" Style="{StaticResource UtilityButton}" Click="btnStatusToggle_Click" Content="Open" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="56" Height="20" Panel.ZIndex="98" d:IsLocked="True" />
-        <Button x:Name="btnAbout" Content="About" Style="{StaticResource UtilityButton}" Click="btnAbout_Click" HorizontalAlignment="Right" Margin="0,0,0,19" VerticalAlignment="Bottom" Width="56" Panel.ZIndex="98" d:IsLocked="True"/>
-        <Grid x:Name="grdAudio" Margin="454,30,-454,20" Panel.ZIndex="5" d:IsLocked="True" d:IsHidden="True">
+        <Button x:Name="btnStatusToggle" Style="{StaticResource UtilityButton}" Click="btnStatusToggle_Click" Content="Open" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="56" Height="20" Panel.ZIndex="98" />
+        <Button x:Name="btnAbout" Content="About" Style="{StaticResource UtilityButton}" Click="btnAbout_Click" HorizontalAlignment="Right" Margin="0,0,0,19" VerticalAlignment="Bottom" Width="56" Panel.ZIndex="98"/>
+        <Grid x:Name="grdAudio" Margin="454,30,-454,20" Panel.ZIndex="5" d:IsHidden="True">
             <Grid.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1B1B1B" Offset="0"/>
@@ -228,8 +228,9 @@
             <Button x:Name="btnMenuNetwork" Content="Network" Click="btnMenuNetwork_Click" Margin="-1,0,1,0"/>
             <Button x:Name="btnMenuSettings" Content="Settings" Click="btnMenuSettings_Click" Margin="-1,0,1,0"/>
             <Button x:Name="btnMenuUpdate" Content="Update" Click="btnMenuUpdate_Click" Margin="-1,0,1,0" IsEnabled="False"/>
+            <Button x:Name="BtnTest" Content="Test" Click="BtnTest_Click" Visibility="Hidden" Margin="-1,0,1,0"/>
         </StackPanel>
-        <Grid x:Name="grdWindows" Margin="454,30,-454,20">
+        <Grid x:Name="grdWindows" Margin="454,30,-454,20" d:IsHidden="True">
             <Grid.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1B1B1B" Offset="0"/>
@@ -285,7 +286,7 @@
                     </LinearGradientBrush>
                 </Rectangle.Stroke>
             </Rectangle>
-            <Rectangle x:Name="rectWinSelArea" HorizontalAlignment="Right" Height="90" Margin="0,36,14,0" StrokeThickness="0.5" VerticalAlignment="Top" Width="110" Stroke="{StaticResource BaseBorderBrush}" d:IsLocked="True"/>
+            <Rectangle x:Name="rectWinSelArea" HorizontalAlignment="Right" Height="90" Margin="0,36,14,0" StrokeThickness="0.5" VerticalAlignment="Top" Width="110" Stroke="{StaticResource BaseBorderBrush}"/>
             <TextBlock x:Name="lblWinSelectedProcess" HorizontalAlignment="Right" Padding="0" Margin="0,116,19,0" TextWrapping="Wrap" Text="Selected Process" VerticalAlignment="Top" Height="14" Foreground="#FF8D8D8D" Width="95" TextAlignment="Center"/>
             <Button x:Name="btnWinProfile1" Click="btnWinProfile1_Click" Content="Profile 1" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,140,72,0" VerticalAlignment="Top" Width="54"/>
             <Button x:Name="btnWinProfile2" Click="btnWinProfile2_Click" Content="Profile 2" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,140,12,0" VerticalAlignment="Top" Width="54"/>
@@ -294,7 +295,7 @@
             <Button x:Name="btnWinUpdateManual" Click="btnWinUpdateManual_Click" Content="Edit" HorizontalAlignment="Right" Margin="0,94,72,0" VerticalAlignment="Top" Width="47" IsEnabled="False"/>
             <Button x:Name="btnWinRefresh" Click="btnWinRefresh_Click" Content="Refresh" HorizontalAlignment="Right" Margin="0,94,19,0" VerticalAlignment="Top" Width="48"/>
         </Grid>
-        <Grid x:Name="grdNetwork" Margin="454,30,-454,20" d:IsLocked="True" d:IsHidden="True">
+        <Grid x:Name="grdNetwork" Margin="454,30,-454,20">
             <Grid.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1B1B1B" Offset="0"/>
@@ -358,10 +359,10 @@
             <ListBox x:Name="lbResolvedAddresses" Margin="136,0,10,3" Height="45" VerticalAlignment="Bottom">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid HorizontalAlignment="Left" Height="16" Margin="0,0,0,0" VerticalAlignment="Top" Width="{Binding ElementName=lbResolvedAddresses, Path=ActualWidth, Converter={StaticResource Minus204Converter}}" Background="Black">
+                        <Grid HorizontalAlignment="Left" Height="16" Margin="0,0,0,0" VerticalAlignment="Top" Width="{Binding ElementName=lbResolvedAddresses, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" Background="Black">
                             <TextBlock MouseDown="lblNetDNS_MouseDown" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding IPAddress}" VerticalAlignment="Top" Width="87" Height="16" Foreground="#FF8D8D8D"/>
                             <TextBlock MouseDown="lblNetDNSFull_MouseDown" HorizontalAlignment="Left" TextWrapping="Wrap" Text=" = " VerticalAlignment="Top" Width="15" Foreground="#FF8D8D8D" Height="16" Margin="87,0,0,0"/>
-                            <TextBlock MouseDown="lblNetDNS_MouseDown" TextWrapping="Wrap" Text="{Binding HostName}" VerticalAlignment="Top" Width="{Binding ElementName=lbResolvedAddresses, Path=ActualWidth, Converter={StaticResource Minus204Converter}}" Foreground="#FF8D8D8D" Height="16" Margin="102,0,10,0"/>
+                            <TextBlock MouseDown="lblNetDNS_MouseDown" TextWrapping="Wrap" Text="{Binding HostName}" VerticalAlignment="Top" Width="{Binding ElementName=lbResolvedAddresses, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" Foreground="#FF8D8D8D" Height="16" Margin="102,0,45,0"/>
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
@@ -405,7 +406,7 @@
             </ListBox>
             <TextBlock x:Name="lblTraceStatus" Margin="219,32,0,0" TextWrapping="Wrap" Text="Tracing" VerticalAlignment="Top" Foreground="#FFD61212" FontSize="24" TextAlignment="Center" HorizontalAlignment="Left" Width="204" Visibility="Hidden"/>
         </Grid>
-        <Grid x:Name="grdSettings" Margin="454,30,-454,20" d:IsLocked="True" d:IsHidden="True">
+        <Grid x:Name="grdSettings" Margin="454,30,-454,20" d:IsHidden="True">
             <Grid.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1B1B1B" Offset="0"/>
@@ -418,15 +419,15 @@
             <Rectangle x:Name="rectSettingsNetTitle" HorizontalAlignment="Left" Height="16" Margin="79,4,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="50"/>
             <TextBlock HorizontalAlignment="Left" Margin="81,3,0,0" TextWrapping="Wrap" Text="Network" VerticalAlignment="Top" Foreground="#FF1DD8D0"/>
             <TextBox x:Name="txtSetNetPingCount" KeyDown="txtSetNetPingCount_KeyDown" HorizontalAlignment="Left" Height="17" Margin="229,6,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-            <ComboBox x:Name="cmbxSetNetDTFormat" SelectionChanged="cmbxSetNetDTFormat_SelectionChanged" HorizontalAlignment="Left" Style="{StaticResource {x:Type ComboBox}}" Margin="180,38,0,0" VerticalAlignment="Top" Width="120" Height="9" Foreground="{x:Null}"/>
+            <ComboBox x:Name="cmbxSetNetDTFormat" SelectionChanged="cmbxSetNetDTFormat_SelectionChanged" HorizontalAlignment="Left" Style="{StaticResource {x:Type ComboBox}}" Margin="180,38,0,0" VerticalAlignment="Top" Width="120" Height="9" Foreground="#FF8D8D8D"/>
             <TextBlock x:Name="lblSetNetPingCount" HorizontalAlignment="Left" Margin="131,5,0,0" TextWrapping="Wrap" Text="Ping Chart Count:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
             <TextBlock x:Name="lblSetNetPingDTF" HorizontalAlignment="Left" Margin="82,38,0,0" TextWrapping="Wrap" Text="Ping Time Format:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
             <TextBlock x:Name="lblSetNetTextboxAction" HorizontalAlignment="Left" Margin="318,23,0,0" TextWrapping="Wrap" Text="Textbox Enter Action:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="122" Height="20"/>
             <TextBlock x:Name="lblSetNetPingCountWarning" HorizontalAlignment="Left" Margin="82,21,0,0" TextWrapping="Wrap" Text="*Warning: Higher count = More CPU Usage" VerticalAlignment="Top" Foreground="#FF4D4747" Width="234"/>
             <TextBlock x:Name="lblSetNetPingDTFNote" HorizontalAlignment="Left" Margin="84,55,0,0" TextWrapping="Wrap" Text="*Note: Hours with small charts are unreadable" VerticalAlignment="Top" Foreground="#FF4D4747" Width="252"/>
             <TextBlock x:Name="lblNetBasicPing" HorizontalAlignment="Left" Margin="361,4,0,0" TextWrapping="Wrap" Text="Basic Ping:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-            <CheckBox x:Name="chkNetBasicPing" Content="" HorizontalAlignment="Left" Margin="422,6,0,0" VerticalAlignment="Top" Width="18" Background="{StaticResource BaseBackgroundBrush}" BorderBrush="{StaticResource BaseBorderBrush}" Foreground="#FF8D8D8D" Height="17"/>
-            <ComboBox x:Name="cmbxSetNetTextboxAction" SelectionChanged="cmbxSetNetTextboxAction_SelectionChanged"  HorizontalAlignment="Left" Style="{StaticResource {x:Type ComboBox}}" Margin="318,38,0,0" VerticalAlignment="Top" Width="120" Height="9" Foreground="{x:Null}"/>
+            <CheckBox x:Name="chkNetBasicPing" Click="chkNetBasicPing_Click" Content="" HorizontalAlignment="Left" Margin="422,6,0,0" VerticalAlignment="Top" Width="18" Background="{StaticResource BaseBackgroundBrush}" BorderBrush="{StaticResource BaseBorderBrush}" Foreground="#FF8D8D8D" Height="17"/>
+            <ComboBox x:Name="cmbxSetNetTextboxAction" SelectionChanged="cmbxSetNetTextboxAction_SelectionChanged"  HorizontalAlignment="Left" Style="{StaticResource {x:Type ComboBox}}" Margin="318,38,0,0" VerticalAlignment="Top" Width="120" Height="9" Foreground="#FF8D8D8D"/>
         </Grid>
     </Grid>
 </Window>

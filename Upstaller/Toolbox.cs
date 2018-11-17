@@ -125,7 +125,7 @@ namespace Upstaller
                 }
                 catch (Exception ex)
                 {
-                    FullExceptionLog(ex);
+                    LogFullException(ex);
                 }
             };
             worker.RunWorkerAsync();

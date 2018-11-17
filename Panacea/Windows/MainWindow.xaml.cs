@@ -35,6 +35,7 @@ using NAudio.CoreAudioApi;
 using System.Collections;
 using System.Management;
 using System.Reflection;
+using System.Net.Sockets;
 
 namespace Panacea
 {
@@ -58,7 +59,7 @@ namespace Panacea
         private MMDevice selectedAudioEndpoint = null;
         private IntPtr LastFoundWindow = IntPtr.Zero;
         private HandleDisplay windowHandleDisplay = null;
-        private Point mouseStartPoint = new Point(0,0);
+        private Point mouseStartPoint = new Point(0, 0);
         private Octokit.GitHubClient gitClient = null;
         private bool audioRefreshing = false;
         private bool debugMode = false;
@@ -73,6 +74,7 @@ namespace Panacea
         private bool traceLoading = false;
         private bool resizingNetGrid = false;
         private bool capturingHandle = false;
+        private bool startingUp = false;
 
         #endregion
 
@@ -106,7 +108,6 @@ namespace Panacea
         {
             uDebugLogAdd("Application closing, starting closing methods");
             SaveSettings();
-            SerializeSettings();
             uDebugLogAdd(string.Format("{0}##################################### Application Closing #####################################{0}", Environment.NewLine));
             DumpDebugLog();
         }
@@ -221,6 +222,20 @@ namespace Panacea
                     Toolbox.debugLog.Append($"{args.DebugType.ToString()} :: {DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()}: Dumping Debug Logs...");
                     DumpDebugLog();
                 }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void lblTitle_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                string verNum = GetVersionNumber().ToString();
+                Clipboard.SetText(verNum);
+                uStatusUpdate($"Copied version to clipboard: {verNum}");
             }
             catch (Exception ex)
             {
@@ -563,8 +578,8 @@ namespace Panacea
                 {
                     ToggleListBox(lbTraceSessions);
                     if (Toolbox.settings.BasicPing)
-                        
-                    SwapPingGrids();
+
+                        SwapPingGrids();
                 }
             }
             catch (Exception ex)
@@ -619,7 +634,7 @@ namespace Panacea
             {
                 if (e.Key == Key.Enter)
                 {
-                   switch (Toolbox.settings.ToolboxEnterAction)
+                    switch (Toolbox.settings.ToolboxEnterAction)
                     {
                         case EnterAction.DNSLookup:
                             btnNetLookup_Click(sender, e);
@@ -738,6 +753,11 @@ namespace Panacea
             }
         }
 
+        private void BtnTest_Click(object sender, RoutedEventArgs e)
+        {
+            TestWifi();
+        }
+
         #endregion
 
         #region grdSettings
@@ -757,6 +777,11 @@ namespace Panacea
             StartSettingsUpdate(SettingsUpdate.TextBoxAction);
         }
 
+        private void chkNetBasicPing_Click(object sender, RoutedEventArgs e)
+        {
+            StartSettingsUpdate(SettingsUpdate.BasicPing);
+        }
+
         #endregion
 
         #endregion
@@ -767,10 +792,14 @@ namespace Panacea
 
         private void Startup()
         {
-            #if DEBUG
+#if DEBUG
             debugMode = true;
-            #endif
+            BtnTest.Visibility = Visibility.Visible;
+#endif
+#if DEBUG == false
             DataContext = this;
+#endif
+            startingUp = true;
             SubscribeToEvents();
             SetupAppFiles();
             uDebugLogAdd(string.Format("{0}##################################### Application Start #####################################{0}", Environment.NewLine));
@@ -781,12 +810,13 @@ namespace Panacea
             tSaveSettingsAuto();
             InitializeMenuGrids();
             tCheckForUpdates();
+            FinishStartup();
         }
 
         private void ToggleStatusSize()
         {
             try
-            { 
+            {
                 var currentSize = 0.00;
                 Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { currentSize = txtStatus.Height; } catch (Exception ex) { LogException(ex); } });
                 if (currentSize != 230.00)
@@ -960,7 +990,7 @@ namespace Panacea
                 }
                 catch (Exception ex)
                 {
-                        LogException(ex);
+                    LogException(ex);
                 }
             }
         }
@@ -986,7 +1016,7 @@ namespace Panacea
                 if (!Directory.Exists(confDir))
                 {
                     Directory.CreateDirectory(confDir);
-                    uDebugLogAdd("Created missing config direcotry");
+                    uDebugLogAdd("Created missing config directory");
                 }
                 else { uDebugLogAdd($"Config Directory: {confDir}"); }
             }
@@ -1193,6 +1223,83 @@ namespace Panacea
             }
         }
 
+        private void TestWifi()
+        {
+            try
+            {
+                var wifiLinkSpeed = GetWifiLinkSpeed();
+                if (wifiLinkSpeed != null)
+                    ShowNotification($"Wifi Link Speed: {wifiLinkSpeed} Mbps");
+                else
+                    ShowNotification("Not currently connected to wifi...");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private double? GetWifiLinkSpeed()
+        {
+            ulong speed = 0;
+            double? dblSpeed = null;
+            string adapter = "";
+
+            try
+            {
+                string[] nameSearches = { "Wireless", "WiFi", "802.11", "Wi-Fi" };
+
+                // The enum value of `AF_INET` will select only IPv4 adapters.
+                // You can change this to `AF_INET6` for IPv6 likewise
+                // And `AF_UNSPEC` for either one
+                foreach (IPIntertop.IP_ADAPTER_ADDRESSES net in IPIntertop.GetIPAdapters(IPIntertop.FAMILY.AF_INET))
+                {
+                    bool containsName = false;
+                    foreach (string name in nameSearches)
+                    {
+                        if (net.FriendlyName.Contains(name))
+                        {
+                            containsName = true;
+                        }
+                    }
+                    if (!containsName) continue;
+
+                    speed = net.TrasmitLinkSpeed;
+                    adapter = net.FriendlyName;
+                    break;
+                }
+
+                if (speed == 0)
+                {
+                    uDebugLogAdd($"Not currently connected to wifi via adapter {adapter}");
+                    dblSpeed = null;
+                }
+                else
+                {
+                    dblSpeed = speed / 1000000.0;
+                    uDebugLogAdd($"Current Wi-Fi Speed: {dblSpeed} Mbps on {adapter}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+
+            return dblSpeed;
+        }
+
+        private void FinishStartup()
+        {
+            try
+            {
+                startingUp = false;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         #endregion
 
         #region Audio
@@ -1359,9 +1466,13 @@ namespace Panacea
 
         private void StartSettingsUpdate(SettingsUpdate settingsUpdate)
         {
-
             try
             {
+                if (startingUp)
+                {
+                    uDebugLogAdd("Application is still starting up, skipping settings update");
+                    return;
+                }
                 SettingsTimerRefresh();
                 if (!settingsSaveVerificationInProgress)
                 {
@@ -1389,10 +1500,7 @@ namespace Panacea
                     {
                         if (pe.ProgressPercentage == 1)
                         {
-                            if (settingsUpdate == SettingsUpdate.PingCount)
-                                tUpdateSettings(settingsUpdate, txtSetNetPingCount.Text);
-                            else
-                                tUpdateSettings(settingsUpdate);
+                            tUpdateSettings(settingsUpdate);
                         }
                     };
                     worker.RunWorkerAsync();
@@ -1879,7 +1987,7 @@ namespace Panacea
 
         private void UpdateWindowItemOptions()
         {
-            
+
         }
 
         private void MoveAllWindows()
@@ -2297,30 +2405,38 @@ namespace Panacea
             {
                 try
                 {
-                    switch (settingsUpdate)
+                        //switch (settingsUpdate)
+                        //{
+                        //    case SettingsUpdate.PingCount:
+                        //        break;
+                        //    case SettingsUpdate.PingDTFormat:
+                        //        worker.ReportProgress(2);
+                        //        break;
+                        //    case SettingsUpdate.TextBoxAction:
+                        //        worker.ReportProgress(3);
+                        //        break;
+                        //}
+
+                        // Pingcount settings
+                        var num = 0;
+                    if (int.TryParse(value, out num))
+                        worker.ReportProgress(1);
+                    else
                     {
-                        case SettingsUpdate.PingCount:
-                            var num = 0;
-                            if (int.TryParse(value, out num))
-                                worker.ReportProgress(1);
-                            else
-                            {
-                                if (!settingsBadAlerted)
-                                {
-                                    worker.ReportProgress(99);
-                                    settingsBadAlerted = true;
-                                    Thread.Sleep(TimeSpan.FromSeconds(5));
-                                    settingsBadAlerted = false;
-                                }
-                            }
-                            break;
-                        case SettingsUpdate.PingDTFormat:
-                            worker.ReportProgress(2);
-                            break;
-                        case SettingsUpdate.TextBoxAction:
-                            worker.ReportProgress(3);
-                            break;
+                        if (!settingsBadAlerted)
+                        {
+                            worker.ReportProgress(99);
+                            settingsBadAlerted = true;
+                            Thread.Sleep(TimeSpan.FromSeconds(5));
+                            settingsBadAlerted = false;
+                        }
                     }
+                        // Update All Settings
+                        worker.ReportProgress(1);
+
+                        // Flip ping basic if checked
+                        if (settingsUpdate == SettingsUpdate.BasicPing)
+                        worker.ReportProgress(2);
                 }
                 catch (Exception ex)
                 {
@@ -2334,32 +2450,46 @@ namespace Panacea
                     switch (pe.ProgressPercentage)
                     {
                         case 1:
-                            Toolbox.settings.PingChartLength = int.Parse(txtSetNetPingCount.Text);
+                            uDebugLogAdd("Starting settings update");
+                            uDebugLogAdd("SETUPDATE: ping chart");
+                                // Set pingchart settings
+                                Toolbox.settings.PingChartLength = int.Parse(txtSetNetPingCount.Text);
                             foreach (PingEntry entry in lbPingSessions.Items)
                             {
                                 entry.ChartLength = Toolbox.settings.PingChartLength;
                             }
-                            break;
-                        case 2:
-                            if (cmbxSetNetDTFormat.Text == "Seconds")
+                            uDebugLogAdd("SETUPDATE: DTFormat");
+                                // Set Date/Time Format settings
+                                if (cmbxSetNetDTFormat.Text == "Seconds")
                                 Toolbox.settings.DateTimeFormat = DTFormat.Sec;
                             else if (cmbxSetNetDTFormat.Text == "Minutes")
                                 Toolbox.settings.DateTimeFormat = DTFormat.Min;
                             else if (cmbxSetNetDTFormat.Text == "Hours")
                                 Toolbox.settings.DateTimeFormat = DTFormat.Hours;
-                            break;
-                        case 3:
-                            if (cmbxSetNetTextboxAction.Text == "DNSLookup")
+                            uDebugLogAdd("SETUPDATE: Enter action");
+                                // Set network textbox enter action
+                                if (cmbxSetNetTextboxAction.Text == "DNSLookup")
                                 Toolbox.settings.ToolboxEnterAction = EnterAction.DNSLookup;
                             else if (cmbxSetNetTextboxAction.Text == "Ping")
                                 Toolbox.settings.ToolboxEnterAction = EnterAction.Ping;
                             else if (cmbxSetNetTextboxAction.Text == "Trace")
                                 Toolbox.settings.ToolboxEnterAction = EnterAction.Trace;
+                            uDebugLogAdd("SETUPDATE: Basic ping");
+                                // Set basic ping
+                                if (chkNetBasicPing.IsChecked == true)
+                                Toolbox.settings.BasicPing = true;
+                            else
+                                Toolbox.settings.BasicPing = false;
+                            break;
+                        case 2:
+                            uDebugLogAdd("Starting ping grid swap from settings update");
+                            SwapPingGrids();
                             break;
                         case 99:
                             ShowNotification("Incorrect format entered");
                             break;
                     }
+                    uDebugLogAdd("Finished settings update");
                 }
                 catch (Exception ex)
                 {
@@ -2389,9 +2519,17 @@ namespace Panacea
                         if (!string.IsNullOrWhiteSpace(dnsEntry.HostName))
                         {
                             resolvedEntry.HostName = dnsEntry.HostName;
+                            resolvedEntry.IPAddress = dnsEntry.AddressList[0].ToString();
                             uDebugLogAdd($"DNS entry hostname isn't empty, resolved to: {resolvedEntry.HostName}");
                         }
                     }
+                    worker.ReportProgress(1);
+                    resolvedEntries++;
+                }
+                catch (SocketException se)
+                {
+                    uDebugLogAdd($"DNS lookup error: {se.Message}");
+                    resolvedEntry.HostName = se.Message;
                     worker.ReportProgress(1);
                     resolvedEntries++;
                 }

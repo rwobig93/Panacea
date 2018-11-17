@@ -13,3 +13,9 @@
 /Panacea/obj/x64/Release
 /Upstaller/bin/Release
 /Upstaller/obj/Release
+*.nupkg
+*.dll
+*.json
+*.props
+*.xml
+*.targets

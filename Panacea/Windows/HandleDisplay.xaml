@@ -1,11 +1,11 @@
-﻿<Window x:Class="Panacea.Windows.HandleDisplay"
+﻿<Window x:Name="HDMainWin" x:Class="Panacea.Windows.HandleDisplay"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Topmost="True" ResizeMode="CanResizeWithGrip"
-        Title="MainWindow" Height="573.95" Width="668.852" WindowStyle="None" AllowsTransparency="True" Background="{StaticResource BaseBackgroundBrush}" Foreground="{x:Null}"
+        Title="MainWindow" Height="573.95" MinHeight="425.45" Width="668.852" MinWidth="668.852" WindowStyle="None" AllowsTransparency="True" Background="{StaticResource BaseBackgroundBrush}" Foreground="{x:Null}"
         MouseDown="Window_PreviewMouseDown" Loaded="Window_Loaded" Closing="Window_Closing" >
     <Grid x:Name="GrdMain">
         <Grid.Background>
@@ -44,14 +44,14 @@
         <Button x:Name="btnRefreshProcList" Click="btnRefreshProcList_Click" Content="Refresh List" HorizontalAlignment="Right" Margin="0,188,102,0" VerticalAlignment="Top" Width="87"/>
         <Button x:Name="btnAddProcess" Click="btnAddProcess_Click" Content="Add Selected" HorizontalAlignment="Left" Margin="10,188,0,0" VerticalAlignment="Top" Width="87"/>
         <Button x:Name="btnClose" Click="btnClose_Click" Content="Close / Finish" HorizontalAlignment="Right" Margin="0,188,10,0" VerticalAlignment="Top" Width="87"/>
-        <ListBox x:Name="lbProcList" SelectionChanged="lbProcList_SelectionChanged" ItemsSource="{Binding ProcessList}" Margin="10,215,10,10">
+        <ListBox x:Name="lbProcList" SelectionChanged="lbProcList_SelectionChanged" ItemsSource="{Binding ProcessList}" Margin="10,215,10,32">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Foreground="#FF8D8D8D" TextWrapping="Wrap" Text="{Binding ProcessName}" Width="650"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <CheckBox x:Name="chkIgnoreWinTitle" Content="Ignore Window Title" HorizontalAlignment="Left" Margin="102,192,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D" BorderBrush="{StaticResource BaseBorderBrush}" Height="16" Background="{StaticResource BaseBackgroundBrush}"/>
-        <TextBlock x:Name="lblUpdateNotification" Margin="10,0,19,10" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Bottom" Foreground="#0014DC00" FontSize="24" Height="32" TextAlignment="Right"/>
+        <CheckBox x:Name="chkIgnoreWinTitle" Content="Ignore Window Title" HorizontalAlignment="Left" Margin="102,192,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D" BorderBrush="{StaticResource BaseBorderBrush}" Height="16" Background="{StaticResource BaseBackgroundBrush}" IsEnabled="False"/>
+        <TextBlock x:Name="lblUpdateNotification" Margin="10,0,19,0" TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="#FF368DB6" FontSize="24" Height="32"/>
     </Grid>
 </Window>

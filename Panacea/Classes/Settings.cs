@@ -238,6 +238,7 @@ namespace Panacea.Classes
     {
         PingCount,
         PingDTFormat,
-        TextBoxAction
+        TextBoxAction,
+        BasicPing
     }
 }
