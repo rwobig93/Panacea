@@ -2601,8 +2601,8 @@ namespace Panacea
                     {
                         Toolbox.settings.CurrentVersion = GetVersionNumber();
                         uDebugLogAdd($"Current Version: {Toolbox.settings.CurrentVersion}");
-                        Task t = GetUpdate(executable);
-                        t.Start();
+                        Task t = Task.Run(async () => { await GetUpdate(executable); });
+                        t.Wait();
                         while (!t.IsCompleted)
                         {
                             Thread.Sleep(500);
@@ -2629,7 +2629,9 @@ namespace Panacea
                                 uDebugLogAdd("Enabled update button");
                             }
                             else
+                            {
                                 uDebugLogAdd($"Current version is the same or newer than release: [c]{Toolbox.settings.CurrentVersion} [p]{Toolbox.settings.ProductionVersion}");
+                            }
                             SaveSettings();
                         }
                     }
