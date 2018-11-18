@@ -200,9 +200,9 @@ namespace Panacea.Windows
             }
         }
 
-        private void uDebugLogAdd(string _log, DebugType debugType = DebugType.INFO)
+        private void uDebugLogAdd(string _log, DebugType debugType = DebugType.INFO, [CallerMemberName] string caller = "")
         {
-            Toolbox.uAddDebugLog(_log, debugType);
+            Toolbox.uAddDebugLog(_log, debugType, caller);
         }
 
         private void UpdateProcessList()

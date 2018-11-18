@@ -10,7 +10,7 @@ using System.Windows.Media;
 
 namespace Panacea.Classes
 {
-    public class Settings: INotifyPropertyChanged
+    public class Settings : INotifyPropertyChanged
     {
         #region INotifyPropertyChanged implementation
 
@@ -40,11 +40,15 @@ namespace Panacea.Classes
         private Int32 _pingChartLength { get; set; } = NetworkVariables.defaultPingChartLength;
         private EnterAction _toolboxEnterAction { get; set; } = EnterAction.DNSLookup;
         private bool _basicPing { get; set; }
+        private bool _betaUpdate { get; set; } = false;
         private WindowProfile _currentWinProfile { get; set; } = WindowProfile.Profile1;
-        private Version _currentVersion { get; set; } = null;
+        private Version _currentVersion { get; set; } = new Version("0.0.0.0");
         private Version _productionVersion { get; set; } = null;
+        private Version _upCurrentVersion { get; set; } = null;
+        private Version _upProductionVersion { get; set; } = null;
         private bool _updateAvailable { get; set; } = false;
         private string _productionURI { get; set; } = null;
+        private string _upProductionURI { get; set; } = null;
 
         #endregion
 
@@ -140,6 +144,15 @@ namespace Panacea.Classes
                 OnPropertyChanged("BasicPing");
             }
         }
+        public bool BetaUpdate
+        {
+            get { return _betaUpdate; }
+            set
+            {
+                _betaUpdate = value;
+                OnPropertyChanged("BetaUpdate");
+            }
+        }
         public WindowProfile CurrentWindowProfile
         {
             get { return _currentWinProfile; }
@@ -220,6 +233,16 @@ namespace Panacea.Classes
             get { return _productionVersion; }
             set { _productionVersion = value; }
         }
+        public Version UpCurrentVersion
+        {
+            get { return _upCurrentVersion; }
+            set { _upCurrentVersion = value; }
+        }
+        public Version UpProductionVersion
+        {
+            get { return _upProductionVersion; }
+            set { _upProductionVersion = value; }
+        }
         public bool UpdateAvailable
         {
             get { return _updateAvailable; }
@@ -230,6 +253,11 @@ namespace Panacea.Classes
             get { return _productionURI; }
             set { _productionURI = value; }
         }
+        public string UpProductionURI
+        {
+            get { return _upProductionURI; }
+            set { _upProductionURI = value; }
+        }
 
         #endregion
     }
@@ -239,6 +267,7 @@ namespace Panacea.Classes
         PingCount,
         PingDTFormat,
         TextBoxAction,
-        BasicPing
+        BasicPing,
+        BetaCheck
     }
 }

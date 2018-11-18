@@ -20,7 +20,7 @@ namespace Upstaller
         {
             var timeStamp = string.Format("{0}--{1}", DateTime.Now.ToLocalTime().ToString("MM-dd-yy"), DateTime.Now.ToLocalTime().ToLongTimeString());
             string exString = string.Format("Timestamp: {0}{1}Caller: {2} at line {3}{1}ExType: {4}{1}HR: {5}{1}Message: {6}{1}StackTrace:{1} {7}{1}Path: {8}{1}", timeStamp, Environment.NewLine, caller, lineNum, ex.GetType().Name, ex.HResult, ex.Message, ex.StackTrace, path);
-            using (StreamWriter sw = File.AppendText(string.Format(@"{0}\Exception_{1}.log", exDir, DateTime.Now.ToLocalTime().ToString("MM-dd-yy"))))
+            using (StreamWriter sw = File.AppendText(string.Format(@"{0}\Upstaller_Exception_{1}.log", exDir, DateTime.Now.ToLocalTime().ToString("MM-dd-yy"))))
                 sw.WriteLine(exString);
         }
 
@@ -28,16 +28,16 @@ namespace Upstaller
         {
             var timeStamp = string.Format("{0}--{1}", DateTime.Now.ToLocalTime().ToString("MM-dd-yy"), DateTime.Now.ToLocalTime().ToLongTimeString());
             string exString = string.Format("Timestamp: {0}{1}Caller: {2} at line {3}{1}ExType: {4}{1}HR: {5}{1}Message: {6}{1}StackTrace:{1} {7}{1}Path: {8}{1}", timeStamp, Environment.NewLine, caller, lineNum, ex.GetType().Name, ex.HResult, ex.Message, ex.StackTrace, path);
-            using (StreamWriter sw = File.AppendText(string.Format(@"{0}\Exception_{1}_{2}.log", exDir, DateTime.Now.ToLocalTime().ToString("MM-dd-yy"), dupe)))
+            using (StreamWriter sw = File.AppendText(string.Format(@"{0}\Upstaller_Exception_{1}_{2}.log", exDir, DateTime.Now.ToLocalTime().ToString("MM-dd-yy"), dupe)))
                 sw.WriteLine(exString);
         }
 
-        public static void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO)
+        public static void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO, string caller = "")
         {
             try
             {
-                debugLog.Append($"{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {_type.ToString()}: {_log}{Environment.NewLine}");
-                if (debugLog.Length > 250)
+                debugLog.Append($"{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {caller.ToUpper()} :: {_type.ToString()}: {_log}{Environment.NewLine}");
+                if (debugLog.Length > 2500)
                     DumpDebugLog();
             }
             catch (Exception ex)
@@ -49,7 +49,7 @@ namespace Upstaller
         public static void DumpDebugLog()
         {
             string _dateNow = DateTime.Now.ToLocalTime().ToString("MM-dd-yy");
-            string _debugLocation = ($@"{Directory.GetCurrentDirectory()}\Logs\DebugLog_{_dateNow}.log");
+            string _debugLocation = ($@"{Directory.GetCurrentDirectory()}\Logs\Upstaller_DebugLog_{_dateNow}.log");
             try
             {
                 if (!File.Exists(_debugLocation))
@@ -59,7 +59,7 @@ namespace Upstaller
                     using (StreamWriter _sw = File.AppendText(_debugLocation))
                         _sw.WriteLine(debugLog.ToString());
             }
-            catch (IOException) { SaveFileRetry(_debugLocation, debugLog.ToString()); return; }
+            catch (IOException io) { SaveFileRetry(_debugLocation, debugLog.ToString(), io.Message); return; }
             catch (Exception ex)
             {
                 LogFullException(ex);
@@ -85,13 +85,14 @@ namespace Upstaller
             }
         }
 
-        public static void SaveFileRetry(string filePath, string writeString)
+        public static void SaveFileRetry(string filePath, string writeString, string message)
         {
             BackgroundWorker worker = new BackgroundWorker();
             worker.DoWork += (sender, e) =>
             {
                 try
                 {
+                    Toolbox.uDebugLogAdd($"Starting file save retry, reason: {message}");
                     string newPath = $@"{filePath.Replace(".", "rt.")}";
                     int tryAttempts = 10;
                     for (int t = 1; t <= tryAttempts; t++)
@@ -113,10 +114,10 @@ namespace Upstaller
                                         sw.WriteLine(writeString);
                                     return;
                                 }
-                                catch (IOException)
+                                catch (IOException io)
                                 {
                                     Toolbox.uDebugLogAdd($"Saving to new file also failed, starting new retry method: {newPath}");
-                                    SaveFileRetry(newPath, writeString);
+                                    SaveFileRetry(newPath, writeString, io.Message);
                                     return;
                                 }
                             }

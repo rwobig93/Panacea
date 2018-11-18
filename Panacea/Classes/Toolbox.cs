@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -96,11 +97,11 @@ namespace Panacea.Classes
             return random.Next(min, max);
         }
 
-        public static void uAddDebugLog(string _log, DebugType _type = DebugType.INFO)
+        public static void uAddDebugLog(string _log, DebugType _type = DebugType.INFO, string caller = "")
         {
             try
             {
-                debugLog.Append($"{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {_type.ToString()}: {_log}{Environment.NewLine}");
+                debugLog.Append($"{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {caller.ToUpper()} :: {_type.ToString()}: {_log}{Environment.NewLine}");
 #if DEBUG
                 Events.AddDebugStatus(_log, _type); 
 #endif
@@ -109,6 +110,11 @@ namespace Panacea.Classes
             {
                 LogException(ex);
             }
+        }
+
+        public static Version GetVersionNumber(string assemblyPath)
+        {
+            return Assembly.LoadFile(assemblyPath).GetName().Version;
         }
     }
 }

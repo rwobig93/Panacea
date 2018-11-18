@@ -75,6 +75,8 @@ namespace Panacea
         private bool resizingNetGrid = false;
         private bool capturingHandle = false;
         private bool startingUp = false;
+        private bool upstallerUpdateInProg = false;
+        private bool downloadInProgress = false;
 
         #endregion
 
@@ -85,6 +87,12 @@ namespace Panacea
             EXCEPTION,
             STATUS,
             INFO
+        }
+
+        public enum AppUpdate
+        {
+            Panacea,
+            Upstaller
         }
 
         #endregion
@@ -782,6 +790,11 @@ namespace Panacea
             StartSettingsUpdate(SettingsUpdate.BasicPing);
         }
 
+        private void chkSettingsBeta_Click(object sender, RoutedEventArgs e)
+        {
+            StartSettingsUpdate(SettingsUpdate.BetaCheck);
+        }
+
         #endregion
 
         #endregion
@@ -796,13 +809,11 @@ namespace Panacea
             debugMode = true;
             BtnTest.Visibility = Visibility.Visible;
 #endif
-#if DEBUG == false
             DataContext = this;
-#endif
             startingUp = true;
             SubscribeToEvents();
             SetupAppFiles();
-            uDebugLogAdd(string.Format("{0}##################################### Application Start #####################################{0}", Environment.NewLine));
+            uDebugLogAdd(string.Format("{0}###################################### Application Start ######################################{0}", Environment.NewLine));
             DeSerializeSettings();
             SetDefaultSettings();
             SetWindowLocation();
@@ -950,11 +961,11 @@ namespace Panacea
             }
         }
 
-        private void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO)
+        private void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO, [CallerMemberName] string caller = "")
         {
             try
             {
-                Toolbox.uAddDebugLog(_log, _type);
+                Toolbox.uAddDebugLog(_log, _type, caller);
             }
             catch (Exception ex)
             {
@@ -1207,7 +1218,10 @@ namespace Panacea
                 if (File.Exists(upstaller))
                 {
                     uDebugLogAdd("Upstaller exists, starting the proc");
-                    Process proc = new Process() { StartInfo = new ProcessStartInfo() { FileName = upstaller } };
+                    var args = "/update";
+                    if (Toolbox.settings.BetaUpdate)
+                        args = "/update /beta";
+                    Process proc = new Process() { StartInfo = new ProcessStartInfo() { FileName = upstaller, Arguments = args } };
                     proc.Start();
                     uDebugLogAdd($"Started {proc.ProcessName}[{proc.Id}]");
                 }
@@ -1216,6 +1230,190 @@ namespace Panacea
                     uDebugLogAdd("Upstaller doesn't exist in the current running directory, cancelling...");
                     ShowNotification("Updater/Installer not found, please repair the application");
                 }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void UpdateUpstaller()
+        {
+            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+            worker.DoWork += (sender, e) =>
+            {
+                try
+                {
+                    CloseUpstallerInstances();
+                    PrepStagingArea();
+                    DownloadWhatWeCameFor();
+                    PutUpstallerInItsPlace();
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex);
+                }
+            };
+            worker.RunWorkerAsync();
+        }
+
+        private void FinishUpstallerUpdate()
+        {
+            try
+            {
+                uDebugLogAdd("Good news everyone! The Upstaller update finished!");
+                upstallerUpdateInProg = false;
+                uStatusUpdate($"Upstaller updated from v{Toolbox.settings.UpCurrentVersion} to v{Toolbox.settings.UpProductionVersion}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void PutUpstallerInItsPlace()
+        {
+            try
+            {
+                var currentDir = Directory.GetCurrentDirectory();
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (ws, we) =>
+                {
+                    uDebugLogAdd("Starting sleep thread to wait for the SLOOOOOW download to finish");
+                    while (downloadInProgress)
+                    {
+                        Thread.Sleep(100);
+                    }
+                    uDebugLogAdd("Download FINALLY finished, jeez we need better throughput!");
+                    worker.ReportProgress(1);
+                };
+                worker.ProgressChanged += (ps, pe) =>
+                {
+                    if (pe.ProgressPercentage == 1)
+                    {
+                        FileInfo fi = new FileInfo($@"{currentDir}\TopSecret\Upstaller.exe");
+                        uDebugLogAdd($@"Moving Upstaller.exe to it's place | Before: {fi.FullName}");
+                        fi.MoveTo($@"{currentDir}\Upstaller.exe");
+                        uDebugLogAdd($@"Moved Upstaller.exe to it's place | After: {fi.FullName}");
+                        uDebugLogAdd("Finished Upstaller update process.");
+                        FinishUpstallerUpdate();
+                    }
+                };
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void DownloadWhatWeCameFor()
+        {
+            try
+            {
+                downloadInProgress = true;
+                uDebugLogAdd($"Starting Upstaller download, this is getting exciting!!! URI: {Toolbox.settings.UpProductionURI}");
+                WebClient webClient = new WebClient();
+                webClient.DownloadProgressChanged += (s, e) => { uDebugLogAdd($"Download progress updated: {e.ProgressPercentage}%"); };
+                webClient.DownloadFileCompleted += (s2, e2) =>
+                {
+                    uDebugLogAdd("Finished Upstaller download");
+                    uStatusUpdate("Finished Upstaller download!");
+                    downloadInProgress = false;
+                };
+                uDebugLogAdd("Starting that download thang");
+                uStatusUpdate("Starting Upstaller download...");
+                webClient.DownloadFileAsync(new Uri(Toolbox.settings.UpProductionURI), $@"{Directory.GetCurrentDirectory()}\TopSecret\Upstaller.exe");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void PrepStagingArea()
+        {
+            try
+            {
+                uDebugLogAdd("Starting staging area prep");
+                var currentDir = Directory.GetCurrentDirectory();
+                var whereTheThingGoes = $@"{currentDir}";
+                if (!currentDir.ToLower().EndsWith("panacea"))
+                {
+                    uDebugLogAdd($"Directory didn't have Panacea in the name, preposterous. I fixed the glitch, before: {whereTheThingGoes}");
+                    if (!Directory.Exists($@"{currentDir}\Panacea"))
+                        Directory.CreateDirectory($@"{currentDir}\Panacea");
+                    currentDir = $@"{currentDir}\Panacea";
+                    whereTheThingGoes = $@"{currentDir}";
+                    uDebugLogAdd($"After: {whereTheThingGoes} | There, that's much better");
+                }
+                var stagingArea = $@"{whereTheThingGoes}\TopSecret";
+                if (!Directory.Exists(whereTheThingGoes))
+                {
+                    uDebugLogAdd($"Panacea directory didn't exist, making love and creating a directory, I'll name it: {whereTheThingGoes}");
+                    Directory.CreateDirectory(whereTheThingGoes);
+                    uDebugLogAdd($"{whereTheThingGoes} is born! Man I feel bad for that kid");
+                }
+                else
+                    uDebugLogAdd($"The holy place already exists, lets move on: {whereTheThingGoes}");
+                if (!Directory.Exists(stagingArea))
+                {
+                    uDebugLogAdd($"The staging area doesn't exist, I need a place to stage stuff damnit! {stagingArea}");
+                    Directory.CreateDirectory(stagingArea);
+                    uDebugLogAdd($"There, now I can stage all the things! {stagingArea}");
+                }
+                else
+                    uDebugLogAdd("The not so secret folder has been verified to exist and is not classified");
+                CleanupStagingArea(stagingArea);
+                uDebugLogAdd("Staging area prep is finished... finally!");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void CloseUpstallerInstances()
+        {
+            try
+            {
+                uDebugLogAdd("Starting Upstaller process slaughter");
+                foreach (var proc in Process.GetProcessesByName("Upstaller"))
+                {
+                    uDebugLogAdd($"Killing process [{proc.Id}]{proc.ProcessName}");
+                    proc.Kill();
+                    uDebugLogAdd("Killed process");
+                }
+                uDebugLogAdd("Finished Upstaller process slaughter");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void CleanupStagingArea(string stagingArea)
+        {
+            try
+            {
+                uDebugLogAdd($"Starting staging area cleanup: {stagingArea}");
+                var crapCounter = 0;
+                foreach (var file in Directory.EnumerateFiles(stagingArea))
+                {
+                    FileInfo fi = new FileInfo(file);
+                    try
+                    {
+                        uDebugLogAdd($"Deleting old staging junk: {fi.Name}");
+                        fi.Delete();
+                        uDebugLogAdd($"Success! That crap is outta heyah!");
+                        crapCounter++;
+                    }
+                    catch (Exception ex2)
+                    {
+                        uDebugLogAdd($"Error occured when trying to delete a file: {Environment.NewLine}{fi.FullName}{Environment.NewLine}Error: {ex2.Message}");
+                    }
+                }
+                uDebugLogAdd($"Finished staging area cleanup, we trashed {crapCounter} thing(s)!");
             }
             catch (Exception ex)
             {
@@ -1441,6 +1639,8 @@ namespace Panacea
                 uDebugLogAdd("SettingsWIN: working on window process settings");
                 ChangeWindowProfiles(Toolbox.settings.CurrentWindowProfile);
                 lbSavedWindows.ItemsSource = Toolbox.settings.WindowList;
+                uDebugLogAdd("SettingsGEN: working on general settings");
+                chkSettingsBeta.IsChecked = Toolbox.settings.BetaUpdate;
                 uDebugLogAdd("Default settings set");
             }
             catch (Exception ex)
@@ -2405,20 +2605,20 @@ namespace Panacea
             {
                 try
                 {
-                        //switch (settingsUpdate)
-                        //{
-                        //    case SettingsUpdate.PingCount:
-                        //        break;
-                        //    case SettingsUpdate.PingDTFormat:
-                        //        worker.ReportProgress(2);
-                        //        break;
-                        //    case SettingsUpdate.TextBoxAction:
-                        //        worker.ReportProgress(3);
-                        //        break;
-                        //}
+                    //switch (settingsUpdate)
+                    //{
+                    //    case SettingsUpdate.PingCount:
+                    //        break;
+                    //    case SettingsUpdate.PingDTFormat:
+                    //        worker.ReportProgress(2);
+                    //        break;
+                    //    case SettingsUpdate.TextBoxAction:
+                    //        worker.ReportProgress(3);
+                    //        break;
+                    //}
 
-                        // Pingcount settings
-                        var num = 0;
+                    // Pingcount settings
+                    var num = 0;
                     if (int.TryParse(value, out num))
                         worker.ReportProgress(1);
                     else
@@ -2431,11 +2631,11 @@ namespace Panacea
                             settingsBadAlerted = false;
                         }
                     }
-                        // Update All Settings
-                        worker.ReportProgress(1);
+                    // Update All Settings
+                    worker.ReportProgress(1);
 
-                        // Flip ping basic if checked
-                        if (settingsUpdate == SettingsUpdate.BasicPing)
+                    // Flip ping basic if checked
+                    if (settingsUpdate == SettingsUpdate.BasicPing)
                         worker.ReportProgress(2);
                 }
                 catch (Exception ex)
@@ -2452,34 +2652,40 @@ namespace Panacea
                         case 1:
                             uDebugLogAdd("Starting settings update");
                             uDebugLogAdd("SETUPDATE: ping chart");
-                                // Set pingchart settings
-                                Toolbox.settings.PingChartLength = int.Parse(txtSetNetPingCount.Text);
+                            // Set pingchart settings
+                            Toolbox.settings.PingChartLength = int.Parse(txtSetNetPingCount.Text);
                             foreach (PingEntry entry in lbPingSessions.Items)
                             {
                                 entry.ChartLength = Toolbox.settings.PingChartLength;
                             }
                             uDebugLogAdd("SETUPDATE: DTFormat");
-                                // Set Date/Time Format settings
-                                if (cmbxSetNetDTFormat.Text == "Seconds")
+                            // Set Date/Time Format settings
+                            if (cmbxSetNetDTFormat.Text == "Seconds")
                                 Toolbox.settings.DateTimeFormat = DTFormat.Sec;
                             else if (cmbxSetNetDTFormat.Text == "Minutes")
                                 Toolbox.settings.DateTimeFormat = DTFormat.Min;
                             else if (cmbxSetNetDTFormat.Text == "Hours")
                                 Toolbox.settings.DateTimeFormat = DTFormat.Hours;
                             uDebugLogAdd("SETUPDATE: Enter action");
-                                // Set network textbox enter action
-                                if (cmbxSetNetTextboxAction.Text == "DNSLookup")
+                            // Set network textbox enter action
+                            if (cmbxSetNetTextboxAction.Text == "DNSLookup")
                                 Toolbox.settings.ToolboxEnterAction = EnterAction.DNSLookup;
                             else if (cmbxSetNetTextboxAction.Text == "Ping")
                                 Toolbox.settings.ToolboxEnterAction = EnterAction.Ping;
                             else if (cmbxSetNetTextboxAction.Text == "Trace")
                                 Toolbox.settings.ToolboxEnterAction = EnterAction.Trace;
                             uDebugLogAdd("SETUPDATE: Basic ping");
-                                // Set basic ping
-                                if (chkNetBasicPing.IsChecked == true)
+                            // Set basic ping
+                            if (chkNetBasicPing.IsChecked == true)
                                 Toolbox.settings.BasicPing = true;
                             else
                                 Toolbox.settings.BasicPing = false;
+                            uDebugLogAdd("SETUPDATE: Beta check");
+                            // Set beta check
+                            if (chkSettingsBeta.IsChecked == true)
+                                Toolbox.settings.BetaUpdate = true;
+                            else
+                                Toolbox.settings.BetaUpdate = false;
                             break;
                         case 2:
                             uDebugLogAdd("Starting ping grid swap from settings update");
@@ -2593,17 +2799,34 @@ namespace Panacea
                     gitClient = new Octokit.GitHubClient(new Octokit.ProductHeaderValue("Panacea"));
                     uDebugLogAdd("gitClient was null, initialized gitClient");
                 }
-                string executable = "Panacea.exe";
                 BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
                 worker.DoWork += (ws, we) =>
                 {
                     try
                     {
-                        Toolbox.settings.CurrentVersion = GetVersionNumber();
+                        // Upstaller update
+                        var upstaller = $"{Directory.GetCurrentDirectory()}\\Upstaller.exe";
+                        Toolbox.settings.UpCurrentVersion = Toolbox.GetVersionNumber(upstaller);
+                        uDebugLogAdd($"Upstaller Current Version: {Toolbox.settings.UpCurrentVersion}");
+                        upstallerUpdateInProg = true;
+                        Task u = Task.Run(async () => { await GetUpdate(AppUpdate.Upstaller); });
+                        while (!u.IsCompleted)
+                        {
+                            Thread.Sleep(500);
+                        }
+                        worker.ReportProgress(2);
+
+                        // Panacea update
+                        var currVer = GetVersionNumber();
+                        if (Toolbox.settings.CurrentVersion != new Version("0.0.0.0") && Toolbox.settings.CurrentVersion != currVer)
+                        {
+                            uDebugLogAdd($"Current Version [{currVer}] isn't 0.0.0.0 and is newer than the existing version [{Toolbox.settings.CurrentVersion}] | I believe an update may have occured, or I'm insane...");
+                            ShowNotification($"Updated from v{Toolbox.settings.CurrentVersion} to v{currVer}");
+                        }
+                        Toolbox.settings.CurrentVersion = currVer;
                         uDebugLogAdd($"Current Version: {Toolbox.settings.CurrentVersion}");
-                        Task t = Task.Run(async () => { await GetUpdate(executable); });
-                        t.Wait();
-                        while (!t.IsCompleted)
+                        Task t = Task.Run(async () => { await GetUpdate(AppUpdate.Panacea); });
+                        while (!t.IsCompleted && upstallerUpdateInProg)
                         {
                             Thread.Sleep(500);
                         }
@@ -2634,6 +2857,19 @@ namespace Panacea
                             }
                             SaveSettings();
                         }
+                        if (pe.ProgressPercentage == 2)
+                        {
+                            if (Toolbox.settings.UpCurrentVersion.CompareTo(Toolbox.settings.UpProductionVersion) < 0)
+                            {
+                                uDebugLogAdd($"New version of the upstaller found: [c]{Toolbox.settings.UpCurrentVersion} [p]{Toolbox.settings.UpProductionVersion}");
+                                UpdateUpstaller();
+                            }
+                            else
+                            {
+                                uDebugLogAdd($"Upstaller version is the same or newer than release: [c]{Toolbox.settings.UpCurrentVersion} [p]{Toolbox.settings.UpProductionVersion}");
+                                upstallerUpdateInProg = false;
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -2648,18 +2884,44 @@ namespace Panacea
             }
         }
 
-        public async Task GetUpdate(string exe)
+        public async Task GetUpdate(AppUpdate appUpdate)
         {
             try
             {
                 var releases = await gitClient.Repository.Release.GetAll("rwobig93", "Panacea");
-                var recentRelease = releases.ToList().FindAll(x => x.Prerelease == true).OrderBy(x => x.TagName).First();
+                uDebugLogAdd($"Releases found: {releases.Count}");
+                Octokit.Release recentRelease;
+                var appName = appUpdate.ToString();
+                uDebugLogAdd($"Getting update for: {appName}");
+                if (Toolbox.settings.BetaUpdate)
+                    recentRelease = releases.ToList().FindAll(x => x.Prerelease == true && x.Assets[0].Name.Contains(appName)).OrderBy(x => x.TagName).Last();
+                else
+                    recentRelease = releases.ToList().FindAll(x => x.Prerelease == false && x.Assets[0].Name.Contains(appName)).OrderBy(x => x.TagName).Last();
                 Version prodVersion = new Version(recentRelease.TagName);
-                Toolbox.settings.ProductionVersion = prodVersion;
-                uDebugLogAdd($"ProdVer: {Toolbox.settings.ProductionVersion}");
-                Toolbox.settings.ProductionURI = $@"{Defaults.GitUpdateURIBase}/{recentRelease.TagName}/{exe}";
-                uDebugLogAdd($"URI: {Toolbox.settings.ProductionURI}");
+                switch (appUpdate)
+                {
+                    case AppUpdate.Panacea:
+                        Toolbox.settings.ProductionVersion = prodVersion;
+                        uDebugLogAdd($"ProdVer: {Toolbox.settings.ProductionVersion}");
+                        Toolbox.settings.ProductionURI = $@"{Defaults.GitUpdateURIBase}/{recentRelease.TagName}/{appName}.exe";
+                        uDebugLogAdd($"URI: {Toolbox.settings.ProductionURI}");
+                        break;
+                    case AppUpdate.Upstaller:
+                        Toolbox.settings.UpProductionVersion = prodVersion;
+                        uDebugLogAdd($"UpProdVer: {Toolbox.settings.UpProductionVersion}");
+                        Toolbox.settings.UpProductionURI = $@"{Defaults.GitUpdateURIBase}/{recentRelease.TagName}/{appName}.exe";
+                        uDebugLogAdd($"URI: {Toolbox.settings.UpProductionURI}");
+                        break;
+                    default:
+                        break;
+                }
                 uDebugLogAdd($"Finished getting github recent version");
+            }
+            catch (InvalidOperationException ioe)
+            {
+                uDebugLogAdd($"Unable to get updates, reason: {ioe.Message}");
+                uStatusUpdate("Unable to check for updates, couldn't find any versions in the repository");
+                return;
             }
             catch (Exception ex)
             {

@@ -20,6 +20,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Upstaller
 {
@@ -35,7 +36,14 @@ namespace Upstaller
             InitializeComponent();
         }
         public bool argUpdate { get; set; } = false;
+        public bool argBeta { get; set; } = false;
+        public bool verifyInProgress = false;
+        public bool downloadInProgress = false;
+        public bool updateInProgress = false;
         public string currentDir { get; set; }
+        private string logDir = $@"{Directory.GetCurrentDirectory()}\Logs\";
+        private string confDir = $@"{Directory.GetCurrentDirectory()}\Config\";
+        private string exDir = $@"{Directory.GetCurrentDirectory()}\Logs\Exceptions\";
         private Octokit.GitHubClient gitClient = null;
         private Version currentVer = null;
         private Version prodVer = null;
@@ -74,30 +82,127 @@ namespace Upstaller
             ChangeDirectoryAction();
         }
 
+        private void btnStartPanacea_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                StartPanacea();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                DragMove();
+        }
+
+        private void lblTitle_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                string verNum = GetVersionNumber().ToString();
+                System.Windows.Clipboard.SetText(verNum);
+                uStatusUpdate($"Copied version to clipboard: {verNum}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         #endregion
 
         #region I got this
 
         private void Startup()
         {
+            VerifyDirectories();
+            uDebugLogAdd(string.Format("{0}###################################### Application Start ######################################{0}", Environment.NewLine));
             InitializeVisualElements();
+            if (txtLabelInstalled.Text == "Installed")
+            {
+                uDebugLogAdd($"Install status is: {txtLabelInstalled.Text} | Starting update check");
+                tCheckForUpdates();
+            }
+            else
+                uDebugLogAdd($"Install status is: {txtLabelInstalled.Text} | Skipping update check");
+            VerifyArgs();
+        }
+
+        private void VerifyDirectories()
+        {
+            try
+            {
+                if (!Directory.Exists(logDir))
+                {
+                    Directory.CreateDirectory(logDir);
+                    uDebugLogAdd("Created Missing Logs Directory");
+                }
+                else { uDebugLogAdd("Logs Directory Already Exists"); }
+                uDebugLogAdd(string.Format("Log Directory: {0}", logDir));
+                if (!Directory.Exists(exDir))
+                {
+                    Directory.CreateDirectory(exDir);
+                    uDebugLogAdd("Created missing Exception Directory");
+                }
+                else { uDebugLogAdd("Exception Directory Already Exists"); }
+                uDebugLogAdd(string.Format("Exception Directory: {0}", exDir));
+                if (!Directory.Exists(confDir))
+                {
+                    Directory.CreateDirectory(confDir);
+                    uDebugLogAdd("Created missing config directory");
+                }
+                else { uDebugLogAdd($"Config Directory: {confDir}"); }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void VerifyArgs()
+        {
+            try
+            {
+                if (argUpdate && txtLabelInstalled.Text == "Installed")
+                {
+                    uDebugLogAdd($"Update arg is set to: {argUpdate}, updating Panacea");
+                    UpdatePanacea();
+                }
+                else
+                    uDebugLogAdd($"Arg is: {argUpdate} & Install status is: {txtLabelInstalled.Text} | Skipping auto-update");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void InitializeVisualElements()
         {
             UpdateDirectory();
             VerifyInstallation();
-            tCheckForUpdates();
             SetIdleDefault();
-            PanaceaStartDisable();
         }
 
         private void PanaceaStartDisable()
         {
             try
             {
-                btnStartPanacea.IsEnabled = false;
-                uDebugLogAdd("Disabled Panacea Start Button");
+                if (txtLabelInstalled.Text != "Installed")
+                {
+                    btnStartPanacea.IsEnabled = false;
+                    uDebugLogAdd("Disabled Panacea Start Button");
+                }
+                else
+                {
+                    btnStartPanacea.IsEnabled = true;
+                    uDebugLogAdd("Enabled Panacea Start Button");
+                }
             }
             catch (Exception ex)
             {
@@ -170,14 +275,17 @@ namespace Upstaller
                 switch (status)
                 {
                     case FixMeStatus.NotInstalled:
+                        btnFixMe.Foreground = new SolidColorBrush(Colors.Red);
                         btnFixMe.Content = "Install Panacea";
                         btnFixMe.IsEnabled = true;
                         break;
                     case FixMeStatus.NeedUpdate:
+                        btnFixMe.Foreground = new SolidColorBrush(Colors.LawnGreen);
                         btnFixMe.Content = "Update Panacea";
                         btnFixMe.IsEnabled = true;
                         break;
                     case FixMeStatus.Shrug:
+                        btnFixMe.Foreground = new SolidColorBrush(Colors.Cyan);
                         btnFixMe.Content = @"¯\_(ツ)_/¯";
                         btnFixMe.IsEnabled = false;
                         break;
@@ -223,7 +331,8 @@ namespace Upstaller
         {
             try
             {
-                txtStatus.Text += $"{update}{Environment.NewLine}";
+                Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { txtStatus.AppendText($"{Environment.NewLine}{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {update}"); } catch (Exception ex) { LogException(ex); } });
+                uDebugLogAdd(update, DebugType.STATUS);
             }
             catch (Exception ex)
             {
@@ -231,11 +340,11 @@ namespace Upstaller
             }
         }
 
-        private void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO)
+        private void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO, [CallerMemberName] string caller = "")
         {
             try
             {
-                Toolbox.uDebugLogAdd(_log, _type);
+                Toolbox.uDebugLogAdd(_log, _type, caller);
             }
             catch (Exception ex)
             {
@@ -252,6 +361,7 @@ namespace Upstaller
         {
             try
             {
+                verifyInProgress = true;
                 uDebugLogAdd("Checking for updates...");
                 InitializeGitClient();
                 string executable = "Panacea.exe";
@@ -260,14 +370,18 @@ namespace Upstaller
                 {
                     try
                     {
-                        currentVer = GetVersionNumber($@"{currentDir}\{executable}");
+                        var assemblyLoc = $@"{currentDir}\{executable}";
+                        uDebugLogAdd($"Assembly location: {assemblyLoc}");
+                        currentVer = GetVersionNumber(assemblyLoc);
                         uDebugLogAdd($"Current Version: {currentVer}");
-                        Task t = GetUpdate(executable);
-                        t.Start();
+                        Task t = Task.Run(async () => { await GetUpdate(executable); });
+                        uDebugLogAdd("Starting verification wait for GetUpdate task to finish");
                         while (!t.IsCompleted)
                         {
+                            uDebugLogAdd("GetUpdate task isn't finished, sleeping...");
                             Thread.Sleep(500);
                         }
+                        uDebugLogAdd("GetUpdate task finished, Comparing version");
                         worker.ReportProgress(1);
                     }
                     catch (Exception ex)
@@ -292,6 +406,7 @@ namespace Upstaller
                                 uDebugLogAdd($"Current version is the same or newer than release: [c]{currentVer} [p]{prodVer}");
                             }
                         }
+                        verifyInProgress = false;
                     }
                     catch (Exception ex)
                     {
@@ -319,7 +434,7 @@ namespace Upstaller
                 {
                     uStatusUpdate("Update found and now available!");
                     txtLabelUpToDate.Text = "Update Available";
-                    txtLabelUpToDate.Foreground = new SolidColorBrush(Colors.AliceBlue);
+                    txtLabelUpToDate.Foreground = new SolidColorBrush(Colors.Cyan);
                     ToggleFixMeButton(FixMeStatus.NeedUpdate);
                 }
                 else
@@ -341,14 +456,25 @@ namespace Upstaller
         {
             try
             {
+                uDebugLogAdd("Starting GetUpdate task");
                 var releases = await gitClient.Repository.Release.GetAll("rwobig93", "Panacea");
-                var recentRelease = releases.ToList().FindAll(x => x.Prerelease == true).OrderBy(x => x.TagName).First();
+                Octokit.Release recentRelease = null;
+                if (argBeta)
+                    recentRelease = releases.ToList().FindAll(x => x.Prerelease == true && x.Assets[0].Name.Contains("Panacea")).OrderBy(x => x.TagName).Last();
+                else
+                    recentRelease = releases.ToList().FindAll(x => x.Prerelease == false && x.Assets[0].Name.Contains("Panacea")).OrderBy(x => x.TagName).Last();
                 Version prodVersion = new Version(recentRelease.TagName);
                 prodVer = prodVersion;
                 uDebugLogAdd($"ProdVer: {prodVer}");
                 productionURI = $@"{baseURI}/{recentRelease.TagName}/{exe}";
                 uDebugLogAdd($"URI: {productionURI}");
                 uDebugLogAdd($"Finished getting github recent version");
+            }
+            catch (InvalidOperationException ioe)
+            {
+                uDebugLogAdd($"Unable to get updates, reason: {ioe.Message}");
+                uStatusUpdate("Unable to check for updates, couldn't find any versions in the repository");
+                return;
             }
             catch (Exception ex)
             {
@@ -361,6 +487,7 @@ namespace Upstaller
             try
             {
                 // this.Close();
+                uDebugLogAdd(string.Format("{0}##################################### Application Closing #####################################{0}", Environment.NewLine));
                 Toolbox.DumpDebugLog();
                 var thisProc = Process.GetCurrentProcess();
                 thisProc.Kill();
@@ -398,7 +525,14 @@ namespace Upstaller
         {
             try
             {
-                uStatusUpdate(@"¯\_(ツ)_/¯");
+                shruggieCounter++;
+                uDebugLogAdd($"Shruggie Counter: {shruggieCounter}");
+                if (shruggieCounter < 10)
+                    uStatusUpdate(@"¯\_(ツ)_/¯");
+                else if (shruggieCounter >= 10 && shruggieCounter < 20)
+                    uStatusUpdate(@"¯\_(ツ)_/¯ | ¯\_(ツ)_/¯");
+                else
+                    uStatusUpdate(@"¯\_(ツ)_/¯ | ¯\_(ツ)_/¯ | ¯\_(ツ)_/¯");
             }
             catch (Exception ex)
             {
@@ -408,31 +542,70 @@ namespace Upstaller
 
         private void InstallPanacea()
         {
-            try
+            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+            worker.DoWork += (ws, we) =>
             {
-                uDebugLogAdd($@"Starting Panacea installation, prodURI: {productionURI}");
                 VerifyInstallationReqs();
-                uDebugLogAdd($@"Finished verification checks, continuing installation w/ prodURI: {productionURI}");
-                uStatusUpdate("Starting Panacea Installation");
-                PrepStagingArea();
-                DownloadWhatWeCameHereFor();
-                PutPanaceaInItsPlace();
-                VerifyInstallation();
-            }
-            catch (Exception ex)
+                Task t = Task.Run(async () => { await GetUpdate("Panacea.exe"); });
+                uDebugLogAdd("Starting thread sleeper for info update");
+                while (!t.IsCompleted)
+                {
+                    Thread.Sleep(100);
+                }
+                uDebugLogAdd("Update info has been gathered, let's kick this off!");
+                worker.ReportProgress(1);
+            };
+            worker.ProgressChanged += (ps, pe) =>
             {
-                LogException(ex);
-            }
+                if (pe.ProgressPercentage == 1)
+                {
+                    try
+                    {
+                        uDebugLogAdd($@"Starting Panacea installation, prodURI: {productionURI}");
+                        uStatusUpdate("Starting Panacea Installation");
+                        PrepStagingArea();
+                        DownloadWhatWeCameHereFor();
+                        PutPanaceaInItsPlace();
+                        VerifyInstallation();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                }
+            };
+            worker.RunWorkerAsync();
         }
 
         private void PutPanaceaInItsPlace()
         {
             try
             {
-                FileInfo fi = new FileInfo($@"{currentDir}\TopSecret\Panacea.exe");
-                uDebugLogAdd($@"Moving Panacea.exe to it's place | Before: {fi.FullName}");
-                fi.MoveTo($@"{currentDir}\Panacea.exe");
-                uDebugLogAdd($@"Moved Panacea.exe to it's place | After: {fi.FullName}");
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (ws, we) =>
+                {
+                    uDebugLogAdd("Starting sleep thread to wait for the SLOOOOOW download to finish");
+                    while (downloadInProgress)
+                    {
+                        Thread.Sleep(100);
+                    }
+                    uDebugLogAdd("Download FINALLY finished, jeez we need better throughput!");
+                    worker.ReportProgress(1);
+                };
+                worker.ProgressChanged += (ps, pe) =>
+                {
+                    if (pe.ProgressPercentage == 1)
+                    {
+                        FileInfo fi = new FileInfo($@"{currentDir}\TopSecret\Panacea.exe");
+                        uDebugLogAdd($@"Moving Panacea.exe to it's place | Before: {fi.FullName}");
+                        fi.MoveTo($@"{currentDir}\Panacea.exe");
+                        uDebugLogAdd($@"Moved Panacea.exe to it's place | After: {fi.FullName}");
+                        PanaceaReadyToStart();
+                        uDebugLogAdd("Finished Panacea update process.");
+                        updateInProgress = false;
+                    }
+                };
+                worker.RunWorkerAsync();
             }
             catch (Exception ex)
             {
@@ -454,6 +627,7 @@ namespace Upstaller
                     currentDir = $@"{currentDir}\Panacea";
                     whereTheThingGoes = $@"{currentDir}";
                     uDebugLogAdd($"After: {whereTheThingGoes} | There, that's much better");
+                    MoveUpstallerToItsNewHome(currentDir);
                 }
                 var stagingArea = $@"{whereTheThingGoes}\TopSecret";
                 if (!Directory.Exists(whereTheThingGoes))
@@ -474,6 +648,21 @@ namespace Upstaller
                     uDebugLogAdd("The not so secret folder has been verified to exist and is not classified");
                 CleanupStagingArea(stagingArea);
                 uDebugLogAdd("Staging area prep is finished... finally!");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveUpstallerToItsNewHome(string currentDir)
+        {
+            try
+            {
+                uDebugLogAdd($"Moving Upstaller.exe from {Directory.GetCurrentDirectory()} to it's new home: {currentDir}");
+                FileInfo fi = new FileInfo($@"{Directory.GetCurrentDirectory()}\Upstaller.exe");
+                fi.MoveTo($@"{currentDir}\Upstaller.exe");
+                uDebugLogAdd("Successfully moved Upstaller.exe to it's new home, where it'll be happy");
             }
             catch (Exception ex)
             {
@@ -514,6 +703,7 @@ namespace Upstaller
         {
             try
             {
+                downloadInProgress = true;
                 uDebugLogAdd($"Starting Panacea download, this is getting exciting!!! URI: {productionURI}");
                 ToggleIdleLable("Downloading");
                 WebClient webClient = new WebClient();
@@ -534,7 +724,7 @@ namespace Upstaller
             try
             {
                 txtLabelDynamic.Text = v;
-                txtLabelDynamic.Foreground = new SolidColorBrush(Colors.AliceBlue);
+                txtLabelDynamic.Foreground = new SolidColorBrush(Colors.Cyan);
             }
             catch (Exception ex)
             {
@@ -547,20 +737,103 @@ namespace Upstaller
             uDebugLogAdd($"Successfully downloaded Panacea to: {$@"{currentDir}\TopSecret\Panacea.exe"}");
             uStatusUpdate("Download finished!");
             SetIdleDefault();
+            downloadInProgress = false;
         }
 
         private void UpdatePanacea()
         {
             try
             {
-                uDebugLogAdd("Starting Panacea update process.");
-                BackupEverything();
-                VerifyInstallationReqs();
-                PrepStagingArea();
-                DownloadWhatWeCameHereFor();
-                PutPanaceaInItsPlace();
-                PanaceaReadyToStart();
-                uDebugLogAdd("Finished Panacea update process.");
+                updateInProgress = true;
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (ws, we) =>
+                {
+                    try
+                    {
+                        uDebugLogAdd("Starting pre-update verification sleep");
+                        while (verifyInProgress)
+                        {
+                            Thread.Sleep(100);
+                        }
+                        uDebugLogAdd("Verify no longer in progress, finished sleeping");
+                        worker.ReportProgress(1);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                };
+                worker.ProgressChanged += (ps, pe) =>
+                {
+                    if (pe.ProgressPercentage == 1)
+                    {
+                        uDebugLogAdd("Starting Panacea update process.");
+                        ClosePanaceaInstances();
+                        BackupEverything();
+                        //VerifyInstallationReqs();
+                        PrepStagingArea();
+                        DownloadWhatWeCameHereFor();
+                        PutPanaceaInItsPlace();
+                        FinishUpdate();
+                    }
+                };
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void FinishUpdate()
+        {
+            try
+            {
+                if (!argUpdate)
+                {
+                    uDebugLogAdd($"Argupdate is: {argUpdate} | Skipping update finish method");
+                    return;
+                }
+                uDebugLogAdd("Starting update arg finish");
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (ws, we) =>
+                {
+                    while (updateInProgress)
+                    {
+                        Thread.Sleep(100);
+                    }
+                    uDebugLogAdd("Finished waiting for update method to finish");
+                    worker.ReportProgress(1);
+                };
+                worker.ProgressChanged += (ps, pe) =>
+                {
+                    if (pe.ProgressPercentage == 1)
+                    {
+                        StartPanacea();
+                        CloseDisBisch();
+                    }
+                };
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void StartPanacea()
+        {
+            try
+            {
+                var panacea = $@"{currentDir}\Panacea.exe";
+                if (File.Exists(panacea))
+                {
+                    uDebugLogAdd($"Found Panacea: {panacea}");
+                    var proc = Process.Start(panacea);
+                    uDebugLogAdd($"Started Panacea process: {proc.ProcessName} | {proc.Id}");
+                }
+                else
+                    uDebugLogAdd($@"Couldn't find Panacea at {panacea}");
             }
             catch (Exception ex)
             {
@@ -586,10 +859,6 @@ namespace Upstaller
             try
             {
                 InitializeGitClient();
-                if (string.IsNullOrWhiteSpace(productionURI))
-                {
-                    tCheckForUpdates();
-                }
             }
             catch (Exception ex)
             {
@@ -695,9 +964,9 @@ namespace Upstaller
         {
             try
             {
-                var dataDir = $@"{currentDir}\Data";
+                var dataDir = $@"{currentDir}\Config";
                 var backupDir = $@"{currentDir}\Backup";
-                var backupDataDir = $@"{currentDir}\Backup\Data";
+                var backupDataDir = $@"{currentDir}\Backup\Config";
                 if (!Directory.Exists(backupDir))
                 {
                     Directory.CreateDirectory(backupDir);
@@ -711,7 +980,7 @@ namespace Upstaller
                 if (Directory.Exists(dataDir))
                 {
                     uDebugLogAdd($@"Found existing data stored at {dataDir}");
-                    // CleanupOldBackupData();
+                    CleanupOldBackupData();
                     DirectoryInfo di = new DirectoryInfo(dataDir);
                     foreach (var fi in di.EnumerateFiles())
                     {
@@ -731,7 +1000,7 @@ namespace Upstaller
         {
             try
             {
-                var backupDataDir = $@"{currentDir}\Backup\Data";
+                var backupDataDir = $@"{currentDir}\Backup\Config";
                 DirectoryInfo di = new DirectoryInfo(backupDataDir);
                 foreach (var fi in di.EnumerateFiles())
                 {
@@ -851,26 +1120,11 @@ namespace Upstaller
             }
         }
 
-        #endregion
-
-        private void btnStartPanacea_Click(object sender, RoutedEventArgs e)
+        private Version GetVersionNumber()
         {
-            try
-            {
-                var panacea = $@"{currentDir}\Panacea.exe";
-                if (File.Exists(panacea))
-                {
-                    Process.Start(panacea);
-                    uDebugLogAdd("Started Panacea.exe, closing this upstaller");
-                    CloseDisBisch();
-                }
-                else
-                    uDebugLogAdd($@"Couldn't find Panacea at {panacea}");
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
+            return Assembly.GetExecutingAssembly().GetName().Version;
         }
+
+        #endregion
     }
 }

@@ -19,3 +19,6 @@
 *.props
 *.xml
 *.targets
+/packages
+/Upstaller/bin/x64
+/Upstaller/obj/x64

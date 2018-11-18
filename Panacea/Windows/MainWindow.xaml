@@ -295,7 +295,7 @@
             <Button x:Name="btnWinUpdateManual" Click="btnWinUpdateManual_Click" Content="Edit" HorizontalAlignment="Right" Margin="0,94,72,0" VerticalAlignment="Top" Width="47" IsEnabled="False"/>
             <Button x:Name="btnWinRefresh" Click="btnWinRefresh_Click" Content="Refresh" HorizontalAlignment="Right" Margin="0,94,19,0" VerticalAlignment="Top" Width="48"/>
         </Grid>
-        <Grid x:Name="grdNetwork" Margin="454,30,-454,20">
+        <Grid x:Name="grdNetwork" Margin="454,30,-454,20" d:IsHidden="True">
             <Grid.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1B1B1B" Offset="0"/>
@@ -406,7 +406,7 @@
             </ListBox>
             <TextBlock x:Name="lblTraceStatus" Margin="219,32,0,0" TextWrapping="Wrap" Text="Tracing" VerticalAlignment="Top" Foreground="#FFD61212" FontSize="24" TextAlignment="Center" HorizontalAlignment="Left" Width="204" Visibility="Hidden"/>
         </Grid>
-        <Grid x:Name="grdSettings" Margin="454,30,-454,20" d:IsHidden="True">
+        <Grid x:Name="grdSettings" Margin="454,30,-454,20">
             <Grid.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1B1B1B" Offset="0"/>
@@ -417,7 +417,7 @@
             </Grid.Background>
             <Rectangle x:Name="rectSettingsNetwork" HorizontalAlignment="Left" Height="106" Margin="79,4,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="365"/>
             <Rectangle x:Name="rectSettingsNetTitle" HorizontalAlignment="Left" Height="16" Margin="79,4,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="50"/>
-            <TextBlock HorizontalAlignment="Left" Margin="81,3,0,0" TextWrapping="Wrap" Text="Network" VerticalAlignment="Top" Foreground="#FF1DD8D0"/>
+            <TextBlock x:Name="txtSettingsNetLabel" HorizontalAlignment="Left" Margin="81,3,0,0" TextWrapping="Wrap" Text="Network" VerticalAlignment="Top" Foreground="#FF1DD8D0"/>
             <TextBox x:Name="txtSetNetPingCount" KeyDown="txtSetNetPingCount_KeyDown" HorizontalAlignment="Left" Height="17" Margin="229,6,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
             <ComboBox x:Name="cmbxSetNetDTFormat" SelectionChanged="cmbxSetNetDTFormat_SelectionChanged" HorizontalAlignment="Left" Style="{StaticResource {x:Type ComboBox}}" Margin="180,38,0,0" VerticalAlignment="Top" Width="120" Height="9" Foreground="#FF8D8D8D"/>
             <TextBlock x:Name="lblSetNetPingCount" HorizontalAlignment="Left" Margin="131,5,0,0" TextWrapping="Wrap" Text="Ping Chart Count:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
@@ -428,6 +428,11 @@
             <TextBlock x:Name="lblNetBasicPing" HorizontalAlignment="Left" Margin="361,4,0,0" TextWrapping="Wrap" Text="Basic Ping:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
             <CheckBox x:Name="chkNetBasicPing" Click="chkNetBasicPing_Click" Content="" HorizontalAlignment="Left" Margin="422,6,0,0" VerticalAlignment="Top" Width="18" Background="{StaticResource BaseBackgroundBrush}" BorderBrush="{StaticResource BaseBorderBrush}" Foreground="#FF8D8D8D" Height="17"/>
             <ComboBox x:Name="cmbxSetNetTextboxAction" SelectionChanged="cmbxSetNetTextboxAction_SelectionChanged"  HorizontalAlignment="Left" Style="{StaticResource {x:Type ComboBox}}" Margin="318,38,0,0" VerticalAlignment="Top" Width="120" Height="9" Foreground="#FF8D8D8D"/>
+            <Rectangle x:Name="rectSettingsGeneral" HorizontalAlignment="Left" Height="40" Margin="79,115,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="365"/>
+            <TextBlock x:Name="txtSettingsGenLabel" HorizontalAlignment="Left" Margin="81,115,0,0" TextWrapping="Wrap" Text="General" VerticalAlignment="Top" Foreground="#FF1DD8D0"/>
+            <Rectangle x:Name="rectSettingsGenTitle" HorizontalAlignment="Left" Height="16" Margin="79,115,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="47"/>
+            <TextBlock x:Name="lblSettingsBeta" HorizontalAlignment="Left" Margin="131,115,0,0" TextWrapping="Wrap" Text="Upgrade to Beta/Test Clients:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+            <CheckBox x:Name="chkSettingsBeta" Click="chkSettingsBeta_Click" Content="" HorizontalAlignment="Left" Margin="288,117,0,0" VerticalAlignment="Top" Width="18" Background="{StaticResource BaseBackgroundBrush}" BorderBrush="{StaticResource BaseBorderBrush}" Foreground="#FF8D8D8D" Height="17"/>
         </Grid>
     </Grid>
 </Window>
