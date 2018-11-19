@@ -40,10 +40,11 @@ namespace Upstaller
         public bool verifyInProgress = false;
         public bool downloadInProgress = false;
         public bool updateInProgress = false;
+        public bool relaunchUpstaller = false;
         public string currentDir { get; set; }
-        private string logDir = $@"{Directory.GetCurrentDirectory()}\Logs\";
-        private string confDir = $@"{Directory.GetCurrentDirectory()}\Config\";
-        private string exDir = $@"{Directory.GetCurrentDirectory()}\Logs\Exceptions\";
+        private string logDir = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\";
+        private string confDir = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Config\";
+        private string exDir = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\Exceptions\";
         private Octokit.GitHubClient gitClient = null;
         private Version currentVer = null;
         private Version prodVer = null;
@@ -157,6 +158,18 @@ namespace Upstaller
                     uDebugLogAdd("Created missing config directory");
                 }
                 else { uDebugLogAdd($"Config Directory: {confDir}"); }
+                FileInfo fi = new FileInfo($@"{Directory.GetCurrentDirectory()}\Relaunch.bat");
+                FileInfo fi2 = new FileInfo($@"{Directory.GetCurrentDirectory()}\Relaunch123456789.bat");
+                if (fi.Exists)
+                {
+                    fi.Delete();
+                    uDebugLogAdd("Relauncher batch file found and annihilated");
+                }
+                if (fi2.Exists)
+                {
+                    fi2.Delete();
+                    uDebugLogAdd("Relauncher extended batch file found and annihilated");
+                }
             }
             catch (Exception ex)
             {
@@ -301,7 +314,7 @@ namespace Upstaller
         {
             try
             {
-                currentDir = Directory.GetCurrentDirectory();
+                currentDir = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 txtDirectory.Text = currentDir;
             }
             catch (Exception ex)
@@ -566,7 +579,7 @@ namespace Upstaller
                         PrepStagingArea();
                         DownloadWhatWeCameHereFor();
                         PutPanaceaInItsPlace();
-                        VerifyInstallation();
+                        //VerifyInstallation();
                     }
                     catch (Exception ex)
                     {
@@ -575,6 +588,54 @@ namespace Upstaller
                 }
             };
             worker.RunWorkerAsync();
+        }
+
+        private void RelaunchUpstaller()
+        {
+            try
+            {
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (sender, e) =>
+                {
+                    try
+                    {
+                        uDebugLogAdd("Waiting until we are ready to re-launch...");
+                        while (updateInProgress)
+                        {
+                            Thread.Sleep(100);
+                        }
+                        uDebugLogAdd($"Relaunch bool is: {relaunchUpstaller} | Re-launching Upstaller");
+                        string reLauncherBat = $@"{Directory.GetCurrentDirectory()}\Panacea\Relaunch.bat";
+                        string launchString = $"taskkill /im Upstaller.exe{Environment.NewLine}START {Directory.GetCurrentDirectory()}\\Panacea\\Upstaller.exe";
+                        if (!File.Exists(reLauncherBat))
+                        {
+                            using (StreamWriter sw = File.AppendText(reLauncherBat))
+                                sw.WriteLine(launchString);
+                            uDebugLogAdd("Created relauncher batch file");
+                        }
+                        else
+                        {
+                            reLauncherBat = $@"{Directory.GetCurrentDirectory()}\Panacea\Relaunch123456789.bat";
+                            using (StreamWriter sw = File.AppendText(reLauncherBat))
+                                sw.WriteLine(launchString);
+                            uDebugLogAdd("Created relauncher extended batch file");
+                        }
+                        uDebugLogAdd("Dumping debug log and launching relauncher batch file");
+                        Toolbox.DumpDebugLog();
+                        Process proc = new Process() { StartInfo = new ProcessStartInfo() { FileName = "cmd.exe", Arguments = "/c" + $"\"{reLauncherBat}\"" } };
+                        proc.Start();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                };
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void PutPanaceaInItsPlace()
@@ -602,7 +663,14 @@ namespace Upstaller
                         uDebugLogAdd($@"Moved Panacea.exe to it's place | After: {fi.FullName}");
                         PanaceaReadyToStart();
                         uDebugLogAdd("Finished Panacea update process.");
+                        var curDur = Directory.GetCurrentDirectory();
+                        uDebugLogAdd($"CurrentDir: {curDur}");
+                        var fullPath = Assembly.GetExecutingAssembly().Location;
+                        var pathDir = System.IO.Path.GetDirectoryName(fullPath);
+                        uDebugLogAdd($"CurrentAssemblyDir: {pathDir}");
                         updateInProgress = false;
+                        if (relaunchUpstaller)
+                            RelaunchUpstaller();
                     }
                 };
                 worker.RunWorkerAsync();
@@ -662,6 +730,23 @@ namespace Upstaller
                 uDebugLogAdd($"Moving Upstaller.exe from {Directory.GetCurrentDirectory()} to it's new home: {currentDir}");
                 FileInfo fi = new FileInfo($@"{Directory.GetCurrentDirectory()}\Upstaller.exe");
                 fi.MoveTo($@"{currentDir}\Upstaller.exe");
+                DirectoryInfo diLog = new DirectoryInfo($@"{Directory.GetCurrentDirectory()}\Logs");
+                DirectoryInfo diConf = new DirectoryInfo($@"{Directory.GetCurrentDirectory()}\Config");
+                if (diLog.Exists)
+                {
+                    diLog.MoveTo($@"{currentDir}\Logs");
+                    uDebugLogAdd("Moved Logs directory");
+                }
+                else
+                    uDebugLogAdd("Previous logs directory didn't exist");
+                if (diConf.Exists)
+                {
+                    diConf.MoveTo($@"{currentDir}\Config");
+                    uDebugLogAdd("Moved Config directory");
+                }
+                else
+                    uDebugLogAdd("Previuos config directory didn't exist");
+                relaunchUpstaller = true;
                 uDebugLogAdd("Successfully moved Upstaller.exe to it's new home, where it'll be happy");
             }
             catch (Exception ex)

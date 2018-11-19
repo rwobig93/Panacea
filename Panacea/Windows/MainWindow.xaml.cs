@@ -53,9 +53,10 @@ namespace Panacea
         #region Globals
 
         private List<string> notifications = new List<string>();
-        private string logDir = $@"{Directory.GetCurrentDirectory()}\Logs\";
-        private string confDir = $@"{Directory.GetCurrentDirectory()}\Config\";
-        private string exDir = $@"{Directory.GetCurrentDirectory()}\Logs\Exceptions\";
+        private string logDir = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\";
+        private string confDir = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Config\";
+        private string exDir = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\Exceptions\";
+        private string currentDir = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         private MMDevice selectedAudioEndpoint = null;
         private IntPtr LastFoundWindow = IntPtr.Zero;
         private HandleDisplay windowHandleDisplay = null;
@@ -1213,7 +1214,7 @@ namespace Panacea
             {
                 uDebugLogAdd("Starting update process");
                 SaveSettings();
-                var upstaller = $"{Directory.GetCurrentDirectory()}\\Upstaller.exe";
+                var upstaller = $"{currentDir}\\Upstaller.exe";
                 uDebugLogAdd($"Upstaller dir: {upstaller}");
                 if (File.Exists(upstaller))
                 {
@@ -1275,7 +1276,6 @@ namespace Panacea
         {
             try
             {
-                var currentDir = Directory.GetCurrentDirectory();
                 BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
                 worker.DoWork += (ws, we) =>
                 {
@@ -1323,7 +1323,7 @@ namespace Panacea
                 };
                 uDebugLogAdd("Starting that download thang");
                 uStatusUpdate("Starting Upstaller download...");
-                webClient.DownloadFileAsync(new Uri(Toolbox.settings.UpProductionURI), $@"{Directory.GetCurrentDirectory()}\TopSecret\Upstaller.exe");
+                webClient.DownloadFileAsync(new Uri(Toolbox.settings.UpProductionURI), $@"{currentDir}\TopSecret\Upstaller.exe");
             }
             catch (Exception ex)
             {
@@ -1336,7 +1336,6 @@ namespace Panacea
             try
             {
                 uDebugLogAdd("Starting staging area prep");
-                var currentDir = Directory.GetCurrentDirectory();
                 var whereTheThingGoes = $@"{currentDir}";
                 if (!currentDir.ToLower().EndsWith("panacea"))
                 {
@@ -1816,7 +1815,7 @@ namespace Panacea
                 capturingHandle = true;
                 uDebugLogAdd("LookForWindowHandle started, updating cursor");
                 // Mouse.OverrideCursor = Cursors.Cross;
-                Cursor = new Cursor($@"{Directory.GetCurrentDirectory()}\Dependencies\target_small.cur");
+                Cursor = new Cursor($@"{currentDir}\Dependencies\target_small.cur");
             }
             catch (Exception ex)
             {
@@ -2805,7 +2804,7 @@ namespace Panacea
                     try
                     {
                         // Upstaller update
-                        var upstaller = $"{Directory.GetCurrentDirectory()}\\Upstaller.exe";
+                        var upstaller = $"{currentDir}\\Upstaller.exe";
                         Toolbox.settings.UpCurrentVersion = Toolbox.GetVersionNumber(upstaller);
                         uDebugLogAdd($"Upstaller Current Version: {Toolbox.settings.UpCurrentVersion}");
                         upstallerUpdateInProg = true;
