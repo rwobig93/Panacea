@@ -137,6 +137,7 @@ namespace Upstaller
     {
         EXCEPTION,
         STATUS,
-        INFO
+        INFO,
+        FAILURE
     }
 }

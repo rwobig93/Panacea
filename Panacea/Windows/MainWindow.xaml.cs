@@ -87,7 +87,8 @@ namespace Panacea
         {
             EXCEPTION,
             STATUS,
-            INFO
+            INFO,
+            FAILURE
         }
 
         public enum AppUpdate
@@ -796,6 +797,20 @@ namespace Panacea
             StartSettingsUpdate(SettingsUpdate.BetaCheck);
         }
 
+        private void btnDefaultConfig_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                uDebugLogAdd("Resetting config to default");
+                Toolbox.settings = new Settings();
+                SaveSettings();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         #endregion
 
         #endregion
@@ -819,7 +834,7 @@ namespace Panacea
             SetDefaultSettings();
             SetWindowLocation();
             SetupAudioDeviceList();
-            tSaveSettingsAuto();
+            tStartTimedActions();
             InitializeMenuGrids();
             tCheckForUpdates();
             FinishStartup();
@@ -1768,20 +1783,6 @@ namespace Panacea
             {
                 try
                 {
-                    //Process process = WinAPIWrapper.GetProcessFromWinItem(selectedWindow);
-                    //if (process != null)
-                    //{
-                    //    uDebugLogAdd($"Moving process handle {process.ProcessName} {process.MainWindowHandle.ToInt32()}");
-                    //    WinAPIWrapper.MoveWindow(process.MainWindowHandle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
-                    //    uDebugLogAdd($"Moved process handle {process.ProcessName} {process.MainWindowHandle.ToInt32()}");
-
-                    //}
-                    //else
-                    //{
-                    //    uDebugLogAdd("Current process not found for selected item in saved windows list");
-                    //    uStatusUpdate("Running process not found for selected process");
-                    //    return;
-                    //}
                     var procList = Process.GetProcessesByName(selectedWindow.WindowInfo.Name);
                     foreach (var process in procList)
                     {
@@ -1792,7 +1793,8 @@ namespace Panacea
                             {
                                 uDebugLogAdd($"Proc {process.ProcessName} {process.Handle.ToInt32()} matched the selected window item");
                                 uDebugLogAdd($"Moving process handle {process.ProcessName}  {process.Handle.ToInt32()} {process.MainWindowHandle.ToInt32()}");
-                                WinAPIWrapper.SetWindowPos(hndl, 0, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, 0x0001);
+                                WinAPIWrapper.MoveWindow(hndl, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                                //WinAPIWrapper.SetWindowPos(hndl, 0, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, 0x0001);
                                 uDebugLogAdd($"Moved process handle {process.ProcessName}  {process.Handle.ToInt32()} {process.MainWindowHandle.ToInt32()}");
                             }
                         }
@@ -2553,18 +2555,21 @@ namespace Panacea
             uDebugLogAdd("Audio check thread started");
         }
 
-        public void tSaveSettingsAuto()
+        public void tStartTimedActions()
         {
             try
             {
-                uDebugLogAdd("Starting auto save worker");
+                uDebugLogAdd("Starting timed actions worker");
                 BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
                 worker.ProgressChanged += (sender, e) =>
                 {
                     try
                     {
                         if (e.ProgressPercentage == 1)
+                        {
                             SaveSettings();
+                            tCheckForUpdates();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -2578,7 +2583,7 @@ namespace Panacea
                         while (true)
                         {
                             Thread.Sleep(TimeSpan.FromMinutes(5));
-                            uDebugLogAdd("5min passed, now auto saving settings");
+                            uDebugLogAdd("5min passed, now running timed actions");
                             worker.ReportProgress(1);
                             worker.ReportProgress(0);
                         }
@@ -2589,7 +2594,7 @@ namespace Panacea
                     }
                 };
                 worker.RunWorkerAsync();
-                uDebugLogAdd("Auto save worker started");
+                uDebugLogAdd("Auto timed actions worker started");
             }
             catch (Exception ex)
             {

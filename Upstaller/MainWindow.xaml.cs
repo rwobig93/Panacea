@@ -51,12 +51,25 @@ namespace Upstaller
         private string baseURI = $@"https://github.com/rwobig93/Panacea/releases/download";
         private string productionURI = string.Empty;
         private FixMeStatus fmButtonStatus = FixMeStatus.Shrug;
+        private InstallStatus installStatus = InstallStatus.NotInstalled;
         private int shruggieCounter = 0;
         private enum FixMeStatus
         {
             NotInstalled,
             NeedUpdate,
             Shrug
+        }
+        private enum VersionStatus
+        {
+            UpToDate,
+            UpdateAvailable,
+            Verifying,
+            NotFound
+        }
+        private enum InstallStatus
+        {
+            Installed,
+            NotInstalled
         }
 
         #endregion
@@ -124,13 +137,17 @@ namespace Upstaller
             VerifyDirectories();
             uDebugLogAdd(string.Format("{0}###################################### Application Start ######################################{0}", Environment.NewLine));
             InitializeVisualElements();
-            if (txtLabelInstalled.Text == "Installed")
+            if (installStatus == InstallStatus.Installed)
             {
-                uDebugLogAdd($"Install status is: {txtLabelInstalled.Text} | Starting update check");
+                uDebugLogAdd($"Install status is: {installStatus} | Starting update check");
+                ToggleVersionStatus(VersionStatus.Verifying);
                 tCheckForUpdates();
             }
             else
-                uDebugLogAdd($"Install status is: {txtLabelInstalled.Text} | Skipping update check");
+            {
+                uDebugLogAdd($"Install status is: {installStatus} | Skipping update check");
+                ToggleVersionStatus(VersionStatus.NotFound);
+            }
             VerifyArgs();
         }
 
@@ -199,7 +216,8 @@ namespace Upstaller
         {
             UpdateDirectory();
             VerifyInstallation();
-            SetIdleDefault();
+            ToggleVersionStatus(VersionStatus.Verifying);
+            ToggleDynamicLabel("Idle", Colors.Cyan);
         }
 
         private void PanaceaStartDisable()
@@ -223,19 +241,6 @@ namespace Upstaller
             }
         }
 
-        private void SetIdleDefault()
-        {
-            try
-            {
-                txtLabelDynamic.Text = "Idle";
-                txtLabelDynamic.Foreground = new SolidColorBrush(Colors.LawnGreen);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
         private void VerifyInstallation()
         {
             try
@@ -243,10 +248,10 @@ namespace Upstaller
                 var panacea = $@"{currentDir}\Panacea.exe";
                 if (File.Exists(panacea))
                 {
-                    ToggleInstallationLabel(true);
+                    ToggleInstallationLabel(InstallStatus.Installed);
                 }
                 else
-                    ToggleInstallationLabel(false);
+                    ToggleInstallationLabel(InstallStatus.NotInstalled);
             }
             catch (Exception ex)
             {
@@ -254,24 +259,30 @@ namespace Upstaller
             }
         }
 
-        private void ToggleInstallationLabel(bool v)
+        private void ToggleInstallationLabel(InstallStatus install)
         {
             try
             {
-                if (v)
+                installStatus = install;
+                switch (install)
                 {
-                    txtLabelInstalled.Foreground = new SolidColorBrush(Colors.LawnGreen);
-                    txtLabelInstalled.Text = "Installed";
-                    uStatusUpdate("Found installed Panacea executable");
-                    PanaceaReadyToStart();
-                }
-                else
-                {
-                    txtLabelInstalled.Foreground = new SolidColorBrush(Colors.Red);
-                    txtLabelInstalled.Text = "Not Installed";
-                    uStatusUpdate("Couldn't find Panacea executable, not installed");
-                    ToggleFixMeButton(FixMeStatus.NotInstalled);
-                    PanaceaStartDisable();
+                    case InstallStatus.Installed:
+                        txtLabelInstalled.Foreground = new SolidColorBrush(Colors.LawnGreen);
+                        txtLabelInstalled.Text = "Installed";
+                        uStatusUpdate("Found installed Panacea executable");
+                        PanaceaReadyToStart();
+                        break;
+                    case InstallStatus.NotInstalled:
+                        txtLabelInstalled.Foreground = new SolidColorBrush(Colors.Red);
+                        txtLabelInstalled.Text = "Not Installed";
+                        uStatusUpdate("Couldn't find Panacea executable, not installed");
+                        ToggleFixMeButton(FixMeStatus.NotInstalled);
+                        PanaceaStartDisable();
+                        break;
+                    default:
+                        uDebugLogAdd("Unknown state triggered for install status", DebugType.FAILURE);
+                        uStatusUpdate("Unknown state triggered for install status, please let the developer know");
+                        break;
                 }
             }
             catch (Exception ex)
@@ -300,7 +311,7 @@ namespace Upstaller
                     case FixMeStatus.Shrug:
                         btnFixMe.Foreground = new SolidColorBrush(Colors.Cyan);
                         btnFixMe.Content = @"¯\_(ツ)_/¯";
-                        btnFixMe.IsEnabled = false;
+                        btnFixMe.IsEnabled = true;
                         break;
                 }
             }
@@ -411,11 +422,11 @@ namespace Upstaller
                             if (currentVer.CompareTo(prodVer) < 0)
                             {
                                 uDebugLogAdd($"New version found: [c]{currentVer} [p]{prodVer}");
-                                ToggleVersionStatus(true);
+                                ToggleVersionStatus(VersionStatus.UpdateAvailable);
                             }
                             else
                             {
-                                ToggleVersionStatus(false);
+                                ToggleVersionStatus(VersionStatus.UpToDate);
                                 uDebugLogAdd($"Current version is the same or newer than release: [c]{currentVer} [p]{prodVer}");
                             }
                         }
@@ -434,30 +445,42 @@ namespace Upstaller
             }
         }
 
-        private void ToggleVersionStatus(bool v)
+        private void ToggleVersionStatus(VersionStatus version)
         {
             try
             {
-                if (txtLabelInstalled.Text != "Installed")
+                switch (version)
                 {
-                    uDebugLogAdd($"Installation status is: {txtLabelInstalled.Text}, skipping update toggle");
-                    return;
+                    case VersionStatus.NotFound:
+                        uStatusUpdate("Please install Panacea");
+                        txtLabelUpToDate.Text = "Not Found";
+                        txtLabelUpToDate.Foreground = new SolidColorBrush(Colors.Red);
+                        ToggleFixMeButton(FixMeStatus.NotInstalled);
+                        break;
+                    case VersionStatus.UpdateAvailable:
+                        uStatusUpdate("Update found and now available!");
+                        txtLabelUpToDate.Text = "Update Available";
+                        txtLabelUpToDate.Foreground = new SolidColorBrush(Colors.Cyan);
+                        ToggleFixMeButton(FixMeStatus.NeedUpdate);
+                        break;
+                    case VersionStatus.UpToDate:
+                        uStatusUpdate("Panacea is at the most up to date version!");
+                        txtLabelUpToDate.Text = "Up To Date";
+                        txtLabelUpToDate.Foreground = new SolidColorBrush(Colors.LawnGreen);
+                        ToggleFixMeButton(FixMeStatus.Shrug);
+                        break;
+                    case VersionStatus.Verifying:
+                        txtLabelUpToDate.Text = "Verifying";
+                        txtLabelUpToDate.Foreground = new SolidColorBrush(Colors.Yellow);
+                        break;
+                    default:
+                        txtLabelUpToDate.Text = "?????";
+                        txtLabelUpToDate.Foreground = new SolidColorBrush(Colors.OrangeRed);
+                        uDebugLogAdd("Unknown state triggered for install status", DebugType.FAILURE);
+                        uStatusUpdate("Unknown state triggered for version status, please let the developer know");
+                        break;
                 }
-                if (v)
-                {
-                    uStatusUpdate("Update found and now available!");
-                    txtLabelUpToDate.Text = "Update Available";
-                    txtLabelUpToDate.Foreground = new SolidColorBrush(Colors.Cyan);
-                    ToggleFixMeButton(FixMeStatus.NeedUpdate);
-                }
-                else
-                {
-                    uStatusUpdate("Panacea is at the most up to date version!");
-                    txtLabelUpToDate.Text = "Up To Date";
-                    txtLabelUpToDate.Foreground = new SolidColorBrush(Colors.LawnGreen);
-                    ToggleFixMeButton(FixMeStatus.Shrug);
-                }
-                uDebugLogAdd($"Version status toggled to: {txtLabelUpToDate.Text}");
+                uDebugLogAdd($"Version status toggled to: {version.ToString()}");
             }
             catch (Exception ex)
             {
@@ -579,7 +602,7 @@ namespace Upstaller
                         PrepStagingArea();
                         DownloadWhatWeCameHereFor();
                         PutPanaceaInItsPlace();
-                        //VerifyInstallation();
+                        VerifyInstallation();
                     }
                     catch (Exception ex)
                     {
@@ -790,7 +813,7 @@ namespace Upstaller
             {
                 downloadInProgress = true;
                 uDebugLogAdd($"Starting Panacea download, this is getting exciting!!! URI: {productionURI}");
-                ToggleIdleLable("Downloading");
+                ToggleDynamicLabel("Downloading", Colors.Yellow);
                 WebClient webClient = new WebClient();
                 webClient.DownloadProgressChanged += (s, e) => { pbDownload.Value = e.ProgressPercentage; uDebugLogAdd($"Download progress updated: {e.ProgressPercentage}%"); };
                 webClient.DownloadFileCompleted += (s2, e2) => { DownloadComplete(); };
@@ -804,12 +827,13 @@ namespace Upstaller
             }
         }
 
-        private void ToggleIdleLable(string v)
+        private void ToggleDynamicLabel(string v, Color color)
         {
             try
             {
                 txtLabelDynamic.Text = v;
-                txtLabelDynamic.Foreground = new SolidColorBrush(Colors.Cyan);
+                txtLabelDynamic.Foreground = new SolidColorBrush(color);
+                uDebugLogAdd($"Dynamic label changed: [s]{v} [c]{color.ToString()}");
             }
             catch (Exception ex)
             {
@@ -819,10 +843,17 @@ namespace Upstaller
 
         private void DownloadComplete()
         {
-            uDebugLogAdd($"Successfully downloaded Panacea to: {$@"{currentDir}\TopSecret\Panacea.exe"}");
-            uStatusUpdate("Download finished!");
-            SetIdleDefault();
-            downloadInProgress = false;
+            try
+            {
+                uDebugLogAdd($"Successfully downloaded Panacea to: {$@"{currentDir}\TopSecret\Panacea.exe"}");
+                uStatusUpdate("Download finished!");
+                ToggleDynamicLabel("Idle", Colors.LawnGreen);
+                downloadInProgress = false;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void UpdatePanacea()
@@ -855,10 +886,10 @@ namespace Upstaller
                         uDebugLogAdd("Starting Panacea update process.");
                         ClosePanaceaInstances();
                         BackupEverything();
-                        //VerifyInstallationReqs();
                         PrepStagingArea();
                         DownloadWhatWeCameHereFor();
                         PutPanaceaInItsPlace();
+                        VerifyInstallation();
                         FinishUpdate();
                     }
                 };
