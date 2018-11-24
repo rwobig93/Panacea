@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Diagnostics;
 using System.ComponentModel;
+using HWND = System.IntPtr;
 
 namespace Panacea.Classes
 {
@@ -385,5 +386,173 @@ namespace Panacea.Classes
         }
 
         public delegate void MouseUpEventHandler(object sender, Point p);
+        public static IntPtr SearchForWindow(string wndclass, string title)
+        {
+            SearchData sd = new SearchData { Wndclass = wndclass, Title = title };
+            EnumWindows(new EnumWindowsProcc(EnumProc), ref sd);
+            return sd.hWnd;
+        }
+
+        public static bool EnumProc(IntPtr hWnd, ref SearchData data)
+        {
+            // Check classname and title
+            // This is different from FindWindow() in that the code below allows partial matches
+            StringBuilder sb = new StringBuilder(1024);
+            GetClassName(hWnd, sb, sb.Capacity);
+            if (sb.ToString().StartsWith(data.Wndclass))
+            {
+                sb = new StringBuilder(1024);
+                GetWindowText(hWnd, sb, sb.Capacity);
+                if (sb.ToString().StartsWith(data.Title))
+                {
+                    data.hWnd = hWnd;
+                    return false;    // Found the wnd, halt enumeration
+                }
+            }
+            return true;
+        }
+
+        private delegate bool EnumWindowsProcc(IntPtr hWnd, ref SearchData data);
+
+        public class SearchData
+        {
+            // You can put any dicks or Doms in here...
+            public string Wndclass;
+            public string Title;
+            public IntPtr hWnd;
+        }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool EnumWindows(EnumWindowsProcc lpEnumFunc, ref SearchData data);
+
+
+        /// <summary>Contains functionality to get all the open windows.</summary>
+        public static class OpenWindowGetter
+        {
+            /// <summary>Returns a dictionary that contains the handle and title of all the open windows.</summary>
+            /// <returns>A dictionary that contains the handle and title of all the open windows.</returns>
+            public static IDictionary<HWND, string> GetOpenWindows()
+            {
+                HWND shellWindow = GetShellWindow();
+                Dictionary<HWND, string> windows = new Dictionary<HWND, string>();
+
+                EnumWindows(delegate (HWND hWnd, int lParam)
+                {
+                    if (hWnd == shellWindow) return true;
+                    if (!IsWindowVisible(hWnd)) return true;
+
+                    int length = GetWindowTextLength(hWnd);
+                    if (length == 0) return true;
+
+                    StringBuilder builder = new StringBuilder(length);
+                    GetWindowText(hWnd, builder, length + 1);
+
+                    windows[hWnd] = builder.ToString();
+                    return true;
+
+                }, 0);
+
+                return windows;
+            }
+
+            private delegate bool EnumWindowsProc(HWND hWnd, int lParam);
+
+            [DllImport("USER32.DLL")]
+            private static extern bool EnumWindows(EnumWindowsProc enumFunc, int lParam);
+
+            [DllImport("USER32.DLL")]
+            private static extern int GetWindowText(HWND hWnd, StringBuilder lpString, int nMaxCount);
+
+            [DllImport("USER32.DLL")]
+            private static extern int GetWindowTextLength(HWND hWnd);
+
+            [DllImport("USER32.DLL")]
+            private static extern bool IsWindowVisible(HWND hWnd);
+
+            [DllImport("USER32.DLL")]
+            private static extern IntPtr GetShellWindow();
+
+            public static List<SystemHandleInformation> GetHandles(Process process)
+            {
+                var nHandleInfoSize = 0x10000;
+                var ipHandlePointer = Marshal.AllocHGlobal(nHandleInfoSize);
+                var nLength = 0;
+                IntPtr ipHandle;
+
+                while ((NtQuerySystemInformation(CnstSystemHandleInformation, ipHandlePointer, nHandleInfoSize, ref nLength)) == StatusInfoLengthMismatch)
+                {
+                    nHandleInfoSize = nLength;
+                    Marshal.FreeHGlobal(ipHandlePointer);
+                    ipHandlePointer = Marshal.AllocHGlobal(nLength);
+                }
+
+                byte[] baTemp = new byte[nLength];
+                CopyMemory(baTemp, ipHandlePointer, (uint)nLength);
+
+                long lHandleCount;
+                if (Is64Bits())
+                {
+                    lHandleCount = Marshal.ReadInt64(ipHandlePointer);
+                    ipHandle = new IntPtr(ipHandlePointer.ToInt64() + 8);
+                }
+                else
+                {
+                    lHandleCount = Marshal.ReadInt32(ipHandlePointer);
+                    ipHandle = new IntPtr(ipHandlePointer.ToInt32() + 4);
+                }
+
+                SystemHandleInformation shHandle;
+                List<SystemHandleInformation> lstHandles = new List<SystemHandleInformation>();
+
+                for (long lIndex = 0; lIndex < lHandleCount; lIndex++)
+                {
+                    shHandle = new SystemHandleInformation();
+                    if (Is64Bits())
+                    {
+                        shHandle = (SystemHandleInformation)Marshal.PtrToStructure(ipHandle, shHandle.GetType());
+                        ipHandle = new IntPtr(ipHandle.ToInt64() + Marshal.SizeOf(shHandle) + 8);
+                    }
+                    else
+                    {
+                        ipHandle = new IntPtr(ipHandle.ToInt64() + Marshal.SizeOf(shHandle));
+                        shHandle = (SystemHandleInformation)Marshal.PtrToStructure(ipHandle, shHandle.GetType());
+                    }
+                    if (shHandle.ProcessID != process.Id) continue;
+                    lstHandles.Add(shHandle);
+                }
+                return lstHandles;
+
+            }
+
+            static bool Is64Bits()
+            {
+                return Marshal.SizeOf(typeof(IntPtr)) == 8;
+            }
+
+            [DllImport("ntdll.dll")]
+            public static extern uint NtQuerySystemInformation(
+            int systemInformationClass,
+            IntPtr systemInformation,
+            int systemInformationLength,
+            ref int returnLength);
+
+            [DllImport("kernel32.dll", EntryPoint = "RtlCopyMemory")]
+            static extern void CopyMemory(byte[] destination, IntPtr source, uint length);
+
+            [StructLayout(LayoutKind.Sequential, Pack = 1)]
+            public struct SystemHandleInformation
+            { // Information Class 16
+                public int ProcessID;
+                public byte ObjectTypeNumber;
+                public byte Flags; // 0x01 = PROTECT_FROM_CLOSE, 0x02 = INHERIT
+                public ushort Handle;
+                public int Object_Pointer;
+                public UInt32 GrantedAccess;
+            }
+
+            const int CnstSystemHandleInformation = 16;
+            const uint StatusInfoLengthMismatch = 0xc0000004;
+        }
     }
 }

@@ -63,13 +63,49 @@ namespace Panacea.Classes
                 OnPropertyChanged("WindowLocation");
             }
         }
-        public List<WindowItem> WindowList
+        public List<WindowItem> ActiveWindowList
         {
             get { return _windowList; }
             set
             {
                 _windowList = value;
-                OnPropertyChanged("WindowList");
+                OnPropertyChanged("ActiveWindowList");
+            }
+        }
+        public List<WindowItem> WindowProfile1
+        {
+            get { return _windowProfile1; }
+            set
+            {
+                _windowList = value;
+                OnPropertyChanged("WindowProfile1");
+            }
+        }
+        public List<WindowItem> WindowProfile2
+        {
+            get { return _windowProfile2; }
+            set
+            {
+                _windowList = value;
+                OnPropertyChanged("WindowProfile2");
+            }
+        }
+        public List<WindowItem> WindowProfile3
+        {
+            get { return _windowProfile3; }
+            set
+            {
+                _windowList = value;
+                OnPropertyChanged("WindowProfile3");
+            }
+        }
+        public List<WindowItem> WindowProfile4
+        {
+            get { return _windowProfile4; }
+            set
+            {
+                _windowList = value;
+                OnPropertyChanged("WindowProfile4");
             }
         }
         public SolidColorBrush PingSuccessFill
@@ -192,16 +228,16 @@ namespace Panacea.Classes
             switch (CurrentWindowProfile)
             {
                 case WindowProfile.Profile1:
-                    _windowProfile1 = WindowList;
+                    _windowProfile1 = ActiveWindowList;
                     break;
                 case WindowProfile.Profile2:
-                    _windowProfile2 = WindowList;
+                    _windowProfile2 = ActiveWindowList;
                     break;
                 case WindowProfile.Profile3:
-                    _windowProfile3 = WindowList;
+                    _windowProfile3 = ActiveWindowList;
                     break;
                 case WindowProfile.Profile4:
-                    _windowProfile4 = WindowList;
+                    _windowProfile4 = ActiveWindowList;
                     break;
             }
             Toolbox.uAddDebugLog($"Moving from WindowProfile {CurrentWindowProfile.ToString()} to {windowProfile}");
@@ -209,16 +245,16 @@ namespace Panacea.Classes
             switch (windowProfile)
             {
                 case WindowProfile.Profile1:
-                    WindowList = _windowProfile1;
+                    ActiveWindowList = _windowProfile1;
                     break;
                 case WindowProfile.Profile2:
-                    WindowList = _windowProfile2;
+                    ActiveWindowList = _windowProfile2;
                     break;
                 case WindowProfile.Profile3:
-                    WindowList = _windowProfile3;
+                    ActiveWindowList = _windowProfile3;
                     break;
                 case WindowProfile.Profile4:
-                    WindowList = _windowProfile4;
+                    ActiveWindowList = _windowProfile4;
                     break;
             }
             Toolbox.uAddDebugLog("Finished changing window profile");

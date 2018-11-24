@@ -36,6 +36,8 @@ using System.Collections;
 using System.Management;
 using System.Reflection;
 using System.Net.Sockets;
+using static Panacea.Classes.WinAPIWrapper;
+using static Panacea.Classes.WinAPIWrapper.OpenWindowGetter;
 
 namespace Panacea
 {
@@ -1074,14 +1076,18 @@ namespace Panacea
         {
             try
             {
-                if (grid.Margin != Defaults.MainGridIn)
+                uDebugLogAdd($"Call ToggleMenuGrid({grid.Name})");
+                //if (grid.Margin != Defaults.MainGridIn)
+                var displayArea = GetWindowDisplayArea();
+                if (grid.Margin != displayArea)
                 {
                     grid.Visibility = Visibility.Visible;
-                    Toolbox.AnimateGrid(grid, Defaults.MainGridIn);
+                    Toolbox.AnimateGrid(grid, displayArea);
                 }
                 else
                 {
-                    Toolbox.AnimateGrid(grid, Defaults.MainGridOut);
+                    //Toolbox.AnimateGrid(grid, Defaults.MainGridOut);
+                    Toolbox.AnimateGrid(grid, GetWindowHiddenArea());
                     grid.Visibility = Visibility.Hidden;
                 }
                 HideUnusedMenuGrids(grid);
@@ -1090,6 +1096,48 @@ namespace Panacea
             {
                 LogException(ex);
             }
+        }
+
+        private Thickness GetWindowDisplayArea()
+        {
+            Thickness displayArea = new Thickness();
+            try
+            {
+                uDebugLogAdd("Getting window display area");
+                displayArea = grdMain.Margin;
+                uDebugLogAdd($"displayArea <Before>: [T]{displayArea.Top} [L]{displayArea.Left} [B]{displayArea.Bottom} [R]{displayArea.Right}");
+                displayArea.Top = displayArea.Top + rectTitle.ActualHeight;
+                displayArea.Bottom = displayArea.Bottom + txtStatus.ActualHeight;
+                uDebugLogAdd($"displayArea <After>: [T]{displayArea.Top} [L]{displayArea.Left} [B]{displayArea.Bottom} [R]{displayArea.Right}");
+                return displayArea;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+            return displayArea;
+        }
+
+        private Thickness GetWindowHiddenArea()
+        {
+            Thickness hiddenArea = new Thickness();
+            try
+            {
+                uDebugLogAdd("Getting window hidden area");
+                hiddenArea = grdMain.Margin;
+                uDebugLogAdd($"hiddenArea <Before>: [T]{hiddenArea.Top} [L]{hiddenArea.Left} [B]{hiddenArea.Bottom} [R]{hiddenArea.Right}");
+                hiddenArea.Left = -20;
+                hiddenArea.Top = -20;
+                hiddenArea.Bottom = -20;
+                hiddenArea.Right = -20;
+                uDebugLogAdd($"hiddenArea <After>: [T]{hiddenArea.Top} [L]{hiddenArea.Left} [B]{hiddenArea.Bottom} [R]{hiddenArea.Right}");
+                return hiddenArea;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+            return hiddenArea;
         }
 
         private void ToggleListBox(ListBox lb)
@@ -1119,25 +1167,36 @@ namespace Panacea
 
         private void HideUnusedMenuGrids(Grid grid = null)
         {
-            if (grid != grdAudio)
+            try
             {
-                grdAudio.Visibility = Visibility.Hidden;
-                Toolbox.AnimateGrid(grdAudio, Defaults.MainGridOut);
+                if (grid == null)
+                    uDebugLogAdd($"Call HideUnusedMenuGrids(null)");
+                else
+                    uDebugLogAdd($"Call HideUnusedMenuGrids({grid.Name})");
+                if (grid != grdAudio)
+                {
+                    grdAudio.Visibility = Visibility.Hidden;
+                    Toolbox.AnimateGrid(grdAudio, Defaults.MainGridOut);
+                }
+                if (grid != grdWindows)
+                {
+                    grdWindows.Visibility = Visibility.Hidden;
+                    Toolbox.AnimateGrid(grdWindows, Defaults.MainGridOut);
+                }
+                if (grid != grdNetwork)
+                {
+                    grdNetwork.Visibility = Visibility.Hidden;
+                    Toolbox.AnimateGrid(grdNetwork, Defaults.MainGridOut);
+                }
+                if (grid != grdSettings)
+                {
+                    grdSettings.Visibility = Visibility.Hidden;
+                    Toolbox.AnimateGrid(grdSettings, Defaults.MainGridOut);
+                }
             }
-            if (grid != grdWindows)
+            catch (Exception ex)
             {
-                grdWindows.Visibility = Visibility.Hidden;
-                Toolbox.AnimateGrid(grdWindows, Defaults.MainGridOut);
-            }
-            if (grid != grdNetwork)
-            {
-                grdNetwork.Visibility = Visibility.Hidden;
-                Toolbox.AnimateGrid(grdNetwork, Defaults.MainGridOut);
-            }
-            if (grid != grdSettings)
-            {
-                grdSettings.Visibility = Visibility.Hidden;
-                Toolbox.AnimateGrid(grdSettings, Defaults.MainGridOut);
+                LogException(ex);
             }
         }
 
@@ -1652,7 +1711,7 @@ namespace Panacea
                 }
                 uDebugLogAdd("SettingsWIN: working on window process settings");
                 ChangeWindowProfiles(Toolbox.settings.CurrentWindowProfile);
-                lbSavedWindows.ItemsSource = Toolbox.settings.WindowList;
+                lbSavedWindows.ItemsSource = Toolbox.settings.ActiveWindowList;
                 uDebugLogAdd("SettingsGEN: working on general settings");
                 chkSettingsBeta.IsChecked = Toolbox.settings.BetaUpdate;
                 uDebugLogAdd("Default settings set");
@@ -1783,24 +1842,30 @@ namespace Panacea
             {
                 try
                 {
-                    var procList = Process.GetProcessesByName(selectedWindow.WindowInfo.Name);
-                    foreach (var process in procList)
-                    {
-                        if (WinAPIWrapper.ProcIsWhatWeAreLookingFor(selectedWindow, process))
-                        {
-                            var matchingHandles = WinAPIWrapper.FindWindowsWithText(process.MainWindowTitle);
-                            foreach (var hndl in matchingHandles)
-                            {
-                                uDebugLogAdd($"Proc {process.ProcessName} {process.Handle.ToInt32()} matched the selected window item");
-                                uDebugLogAdd($"Moving process handle {process.ProcessName}  {process.Handle.ToInt32()} {process.MainWindowHandle.ToInt32()}");
-                                WinAPIWrapper.MoveWindow(hndl, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
-                                //WinAPIWrapper.SetWindowPos(hndl, 0, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, 0x0001);
-                                uDebugLogAdd($"Moved process handle {process.ProcessName}  {process.Handle.ToInt32()} {process.MainWindowHandle.ToInt32()}");
-                            }
-                        }
-                        else
-                            uDebugLogAdd($"Skipping proc {process.ProcessName} {process.Handle.ToInt32()} as it didn't match the selected window item");
-                    }
+                    //var procList = Process.GetProcessesByName(selectedWindow.WindowInfo.Name);
+                    //foreach (var process in procList)
+                    //{
+                    //    if (WinAPIWrapper.ProcIsWhatWeAreLookingFor(selectedWindow, process))
+                    //    {
+                    //        var matchingHandles = WinAPIWrapper.FindWindowsWithText(process.MainWindowTitle);
+                    //        foreach (var hndl in matchingHandles)
+                    //        {
+                    //            uDebugLogAdd($"Proc {process.ProcessName} {process.Handle.ToInt32()} matched the selected window item");
+                    //            uDebugLogAdd($"Moving process handle {process.ProcessName}  {process.Handle.ToInt32()} {process.MainWindowHandle.ToInt32()}");
+                    //            WinAPIWrapper.MoveWindow(hndl, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                    //            //WinAPIWrapper.SetWindowPos(hndl, 0, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, 0x0001);
+                    //            uDebugLogAdd($"Moved process handle {process.ProcessName}  {process.Handle.ToInt32()} {process.MainWindowHandle.ToInt32()}");
+                    //        }
+                    //    }
+                    //    else
+                    //        uDebugLogAdd($"Skipping proc {process.ProcessName} {process.Handle.ToInt32()} as it didn't match the selected window item");
+
+                    //var openWindows = OpenWindowGetter.GetOpenWindows();
+                
+                    IntPtr desiredHandle = WinAPIWrapper.SearchForWindow(selectedWindow.WindowInfo.WinClass, selectedWindow.WindowInfo.Title);
+                    WinAPIWrapper.MoveWindow(desiredHandle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+
+                    uDebugLogAdd("Hopefully Worked?");
                 }
                 catch (Exception ex)
                 {
@@ -2057,7 +2122,7 @@ namespace Panacea
             try
             {
                 lbSavedWindows.ItemsSource = null;
-                lbSavedWindows.ItemsSource = Toolbox.settings.WindowList;
+                lbSavedWindows.ItemsSource = Toolbox.settings.ActiveWindowList;
             }
             catch (Exception ex)
             {
@@ -2150,7 +2215,7 @@ namespace Panacea
             try
             {
                 Toolbox.settings.ChangeWindowProfile(profile);
-                lbSavedWindows.ItemsSource = Toolbox.settings.WindowList;
+                lbSavedWindows.ItemsSource = Toolbox.settings.ActiveWindowList;
                 switch (profile)
                 {
                     case WindowProfile.Profile1:
@@ -2195,7 +2260,7 @@ namespace Panacea
         {
             try
             {
-                foreach (var window in Toolbox.settings.WindowList.ToList())
+                foreach (var window in Toolbox.settings.ActiveWindowList.ToList())
                 {
                     MoveProcessHandle(window);
                 }

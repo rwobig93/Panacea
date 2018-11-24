@@ -26,6 +26,7 @@ namespace Panacea.Classes
     {
         public string Name { get; set; }
         public string ModName { get; set; }
+        public string WinClass { get; set; }
         public string Title { get; set; }
         public string FileName { get; set; }
         public int PrivateID { get; set; } = Toolbox.GenerateRandomNumber();
@@ -39,12 +40,15 @@ namespace Panacea.Classes
             if (proc != null)
             {
                 var dimensions = GetProcessDimensions(proc);
+                StringBuilder sb = new StringBuilder(1024);
+                WinAPIWrapper.GetClassName(proc.MainWindowHandle, sb, sb.Capacity);
                 if (options == null)
                 {
                     return new WindowInfo()
                     {
                         Name = proc.ProcessName,
                         ModName = proc.MainModule.ModuleName,
+                        WinClass = sb.ToString(),
                         Title = proc.MainWindowTitle,
                         FileName = proc.MainModule.FileName,
                         IndexNum = 0,
@@ -60,6 +64,7 @@ namespace Panacea.Classes
                     {
                         Name = proc.ProcessName,
                         ModName = proc.MainModule.ModuleName,
+                        WinClass = sb.ToString(),
                         Title = options.IgnoreProcessTitle ? "*" : proc.MainWindowTitle,
                         FileName = proc.MainModule.FileName,
                         IndexNum = 0,
@@ -132,7 +137,7 @@ namespace Panacea.Classes
         }
         public static bool DoesDuplicateExist(WindowItem windowItem)
         {
-            var existingWinItem = Toolbox.settings.WindowList.ToList().Find(x => x.WindowInfo.Name == windowItem.WindowInfo.Name && x.WindowInfo.Title == windowItem.WindowInfo.Title && x.WindowInfo.FileName == windowItem.WindowInfo.FileName && x.WindowInfo.ModName == windowItem.WindowInfo.ModName);
+            var existingWinItem = Toolbox.settings.ActiveWindowList.ToList().Find(x => x.WindowInfo.Name == windowItem.WindowInfo.Name && x.WindowInfo.Title == windowItem.WindowInfo.Title && x.WindowInfo.FileName == windowItem.WindowInfo.FileName && x.WindowInfo.ModName == windowItem.WindowInfo.ModName);
             if (existingWinItem != null)
                 return true;
             else
