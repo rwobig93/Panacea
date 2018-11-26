@@ -128,12 +128,35 @@ namespace Upstaller
             }
         }
 
+        private void btnTest_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var response = Prompt.YesNo(string.Format("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM{0}" +
+                    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM{0}" +
+                    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM{0}" +
+                    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM{0}" +
+                    "5{0}" +
+                    "6{0}" +
+                    "7{0}" +
+                    "8", Environment.NewLine));
+                uStatusUpdate($"You said: {response.ToString()}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         #endregion
 
         #region I got this
 
         private void Startup()
         {
+#if DEBUG
+            btnTest.Visibility = Visibility.Visible;
+#endif
             VerifyDirectories();
             uDebugLogAdd(string.Format("{0}###################################### Application Start ######################################{0}", Environment.NewLine));
             InitializeVisualElements();

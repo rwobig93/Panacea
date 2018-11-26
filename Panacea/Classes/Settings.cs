@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Media;
 
 namespace Panacea.Classes
@@ -26,7 +23,7 @@ namespace Panacea.Classes
 
         #region Private Properties
 
-        private WindowDimensions _windowLocation { get; set; } = new WindowDimensions { Left = 0, Top = 0, Height = 251.309, Width = 454.455 };
+        private WindowDimensions _windowLocation { get; set; } = new WindowDimensions { Left = 0, Top = 0, Height = 251.309, Width = 570.455 };
         private List<WindowItem> _windowList { get; set; } = new List<WindowItem>();
         private List<WindowItem> _windowProfile1 { get; set; } = new List<WindowItem>();
         private List<WindowItem> _windowProfile2 { get; set; } = new List<WindowItem>();
@@ -36,19 +33,21 @@ namespace Panacea.Classes
         private SolidColorBrush _pingSuccessStroke { get; set; } = NetworkVariables.defaultSuccessChartStroke;
         private SolidColorBrush _pingFailFill { get; set; } = NetworkVariables.defaultFailChartFill;
         private SolidColorBrush _pingFailStroke { get; set; } = NetworkVariables.defaultFailChartStroke;
-        private DTFormat _dateTimeFormat { get; set; } = DTFormat.Sec;
         private Int32 _pingChartLength { get; set; } = NetworkVariables.defaultPingChartLength;
-        private EnterAction _toolboxEnterAction { get; set; } = EnterAction.DNSLookup;
-        private bool _basicPing { get; set; }
-        private bool _betaUpdate { get; set; } = false;
-        private WindowProfile _currentWinProfile { get; set; } = WindowProfile.Profile1;
         private Version _currentVersion { get; set; } = new Version("0.0.0.0");
         private Version _productionVersion { get; set; } = null;
         private Version _upCurrentVersion { get; set; } = null;
         private Version _upProductionVersion { get; set; } = null;
         private bool _updateAvailable { get; set; } = false;
+        private bool _basicPing { get; set; } = false;
+        private bool _betaUpdate { get; set; } = false;
+        private bool _showChangelog { get; set; } = false;
         private string _productionURI { get; set; } = null;
         private string _upProductionURI { get; set; } = null;
+        private string _latestChangelog { get; set; } = "I'm a default Changelog! You shouldn't ever see me! :D";
+        private WindowProfile _currentWinProfile { get; set; } = WindowProfile.Profile1;
+        private EnterAction _toolboxEnterAction { get; set; } = EnterAction.DNSLookup;
+        private DTFormat _dateTimeFormat { get; set; } = DTFormat.Sec;
 
         #endregion
 
@@ -144,15 +143,6 @@ namespace Panacea.Classes
                 OnPropertyChanged("PingFailStroke");
             }
         }
-        public DTFormat DateTimeFormat
-        {
-            get { return _dateTimeFormat; }
-            set
-            {
-                _dateTimeFormat = value;
-                OnPropertyChanged("DateTimeFormat");
-            }
-        }
         public Int32 PingChartLength
         {
             get { return _pingChartLength; }
@@ -162,14 +152,30 @@ namespace Panacea.Classes
                 OnPropertyChanged("PingChartLength");
             }
         }
-        public EnterAction ToolboxEnterAction
+        public Version CurrentVersion
         {
-            get { return _toolboxEnterAction; }
-            set
-            {
-                _toolboxEnterAction = value;
-                OnPropertyChanged("ToolboxEnterAction");
-            }
+            get { return _currentVersion; }
+            set { _currentVersion = value; }
+        }
+        public Version ProductionVersion
+        {
+            get { return _productionVersion; }
+            set { _productionVersion = value; }
+        }
+        public Version UpCurrentVersion
+        {
+            get { return _upCurrentVersion; }
+            set { _upCurrentVersion = value; }
+        }
+        public Version UpProductionVersion
+        {
+            get { return _upProductionVersion; }
+            set { _upProductionVersion = value; }
+        }
+        public bool UpdateAvailable
+        {
+            get { return _updateAvailable; }
+            set { _updateAvailable = value; }
         }
         public bool BasicPing
         {
@@ -189,13 +195,32 @@ namespace Panacea.Classes
                 OnPropertyChanged("BetaUpdate");
             }
         }
-        public WindowProfile CurrentWindowProfile
+        public bool ShowChangelog
         {
-            get { return _currentWinProfile; }
+            get { return _showChangelog; }
             set
             {
-                _currentWinProfile = value;
-                OnPropertyChanged("CurrentWindowProfile");
+                _showChangelog = value;
+                OnPropertyChanged("ShowChangelog");
+            }
+        }
+        public string ProductionURI
+        {
+            get { return _productionURI; }
+            set { _productionURI = value; }
+        }
+        public string UpProductionURI
+        {
+            get { return _upProductionURI; }
+            set { _upProductionURI = value; }
+        }
+        public string LatestChangelog
+        {
+            get { return _latestChangelog; }
+            set
+            {
+                _latestChangelog = value;
+                OnPropertyChanged("LatestChangelog");
             }
         }
         public void AddWindow(WindowItem windowItem)
@@ -259,40 +284,32 @@ namespace Panacea.Classes
             }
             Toolbox.uAddDebugLog("Finished changing window profile");
         }
-        public Version CurrentVersion
+        public WindowProfile CurrentWindowProfile
         {
-            get { return _currentVersion; }
-            set { _currentVersion = value; }
+            get { return _currentWinProfile; }
+            set
+            {
+                _currentWinProfile = value;
+                OnPropertyChanged("CurrentWindowProfile");
+            }
         }
-        public Version ProductionVersion
+        public EnterAction ToolboxEnterAction
         {
-            get { return _productionVersion; }
-            set { _productionVersion = value; }
+            get { return _toolboxEnterAction; }
+            set
+            {
+                _toolboxEnterAction = value;
+                OnPropertyChanged("ToolboxEnterAction");
+            }
         }
-        public Version UpCurrentVersion
+        public DTFormat DateTimeFormat
         {
-            get { return _upCurrentVersion; }
-            set { _upCurrentVersion = value; }
-        }
-        public Version UpProductionVersion
-        {
-            get { return _upProductionVersion; }
-            set { _upProductionVersion = value; }
-        }
-        public bool UpdateAvailable
-        {
-            get { return _updateAvailable; }
-            set { _updateAvailable = value; }
-        }
-        public string ProductionURI
-        {
-            get { return _productionURI; }
-            set { _productionURI = value; }
-        }
-        public string UpProductionURI
-        {
-            get { return _upProductionURI; }
-            set { _upProductionURI = value; }
+            get { return _dateTimeFormat; }
+            set
+            {
+                _dateTimeFormat = value;
+                OnPropertyChanged("DateTimeFormat");
+            }
         }
 
         #endregion

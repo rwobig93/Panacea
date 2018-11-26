@@ -11,33 +11,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Shell;
 using System.Windows.Threading;
-using System.Security.Cryptography;
 using Newtonsoft.Json;
 using Panacea.Windows;
-using System.Collections.ObjectModel;
-using LiveCharts;
-using LiveCharts.Configurations;
 using System.Net.NetworkInformation;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Globalization;
 using NAudio.CoreAudioApi;
 using System.Collections;
-using System.Management;
 using System.Reflection;
 using System.Net.Sockets;
-using static Panacea.Classes.WinAPIWrapper;
-using static Panacea.Classes.WinAPIWrapper.OpenWindowGetter;
 
 namespace Panacea
 {
@@ -246,13 +233,30 @@ namespace Panacea
             try
             {
                 string verNum = GetVersionNumber().ToString();
-                Clipboard.SetText(verNum);
-                uStatusUpdate($"Copied version to clipboard: {verNum}");
+                CopyToClipboard(verNum, $"Copied version to clipboard: {verNum}");
             }
             catch (Exception ex)
             {
                 LogException(ex);
             }
+        }
+
+        private void btnShrug_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string clip = @"¯\_(ツ)_/¯";
+                CopyToClipboard(clip, "You now have the almighty shrug on your clipboard!");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void btnViewChangeLog_Click(object sender, RoutedEventArgs e)
+        {
+            ShowChangelog();
         }
 
         #endregion
@@ -677,8 +681,7 @@ namespace Panacea
                     if (e.ChangedButton == MouseButton.Left)
                     {
                         var textBlock = (TextBlock)e.OriginalSource;
-                        Clipboard.SetText(textBlock.Text);
-                        uStatusUpdate($"Set Clipboard: {textBlock.Text}");
+                        CopyToClipboard(textBlock.Text);
                     }
                     break;
                 }
@@ -703,8 +706,7 @@ namespace Panacea
                     if (e.ChangedButton == MouseButton.Left)
                     {
                         var dnsEntry = (HostEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
-                        Clipboard.SetText($"{dnsEntry.IPAddress} = {dnsEntry.HostName}");
-                        uStatusUpdate($"Set Clipboard: {dnsEntry.IPAddress} = {dnsEntry.HostName}");
+                        CopyToClipboard($"{dnsEntry.IPAddress} = {dnsEntry.HostName}");
                     }
                     break;
                 }
@@ -803,9 +805,20 @@ namespace Panacea
         {
             try
             {
-                uDebugLogAdd("Resetting config to default");
-                Toolbox.settings = new Settings();
-                SaveSettings();
+                uDebugLogAdd("User clicked the Default Config button");
+                var response = Prompt.YesNo("Are you sure you want to default all of this applications configuration?");
+                uDebugLogAdd($"When prompted, the user hit: {response.ToString()}");
+                if (response == Prompt.PromptResponse.Yes)
+                {
+                    uDebugLogAdd("Resetting config to default");
+                    Toolbox.settings = new Settings();
+                    SaveSettings();
+                }
+                else
+                {
+                    uDebugLogAdd("We ended up not resetting all of our config.... maybe next time");
+                    SaveSettings();
+                }
             }
             catch (Exception ex)
             {
@@ -1296,6 +1309,8 @@ namespace Panacea
                     var args = "/update";
                     if (Toolbox.settings.BetaUpdate)
                         args = "/update /beta";
+                    Toolbox.settings.ShowChangelog = true;
+                    SaveSettings();
                     Process proc = new Process() { StartInfo = new ProcessStartInfo() { FileName = upstaller, Arguments = args } };
                     proc.Start();
                     uDebugLogAdd($"Started {proc.ProcessName}[{proc.Id}]");
@@ -1571,6 +1586,22 @@ namespace Panacea
             }
         }
 
+        private void CopyToClipboard(string clip, string optionalMessage = null)
+        {
+            try
+            {
+                Clipboard.SetText(clip);
+                if (optionalMessage == null)
+                    uStatusUpdate($"Set Clipboard: {clip}");
+                else
+                    uStatusUpdate(optionalMessage);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         #endregion
 
         #region Audio
@@ -1790,6 +1821,20 @@ namespace Panacea
             settingsTimer = 2;
         }
 
+        private void ShowChangelog()
+        {
+            try
+            {
+                uDebugLogAdd("Showing Changelog Window");
+                Prompt.OK($"Changelog for v{Toolbox.settings.CurrentVersion}:{Environment.NewLine}{Toolbox.settings.LatestChangelog}");
+                uDebugLogAdd("Closed changelog window");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         #endregion
 
         #region WindowPreferences
@@ -1861,11 +1906,19 @@ namespace Panacea
                     //        uDebugLogAdd($"Skipping proc {process.ProcessName} {process.Handle.ToInt32()} as it didn't match the selected window item");
 
                     //var openWindows = OpenWindowGetter.GetOpenWindows();
-                
-                    IntPtr desiredHandle = WinAPIWrapper.SearchForWindow(selectedWindow.WindowInfo.WinClass, selectedWindow.WindowInfo.Title);
-                    WinAPIWrapper.MoveWindow(desiredHandle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
 
-                    uDebugLogAdd("Hopefully Worked?");
+                    /// Title is a wildcard, lets move ALL THE PROCESSES!!!
+                    if (selectedWindow.WindowInfo.Title == "*" || string.IsNullOrWhiteSpace(selectedWindow.WindowInfo.Title))
+                    {
+                        uDebugLogAdd("Invoking MoveMultipleWindows");
+                        MoveMultipleWindows(selectedWindow);
+                    }
+                    /// Title isn't a wildcard, lets only move the process we want
+                    else
+                    {
+                        uDebugLogAdd("Invoking MoveSingleWindow");
+                        MoveSingleWindow(selectedWindow);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1873,6 +1926,97 @@ namespace Panacea
                 }
             };
             worker.RunWorkerAsync();
+        }
+
+        private void MoveMultipleWindows(WindowItem selectedWindow)
+        {
+            try
+            {
+                uDebugLogAdd("Title has a wildcard... somehow, how did this person do that?");
+                uStatusUpdate("Unexpected window title in item, how'd you do this?");
+                MoveSingleWindow(selectedWindow);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveSingleWindow(WindowItem selectedWindow)
+        {
+            try
+            {
+                var procList = Process.GetProcessesByName(selectedWindow.WindowInfo.Name);
+                if (procList.Length <= 0)
+                {
+                    uDebugLogAdd($"No running process found for {selectedWindow.WindowInfo.Name}, ducking out");
+                    uStatusUpdate($"Couldn't find an active running process for {selectedWindow.WindowInfo.Name}");
+                    return;
+                }
+                if (!WindowInfo.DoesWindowInfoHaveClass(selectedWindow.WindowInfo))
+                {
+                    uDebugLogAdd($"Window info doesn't have class, initiating update to get this fool some class!");
+                    AttemptWindowInfoUpdate(selectedWindow);
+                }
+                IntPtr desiredHandle = WinAPIWrapper.SearchForWindow(selectedWindow.WindowInfo.WinClass, selectedWindow.WindowInfo.Title);
+                if (desiredHandle == (IntPtr)0x0000000000000000)
+                {
+                    uDebugLogAdd($"Couldn't find a handle for {selectedWindow.WindowInfo.Name}, skipping MoveWindow | {desiredHandle}");
+                    return;
+                }
+                else
+                    uDebugLogAdd($"Active window handle found matching criteria: {desiredHandle} | {selectedWindow.WindowInfo.WinClass} | {selectedWindow.WindowInfo.Title}");
+                WinAPIWrapper.MoveWindow(desiredHandle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void AttemptWindowInfoUpdate(WindowItem selectedWindow)
+        {
+            try
+            {
+                uDebugLogAdd($"Attempting to update window info for the window: {selectedWindow.WindowInfo.Name} | {selectedWindow.WindowInfo.PrivateID} | {selectedWindow.WindowInfo.Title}");
+                var procList = Process.GetProcessesByName(selectedWindow.WindowInfo.Name);
+                StringBuilder sb = new StringBuilder(1024);
+                foreach (var proc in procList)
+                {
+                    try
+                    {
+                        uDebugLogAdd($"Attempting to get class from process: {proc.ProcessName} | {proc.Id}");
+                        WinAPIWrapper.GetClassName(proc.MainWindowHandle, sb, sb.Capacity);
+                        string className = sb.ToString();
+                        if (!string.IsNullOrWhiteSpace(className))
+                        {
+                            uDebugLogAdd($"Found a process with class that fool can learn from! {proc.ProcessName} | {proc.Id} | {className}");
+                            var oGWindow = Toolbox.settings.ActiveWindowList.ToList().Find(x => x.WindowInfo.PrivateID == selectedWindow.WindowInfo.PrivateID);
+                            if (oGWindow != null)
+                            {
+                                oGWindow.WindowInfo.WinClass = className;
+                                uDebugLogAdd($"Updated OG window class to: {className}");
+                            }
+                            else
+                                uDebugLogAdd($"Couldn't find an OG window to up it's class yo! Not cool. [N]{selectedWindow.WindowInfo.Name} [ID]{selectedWindow.WindowInfo.PrivateID}");
+                            selectedWindow.WindowInfo.WinClass = className;
+                            uDebugLogAdd($"Updated selectedWindow window Class to: {className}");
+                            return;
+                        }
+                        else
+                            uDebugLogAdd($"Didn't find class from this process: {proc.ProcessName}, what a hooligan");
+                    }
+                    catch (Exception)
+                    {
+                        uDebugLogAdd($"Couldn't get class from {proc.ProcessName}, this process is a whole new level of low");
+                    }
+                }
+                uDebugLogAdd($"Couldn't find an active running process to update windowInfo from: {selectedWindow.WindowInfo.Name}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void LookForWindowHandle()
@@ -2650,7 +2794,6 @@ namespace Panacea
                             Thread.Sleep(TimeSpan.FromMinutes(5));
                             uDebugLogAdd("5min passed, now running timed actions");
                             worker.ReportProgress(1);
-                            worker.ReportProgress(0);
                         }
                     }
                     catch (Exception ex)
@@ -2688,16 +2831,19 @@ namespace Panacea
 
                     // Pingcount settings
                     var num = 0;
-                    if (int.TryParse(value, out num))
-                        worker.ReportProgress(1);
-                    else
+                    if (value != null)
                     {
-                        if (!settingsBadAlerted)
+                        if (int.TryParse(value, out num))
+                            worker.ReportProgress(1);
+                        else
                         {
-                            worker.ReportProgress(99);
-                            settingsBadAlerted = true;
-                            Thread.Sleep(TimeSpan.FromSeconds(5));
-                            settingsBadAlerted = false;
+                            if (settingsBadAlerted)
+                            {
+                                worker.ReportProgress(99);
+                                settingsBadAlerted = true;
+                                Thread.Sleep(TimeSpan.FromSeconds(5));
+                                settingsBadAlerted = false;
+                            }
                         }
                     }
                     // Update All Settings
@@ -2918,11 +3064,17 @@ namespace Panacea
                                 ShowNotification("A new version is available, update when ready");
                                 Toolbox.settings.UpdateAvailable = true;
                                 btnMenuUpdate.IsEnabled = true;
-                                uDebugLogAdd("Enabled update button");
+                                btnMenuUpdate.Visibility = Visibility.Visible;
+                                uDebugLogAdd("Enabled update button and made it visible, no more Houdini");
                             }
                             else
                             {
                                 uDebugLogAdd($"Current version is the same or newer than release: [c]{Toolbox.settings.CurrentVersion} [p]{Toolbox.settings.ProductionVersion}");
+                                if (Toolbox.settings.ShowChangelog)
+                                {
+                                    Toolbox.settings.ShowChangelog = false;
+                                    ShowChangelog();
+                                }
                             }
                             SaveSettings();
                         }
@@ -2974,6 +3126,8 @@ namespace Panacea
                         uDebugLogAdd($"ProdVer: {Toolbox.settings.ProductionVersion}");
                         Toolbox.settings.ProductionURI = $@"{Defaults.GitUpdateURIBase}/{recentRelease.TagName}/{appName}.exe";
                         uDebugLogAdd($"URI: {Toolbox.settings.ProductionURI}");
+                        Toolbox.settings.LatestChangelog = recentRelease.Body;
+                        uDebugLogAdd($"Changelog: {Environment.NewLine}{Toolbox.settings.LatestChangelog}");
                         break;
                     case AppUpdate.Upstaller:
                         Toolbox.settings.UpProductionVersion = prodVersion;

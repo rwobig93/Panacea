@@ -161,7 +161,7 @@
                 <GradientStop Color="#FF191919" Offset="0.84"/>
             </LinearGradientBrush>
         </Grid.Background>
-        <Rectangle x:Name="rectBorder" Stroke="#FF707070" Panel.ZIndex="99"/>
+        <Rectangle x:Name="rectBorder" Stroke="#FF707070" Panel.ZIndex="99" d:IsLocked="True"/>
         <Rectangle x:Name="rectTitle" Height="30" Stroke="#FF707070" VerticalAlignment="Top" Panel.ZIndex="99">
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -171,7 +171,7 @@
             </Rectangle.Fill>
         </Rectangle>
         <TextBlock x:Name="lblTitle" MouseDown="lblTitle_MouseDown" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Panacea" VerticalAlignment="Top" Height="30" Width="91" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Panel.ZIndex="100"/>
-        <Grid x:Name="grdNotification" Height="30" VerticalAlignment="Top" Panel.ZIndex="50">
+        <Grid x:Name="grdNotification" Height="30" VerticalAlignment="Top" Panel.ZIndex="50" d:IsLocked="True">
             <TextBlock x:Name="lblNotification" TextWrapping="Wrap" Foreground="#FF368DB6" TextAlignment="Center" FontSize="16" Margin="0,30,0,0" Height="45" VerticalAlignment="Top">
                 <TextBlock.Background>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -227,10 +227,11 @@
             <Button x:Name="btnMenuWindows" Content="Windows" Click="btnMenuWindows_Click" Margin="-1,0,1,0"/>
             <Button x:Name="btnMenuNetwork" Content="Network" Click="btnMenuNetwork_Click" Margin="-1,0,1,0"/>
             <Button x:Name="btnMenuSettings" Content="Settings" Click="btnMenuSettings_Click" Margin="-1,0,1,0"/>
-            <Button x:Name="btnMenuUpdate" Content="Update" Click="btnMenuUpdate_Click" Margin="-1,0,1,0" IsEnabled="False"/>
-            <Button x:Name="BtnTest" Content="Test" Click="BtnTest_Click" Visibility="Hidden" Margin="-1,0,1,0"/>
+            <Button x:Name="btnShrug" Content="¯\_(ツ)_/¯" Click="btnShrug_Click" Margin="-1,0,1,0"/>
+            <Button x:Name="btnMenuUpdate" Content="Update" Click="btnMenuUpdate_Click" Margin="-1,0,1,0" IsEnabled="False" Visibility="Hidden"/>
+            <Button x:Name="BtnTest" Content="Test" Click="BtnTest_Click" Margin="-1,0,1,0" Visibility="Hidden"/>
         </StackPanel>
-        <Grid x:Name="grdWindows" Margin="575,0,-575,50" d:IsLocked="True">
+        <Grid x:Name="grdWindows" Margin="575,0,-575,50">
             <Grid.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1B1B1B" Offset="0"/>
@@ -428,12 +429,13 @@
             <TextBlock x:Name="lblNetBasicPing" HorizontalAlignment="Left" Margin="361,4,0,0" TextWrapping="Wrap" Text="Basic Ping:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
             <CheckBox x:Name="chkNetBasicPing" Click="chkNetBasicPing_Click" Content="" HorizontalAlignment="Left" Margin="420,6,0,0" VerticalAlignment="Top" Width="18" Background="{StaticResource BaseBackgroundBrush}" BorderBrush="{StaticResource BaseBorderBrush}" Foreground="#FF8D8D8D" Height="17"/>
             <ComboBox x:Name="cmbxSetNetTextboxAction" SelectionChanged="cmbxSetNetTextboxAction_SelectionChanged"  HorizontalAlignment="Left" Style="{StaticResource {x:Type ComboBox}}" Margin="318,38,0,0" VerticalAlignment="Top" Width="120" Height="9" Foreground="#FF8D8D8D"/>
-            <Rectangle x:Name="rectSettingsGeneral" HorizontalAlignment="Left" Height="29" Margin="79,85,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="365"/>
+            <Rectangle x:Name="rectSettingsGeneral" HorizontalAlignment="Left" Height="54" Margin="79,85,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="365"/>
             <TextBlock x:Name="txtSettingsGenLabel" HorizontalAlignment="Left" Margin="83,85,0,0" TextWrapping="Wrap" Text="General" VerticalAlignment="Top" Foreground="#FF1DD8D0" Width="41"/>
             <Rectangle x:Name="rectSettingsGenTitle" HorizontalAlignment="Left" Height="16" Margin="79,85,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="50"/>
             <TextBlock x:Name="lblSettingsBeta" HorizontalAlignment="Left" Margin="130,90,0,0" TextWrapping="Wrap" Text="Upgrade to Beta/Test Clients:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="155" Height="16"/>
             <CheckBox x:Name="chkSettingsBeta" Click="chkSettingsBeta_Click" Content="" HorizontalAlignment="Left" Margin="286,92,0,0" VerticalAlignment="Top" Width="18" Background="{StaticResource BaseBackgroundBrush}" BorderBrush="{StaticResource BaseBorderBrush}" Foreground="#FF8D8D8D" Height="17"/>
             <Button x:Name="btnDefaultConfig" Click="btnDefaultConfig_Click" Content="Reset Config to Default" HorizontalAlignment="Left" Margin="307,88,0,0" VerticalAlignment="Top" Width="133" Height="22"/>
+            <Button x:Name="btnViewChangeLog" Click="btnViewChangeLog_Click" Content="View Changelog" HorizontalAlignment="Left" Margin="84,111,0,0" VerticalAlignment="Top" Width="102"/>
         </Grid>
     </Grid>
 </Window>

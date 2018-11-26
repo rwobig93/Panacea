@@ -1,12 +1,9 @@
 ﻿using Panacea.Windows;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Media;
 using static Panacea.MainWindow;
@@ -110,6 +107,10 @@ namespace Panacea.Classes
             }
             else
                 return true;
+        }
+        public static bool DoesWindowInfoHaveClass(WindowInfo winInfo)
+        {
+            return !string.IsNullOrWhiteSpace(winInfo.WinClass);
         }
     }
     public class WindowItem

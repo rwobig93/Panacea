@@ -56,5 +56,6 @@
         <Button x:Name="btnClose" Click="btnClose_Click" Content="X" HorizontalAlignment="Right" Style="{StaticResource ButtonEdges}" VerticalAlignment="Top" Width="30" Height="30" Panel.ZIndex="500" BorderBrush="#FF707070"/>
         <Button x:Name="btnFixMe" Click="btnFixMe_Click" Content="FixMe" HorizontalAlignment="Left" Margin="10,60,0,0" VerticalAlignment="Top" Width="93" Height="23"/>
         <Button x:Name="btnStartPanacea" Click="btnStartPanacea_Click" Content="Start Panacea" HorizontalAlignment="Left" Margin="108,60,0,0" VerticalAlignment="Top" Width="86" Height="23"/>
+        <Button x:Name="btnTest" Click="btnTest_Click" Content="Test" HorizontalAlignment="Left" Margin="10,113,0,0" VerticalAlignment="Top" Width="75" Visibility="Hidden"/>
     </Grid>
 </Window>

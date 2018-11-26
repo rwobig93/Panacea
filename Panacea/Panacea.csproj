@@ -120,9 +120,11 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Classes\IPInterop.cs" />
-    <Compile Include="Classes\MyEnumWindows.cs" />
     <Compile Include="Windows\ProcessOutline.xaml.cs">
       <DependentUpon>ProcessOutline.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\Prompt.xaml.cs">
+      <DependentUpon>Prompt.xaml</DependentUpon>
     </Compile>
     <Page Include="Windows\HandleDisplay.xaml">
       <SubType>Designer</SubType>
@@ -153,6 +155,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Windows\ProcessOutline.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\Prompt.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
