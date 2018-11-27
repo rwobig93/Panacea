@@ -27,6 +27,6 @@
         <Button x:Name="btnYes" Click="btnYes_Click" Content="Yes" HorizontalAlignment="Center" Margin="223,0,303,8" VerticalAlignment="Bottom" Width="74" Height="40" FontSize="22" Visibility="Hidden"/>
         <Button x:Name="btnNo" Click="btnNo_Click" Content="No" HorizontalAlignment="Center" Margin="302,0,224,8" VerticalAlignment="Bottom" Width="74" Height="40" FontSize="22" Visibility="Hidden"/>
         <TextBlock x:Name="txtMessage" Margin="10,10,10,61" TextWrapping="Wrap" TextAlignment="Center" Foreground="#FF8D8D8D" FontSize="20"/>
-        <Button x:Name="btnOK" Click="btnOK_Click" Content="OK" HorizontalAlignment="Left" Margin="263,0,0,8" VerticalAlignment="Bottom" Width="74" Height="40" FontSize="22" Visibility="Hidden"/>
+        <Button x:Name="btnOK" Click="btnOK_Click" Content="OK" HorizontalAlignment="Center" Margin="0,0,0,8" VerticalAlignment="Bottom" Width="74" Height="40" FontSize="22" Visibility="Hidden"/>
     </Grid>
 </Window>

@@ -32,12 +32,13 @@ namespace Panacea.Classes
         public int YValue { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
-        public static WindowInfo GetWindowInfoFromProc(Process proc, ProcessOptions options = null)
+        public static WindowInfo GetWindowInfoFromProc(Process proc, ProcessOptions options = null, string winTitle = "")
         {
             if (proc != null)
             {
                 var dimensions = GetProcessDimensions(proc);
                 StringBuilder sb = new StringBuilder(1024);
+                var title = string.IsNullOrWhiteSpace(winTitle) ? proc.MainWindowTitle : winTitle;
                 WinAPIWrapper.GetClassName(proc.MainWindowHandle, sb, sb.Capacity);
                 if (options == null)
                 {
@@ -46,7 +47,7 @@ namespace Panacea.Classes
                         Name = proc.ProcessName,
                         ModName = proc.MainModule.ModuleName,
                         WinClass = sb.ToString(),
-                        Title = proc.MainWindowTitle,
+                        Title = title,
                         FileName = proc.MainModule.FileName,
                         IndexNum = 0,
                         XValue = dimensions.Left,
@@ -62,7 +63,7 @@ namespace Panacea.Classes
                         Name = proc.ProcessName,
                         ModName = proc.MainModule.ModuleName,
                         WinClass = sb.ToString(),
-                        Title = options.IgnoreProcessTitle ? "*" : proc.MainWindowTitle,
+                        Title = options.IgnoreProcessTitle ? "*" : title,
                         FileName = proc.MainModule.FileName,
                         IndexNum = 0,
                         XValue = dimensions.Left,
@@ -94,9 +95,29 @@ namespace Panacea.Classes
             WinAPIWrapper.GetWindowRect(proc.MainWindowHandle, ref dimensions);
             return dimensions;
         }
+        public static WinAPIWrapper.RECT GetHandleDimensions(IntPtr handle)
+        {
+            WinAPIWrapper.RECT dimensions = new WinAPIWrapper.RECT();
+            WinAPIWrapper.GetWindowRect(handle, ref dimensions);
+            return dimensions;
+        }
         public static bool DoesProcessHandleHaveSize(Process proc)
         {
             var rect = GetProcessDimensions(proc);
+            if (rect.Left == 0 &&
+                rect.Top == 0 &&
+                rect.Bottom == 0 &&
+                rect.Right == 0
+                )
+            {
+                return false;
+            }
+            else
+                return true;
+        }
+        public static bool DoesHandleHaveSize(IntPtr handle)
+        {
+            var rect = GetHandleDimensions(handle);
             if (rect.Left == 0 &&
                 rect.Top == 0 &&
                 rect.Bottom == 0 &&
@@ -121,11 +142,11 @@ namespace Panacea.Classes
         public string Enabled { get; set; } = "On";
         public string Checked { get; set; } = "";
         public Brush EnableColor { get; set; } = Defaults.WinEnableButtonColorOn;
-        public static WindowItem Create(Process process, ProcessOptions options = null)
+        public static WindowItem Create(Process process, ProcessOptions options = null, string winTitle = "")
         {
             return new WindowItem()
             {
-                WindowInfo = WindowInfo.GetWindowInfoFromProc(process, options),
+                WindowInfo = WindowInfo.GetWindowInfoFromProc(process, options, winTitle),
                 WindowName = process.ProcessName
             };
         }
@@ -143,6 +164,39 @@ namespace Panacea.Classes
                 return true;
             else
                 return false;
+        }
+    }
+    public class DetailedProcess
+    {
+        public IntPtr Handle { get; set; }
+        public string Name { get; set; }
+        public string Title { get; set; }
+        public static DetailedProcess Create(Process process, IntPtr handle)
+        {
+            return new DetailedProcess()
+            {
+                Handle = handle,
+                Name = process.ProcessName,
+                Title = WinAPIWrapper.GetWindowText(handle)
+            };
+        }
+    }
+    public class WindowListItem
+    {
+        public Process Process { get; set; }
+        public string Title { get; set; }
+        public IntPtr Handle { get; set; }
+        public string Display { get; set; }
+        public static WindowListItem Create(Process process, IntPtr handle)
+        {
+            var title = WinAPIWrapper.GetWindowText(handle);
+            return new WindowListItem()
+            {
+                Process = process,
+                Handle = handle,
+                Title = title,
+                Display = $"{process.ProcessName} | {title}"
+            };
         }
     }
 

@@ -287,7 +287,7 @@
                     </LinearGradientBrush>
                 </Rectangle.Stroke>
             </Rectangle>
-            <Rectangle x:Name="rectWinSelArea" HorizontalAlignment="Right" Height="90" Margin="0,36,14,0" StrokeThickness="0.5" VerticalAlignment="Top" Width="110" Stroke="{StaticResource BaseBorderBrush}"/>
+            <Rectangle x:Name="rectWinSelArea" HorizontalAlignment="Right" Height="90" Margin="0,36,14,0" StrokeThickness="0.5" VerticalAlignment="Top" Width="110" Stroke="{StaticResource BaseBorderBrush}" d:IsLocked="True"/>
             <TextBlock x:Name="lblWinSelectedProcess" HorizontalAlignment="Right" Padding="0" Margin="0,116,19,0" TextWrapping="Wrap" Text="Selected Process" VerticalAlignment="Top" Height="14" Foreground="#FF8D8D8D" Width="95" TextAlignment="Center"/>
             <Button x:Name="btnWinProfile1" Click="btnWinProfile1_Click" Content="Profile 1" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,140,72,0" VerticalAlignment="Top" Width="54"/>
             <Button x:Name="btnWinProfile2" Click="btnWinProfile2_Click" Content="Profile 2" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,140,12,0" VerticalAlignment="Top" Width="54"/>

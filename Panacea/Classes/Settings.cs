@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Windows.Media;
 
 namespace Panacea.Classes
@@ -41,7 +41,7 @@ namespace Panacea.Classes
         private bool _updateAvailable { get; set; } = false;
         private bool _basicPing { get; set; } = false;
         private bool _betaUpdate { get; set; } = false;
-        private bool _showChangelog { get; set; } = false;
+        private bool _showChangelog { get; set; } = true;
         private string _productionURI { get; set; } = null;
         private string _upProductionURI { get; set; } = null;
         private string _latestChangelog { get; set; } = "I'm a default Changelog! You shouldn't ever see me! :D";

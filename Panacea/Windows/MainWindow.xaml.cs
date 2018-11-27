@@ -1653,7 +1653,13 @@ namespace Panacea
                 try
                 {
                     uDebugLogAdd("Starting settings serialization");
-                    string serializedObj = JsonConvert.SerializeObject(Toolbox.settings, Formatting.Indented);
+                    var settings = new JsonSerializerSettings()
+                    {
+                        MissingMemberHandling = MissingMemberHandling.Ignore,
+                        DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                        NullValueHandling = NullValueHandling.Include,
+                    };
+                    string serializedObj = JsonConvert.SerializeObject(Toolbox.settings, Formatting.Indented, settings);
                     using (StreamWriter sw = new StreamWriter($@"{confDir}Settings.conf"))
                         sw.WriteLine(serializedObj);
                     uDebugLogAdd($"Settings.conf serialized");
@@ -1677,9 +1683,15 @@ namespace Panacea
                 if (File.Exists($@"{confDir}Settings.conf"))
                 {
                     uDebugLogAdd($@"Settings file found: {confDir}Settings.conf");
+                    var settings = new JsonSerializerSettings()
+                    {
+                        MissingMemberHandling = MissingMemberHandling.Ignore,
+                        DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                        NullValueHandling = NullValueHandling.Include,
+                    };
                     using (StreamReader sr = new StreamReader($@"{confDir}Settings.conf"))
                     {
-                        var tmpSettings = JsonConvert.DeserializeObject<Settings>(sr.ReadToEnd());
+                        dynamic tmpSettings = JsonConvert.DeserializeObject<Settings>(sr.ReadToEnd(), settings);
                         if (tmpSettings != null)
                             Toolbox.settings = tmpSettings;
                     }
@@ -1826,7 +1838,7 @@ namespace Panacea
             try
             {
                 uDebugLogAdd("Showing Changelog Window");
-                Prompt.OK($"Changelog for v{Toolbox.settings.CurrentVersion}:{Environment.NewLine}{Toolbox.settings.LatestChangelog}");
+                Prompt.OK($"Changelog for v{Toolbox.settings.CurrentVersion}:{Environment.NewLine}{Toolbox.settings.LatestChangelog}", TextAlignment.Left);
                 uDebugLogAdd("Closed changelog window");
             }
             catch (Exception ex)
@@ -1887,37 +1899,45 @@ namespace Panacea
             {
                 try
                 {
-                    //var procList = Process.GetProcessesByName(selectedWindow.WindowInfo.Name);
-                    //foreach (var process in procList)
-                    //{
-                    //    if (WinAPIWrapper.ProcIsWhatWeAreLookingFor(selectedWindow, process))
-                    //    {
-                    //        var matchingHandles = WinAPIWrapper.FindWindowsWithText(process.MainWindowTitle);
-                    //        foreach (var hndl in matchingHandles)
-                    //        {
-                    //            uDebugLogAdd($"Proc {process.ProcessName} {process.Handle.ToInt32()} matched the selected window item");
-                    //            uDebugLogAdd($"Moving process handle {process.ProcessName}  {process.Handle.ToInt32()} {process.MainWindowHandle.ToInt32()}");
-                    //            WinAPIWrapper.MoveWindow(hndl, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
-                    //            //WinAPIWrapper.SetWindowPos(hndl, 0, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, 0x0001);
-                    //            uDebugLogAdd($"Moved process handle {process.ProcessName}  {process.Handle.ToInt32()} {process.MainWindowHandle.ToInt32()}");
-                    //        }
-                    //    }
-                    //    else
-                    //        uDebugLogAdd($"Skipping proc {process.ProcessName} {process.Handle.ToInt32()} as it didn't match the selected window item");
+                    bool moveAll = false;
 
-                    //var openWindows = OpenWindowGetter.GetOpenWindows();
-
-                    /// Title is a wildcard, lets move ALL THE PROCESSES!!!
-                    if (selectedWindow.WindowInfo.Title == "*" || string.IsNullOrWhiteSpace(selectedWindow.WindowInfo.Title))
+                    /// Title is a wildcard, lets move ALL THE WINDOWS!!!
+                    if (selectedWindow.WindowInfo.Title == "*")
                     {
-                        uDebugLogAdd("Invoking MoveMultipleWindows");
-                        MoveMultipleWindows(selectedWindow);
+                        moveAll = true;
+                        uDebugLogAdd($"WindowInfo title for {selectedWindow.WindowInfo.Name} is {selectedWindow.WindowInfo.Title} so we will be MOVING ALL THE WINDOWS!!!!");
                     }
-                    /// Title isn't a wildcard, lets only move the process we want
+                    /// Title isn't a wildcard, lets only move the windows we want
+                    else
+                        uDebugLogAdd($"WindowInfo title for {selectedWindow.WindowInfo.Name} is {selectedWindow.WindowInfo.Title} so I can only move matching handles... :(");
+
+                    List<DetailedProcess> foundList = new List<DetailedProcess>();
+                    foreach (var proc in Process.GetProcessesByName(selectedWindow.WindowInfo.Name))
+                    {
+                        foreach (var handle in WinAPIWrapper.EnumerateProcessWindowHandles(proc.Id))
+                        {
+                            var detProc = DetailedProcess.Create(proc, handle);
+                            foundList.Add(detProc);
+                            uDebugLogAdd($"Added to list | [{detProc.Handle}]{detProc.Name} :: {detProc.Title}");
+                        }
+                    }
+                    if (moveAll)
+                        foreach (var detProc in foundList)
+                        {
+                            uDebugLogAdd($"Moving handle | [{detProc.Handle}]{detProc.Name} :: {detProc.Title}");
+                            WinAPIWrapper.MoveWindow(detProc.Handle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                        }
                     else
                     {
-                        uDebugLogAdd("Invoking MoveSingleWindow");
-                        MoveSingleWindow(selectedWindow);
+                        foreach (var detProc in foundList)
+                        {
+                            if (detProc.Name == selectedWindow.WindowInfo.Name &&
+                                detProc.Title == selectedWindow.WindowInfo.Title)
+                            {
+                                uDebugLogAdd($"Matched window & title, moving: [{detProc.Handle}]{detProc.Name} | {detProc.Title}");
+                                WinAPIWrapper.MoveWindow(detProc.Handle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -1926,20 +1946,6 @@ namespace Panacea
                 }
             };
             worker.RunWorkerAsync();
-        }
-
-        private void MoveMultipleWindows(WindowItem selectedWindow)
-        {
-            try
-            {
-                uDebugLogAdd("Title has a wildcard... somehow, how did this person do that?");
-                uStatusUpdate("Unexpected window title in item, how'd you do this?");
-                MoveSingleWindow(selectedWindow);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
         }
 
         private void MoveSingleWindow(WindowItem selectedWindow)
@@ -2346,6 +2352,7 @@ namespace Panacea
                 {
                     Toolbox.settings.UpdateWindowLocation(windowItem, foundProc);
                     uDebugLogAdd($"Updated {windowItem.WindowName} windowItem");
+                    uStatusUpdate($"Updated location for {foundProc.ProcessName}");
                 }
             }
             catch (Exception ex)
@@ -3021,15 +3028,20 @@ namespace Panacea
                     {
                         // Upstaller update
                         var upstaller = $"{currentDir}\\Upstaller.exe";
-                        Toolbox.settings.UpCurrentVersion = Toolbox.GetVersionNumber(upstaller);
-                        uDebugLogAdd($"Upstaller Current Version: {Toolbox.settings.UpCurrentVersion}");
-                        upstallerUpdateInProg = true;
-                        Task u = Task.Run(async () => { await GetUpdate(AppUpdate.Upstaller); });
-                        while (!u.IsCompleted)
+                        if (File.Exists(upstaller))
                         {
-                            Thread.Sleep(500);
+                            Toolbox.settings.UpCurrentVersion = Toolbox.GetVersionNumber(upstaller);
+                            uDebugLogAdd($"Upstaller Current Version: {Toolbox.settings.UpCurrentVersion}");
+                            upstallerUpdateInProg = true;
+                            Task u = Task.Run(async () => { await GetUpdate(AppUpdate.Upstaller); });
+                            while (!u.IsCompleted)
+                            {
+                                Thread.Sleep(500);
+                            }
+                            worker.ReportProgress(2);
                         }
-                        worker.ReportProgress(2);
+                        else
+                            uDebugLogAdd($"Upstaller not found at: {upstaller}");
 
                         // Panacea update
                         var currVer = GetVersionNumber();

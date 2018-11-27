@@ -188,6 +188,12 @@ namespace Panacea.Classes
             return result;
         }
 
+        public const uint WM_GETTEXT = 0x000D;
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, int wParam,
+            StringBuilder lParam);
+
         delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
 
         [DllImport("user32.dll")]

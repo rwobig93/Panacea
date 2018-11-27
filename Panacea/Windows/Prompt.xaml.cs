@@ -115,13 +115,14 @@ namespace Panacea.Windows
             }
         }
 
-        public static PromptResponse YesNo(string message)
+        public static PromptResponse YesNo(string message, TextAlignment alignment = TextAlignment.Center)
         {
             var response = PromptResponse.Cancel;
             try
             {
                 Prompt prompt = new Prompt(PromptType.YesNo);
                 prompt.txtMessage.Text = message;
+                prompt.txtMessage.TextAlignment = alignment;
                 SizeWindowBasedOnMessage(prompt);
                 prompt.ShowDialog();
                 response = prompt.Response;
@@ -133,13 +134,14 @@ namespace Panacea.Windows
             return response;
         }
 
-        public static PromptResponse OK(string message)
+        public static PromptResponse OK(string message, TextAlignment alignment = TextAlignment.Center)
         {
             var response = PromptResponse.Cancel;
             try
             {
                 Prompt prompt = new Prompt(PromptType.OK);
                 prompt.txtMessage.Text = message;
+                prompt.txtMessage.TextAlignment = alignment;
                 SizeWindowBasedOnMessage(prompt);
                 prompt.ShowDialog();
                 response = prompt.Response;
