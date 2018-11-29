@@ -23,7 +23,7 @@ namespace Panacea.Classes
 
         #region Private Properties
 
-        private WindowDimensions _windowLocation { get; set; } = new WindowDimensions { Left = 0, Top = 0, Height = 251.309, Width = 570.455 };
+        private WindowDimensions _windowLocation { get; set; } = new WindowDimensions { Left = 0, Top = 0, Height = 300, Width = 625 };
         private List<WindowItem> _windowList { get; set; } = new List<WindowItem>();
         private List<WindowItem> _windowProfile1 { get; set; } = new List<WindowItem>();
         private List<WindowItem> _windowProfile2 { get; set; } = new List<WindowItem>();

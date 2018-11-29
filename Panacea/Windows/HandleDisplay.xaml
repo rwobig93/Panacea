@@ -44,10 +44,10 @@
         <Button x:Name="btnRefreshProcList" Click="btnRefreshProcList_Click" Content="Refresh List" HorizontalAlignment="Right" Margin="0,188,102,0" VerticalAlignment="Top" Width="87"/>
         <Button x:Name="btnAddProcess" Click="btnAddProcess_Click" Content="Add Selected" HorizontalAlignment="Left" Margin="10,188,0,0" VerticalAlignment="Top" Width="87"/>
         <Button x:Name="btnClose" Click="btnClose_Click" Content="Close / Finish" HorizontalAlignment="Right" Margin="0,188,10,0" VerticalAlignment="Top" Width="87"/>
-        <ListBox x:Name="lbProcList" SelectionChanged="lbProcList_SelectionChanged" ItemsSource="{Binding ProcessList}" Margin="10,215,10,32">
+        <ListBox x:Name="lbProcList" SelectionChanged="lbProcList_SelectionChanged" ItemsSource="{Binding WindowList}" Margin="10,215,10,32">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Foreground="#FF8D8D8D" TextWrapping="Wrap" Text="{Binding ProcessName}" Width="650"/>
+                    <TextBlock Foreground="#FF8D8D8D" TextWrapping="Wrap" Text="{Binding Display}" Width="650"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

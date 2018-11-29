@@ -31,6 +31,7 @@ namespace Panacea.Windows
 
         private ProcessOutline processOutline = null;
         private List<Process> _procList = new List<Process>();
+        private List<WindowListItem> _windowList = new List<WindowListItem>();
         private List<string> _notificationList = new List<string>();
         private bool _playingNotification = false;
         public List<Process> ProcessList
@@ -40,6 +41,15 @@ namespace Panacea.Windows
             {
                 _procList = value;
                 OnPropertyChanged("ProcessList");
+            }
+        }
+        public List<WindowListItem> WindowList
+        {
+            get { return _windowList; }
+            set
+            {
+                _windowList = value;
+                OnPropertyChanged("WindowList");
             }
         }
 
@@ -92,7 +102,8 @@ namespace Panacea.Windows
         {
             try
             {
-                UpdateProcessList();
+                //UpdateProcessList();
+                UpdateWindowList();
                 SendUserUpdateNotification("Let's get those processes!");
             }
             catch (Exception ex)
@@ -124,7 +135,8 @@ namespace Panacea.Windows
             try
             {
                 uDebugLogAdd("Refresh clicked, updating process list");
-                UpdateProcessList();
+                //UpdateProcessList();
+                UpdateWindowList();
                 SendUserUpdateNotification("Refreshed Process List");
                 uDebugLogAdd("Finished updating process list");
             }
@@ -136,17 +148,42 @@ namespace Panacea.Windows
 
         private void lbProcList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            //try
+            //{
+            //    if (lbProcList.SelectedItem != null)
+            //    {
+            //        uDebugLogAdd($"Proc item wasn't null, item: {lbProcList.SelectedItem.ToString()}");
+            //        Process proc = (Process)lbProcList.SelectedItem;
+            //        if (processOutline != null)
+            //            MoveProcessOutline(proc);
+            //        else
+            //            ShowProcessOutline(proc);
+            //        DisplayProcessInfo(proc);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    LogException(ex);
+            //}
             try
             {
                 if (lbProcList.SelectedItem != null)
                 {
-                    uDebugLogAdd($"Proc item wasn't null, item: {lbProcList.SelectedItem.ToString()}");
-                    Process proc = (Process)lbProcList.SelectedItem;
-                    if (processOutline != null)
-                        MoveProcessOutline(proc);
-                    else
-                        ShowProcessOutline(proc);
-                    DisplayProcessInfo(proc);
+                    try
+                    {
+                        uDebugLogAdd($"Proc item wasn't null, item: {lbProcList.SelectedItem.ToString()}");
+                        WindowListItem proc = (WindowListItem)lbProcList.SelectedItem;
+                        if (processOutline != null)
+                            MoveProcessOutline(proc.Handle);
+                        else
+                            ShowProcessOutline(proc.Handle);
+                        DisplayProcessInfo(proc.Process);
+                    }
+                    catch (Win32Exception we) { uDebugLogAdd($"Unable to draw process outline: {we.Message}"); lbProcList.Items.Remove(lbProcList.SelectedItem); return; }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
                 }
             }
             catch (Exception ex)
@@ -249,11 +286,104 @@ namespace Panacea.Windows
             }
         }
 
+        private void UpdateWindowList()
+        {
+            try
+            {
+                var tempWindowList = new List<WindowListItem>();
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (ws, we) =>
+                {
+                    try
+                    {
+                        foreach (var proc in Process.GetProcesses())
+                        {
+                            try
+                            {
+                                var rect = WindowInfo.GetProcessDimensions(proc);
+                                uDebugLogAdd($"Process {proc.ProcessName} | T{rect.Top} L{rect.Left} H{rect.Bottom - rect.Top} W{rect.Right - rect.Left}");
+                                if (WindowInfo.DoesProcessHandleHaveSize(proc))
+                                {
+                                    uDebugLogAdd($"Process {proc.ProcessName} has size");
+                                    if (tempWindowList.Find(x => x.Process.MainWindowHandle == proc.MainWindowHandle) == null)
+                                    {
+                                        uDebugLogAdd($"Process {proc.ProcessName} doesn't currently exist in the windowList, adding process");
+                                        foreach (var handle in WinAPIWrapper.EnumerateProcessWindowHandles(proc.Id))
+                                        {
+                                            try
+                                            {
+                                                if (WindowInfo.DoesHandleHaveSize(handle))
+                                                {
+                                                    var windowListItem = WindowListItem.Create(proc, handle);
+                                                    if (tempWindowList.Find(x => x.Display == windowListItem.Display) == null)
+                                                    {
+                                                        tempWindowList.Add(windowListItem);
+                                                        uDebugLogAdd($"Added to list | [{windowListItem.Handle}]{windowListItem.Display}");
+                                                    }
+                                                    else
+                                                        uDebugLogAdd($"Item already in the list, skipping | {windowListItem.Display}");
+                                                }
+                                                else
+                                                    uDebugLogAdd($"Handle window doesn't have size, skipping | [{handle}]{proc.ProcessName}");
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                uDebugLogAdd($"Unable to add handle to the list | [{handle}]{proc.ProcessName}: {ex.Message}");
+                                            }
+                                        }
+                                    }
+                                    else
+                                        uDebugLogAdd($"Already enumerated through handles for {proc.ProcessName}, skipping this one");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                uDebugLogAdd($"Unable to get proc {proc.ProcessName}: {ex.Message}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                    worker.ReportProgress(1);
+                };
+                worker.ProgressChanged += (ps, pe) =>
+                {
+                    if (pe.ProgressPercentage == 1)
+                    {
+
+                        lbProcList.ItemsSource = null;
+                        WindowList = tempWindowList.OrderBy(x => x.Display).ToList();
+                        lbProcList.ItemsSource = WindowList;
+                        uDebugLogAdd("Updated window list");
+                    }
+                };
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         private void MoveProcessOutline(Process proc)
         {
             try
             {
                 processOutline.UpdateLocation(WindowItem.Create(proc));
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveProcessOutline(IntPtr handle)
+        {
+            try
+            {
+                processOutline.UpdateLocation(handle);
             }
             catch (Exception ex)
             {
@@ -278,25 +408,41 @@ namespace Panacea.Windows
             }
         }
 
+        private void ShowProcessOutline(IntPtr handle)
+        {
+            try
+            {
+                if (processOutline == null)
+                {
+                    processOutline = new ProcessOutline(handle);
+                    processOutline.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         private void AddProcessToWinList()
         {
             try
             {
                 bool optionChecked = false;
-                Process selProc = (Process)lbProcList.SelectedItem;
+                WindowListItem selProc = (WindowListItem)lbProcList.SelectedItem;
                 ProcessOptions options = new ProcessOptions();
                 if (chkIgnoreWinTitle.IsChecked == true)
                 {
                     options.IgnoreProcessTitle = true;
                     optionChecked = true;
                 }
-                uDebugLogAdd($"Adding process to window list, {selProc.ProcessName}, {selProc.MainWindowTitle}");
+                uDebugLogAdd($"Adding process to window list, {selProc.Display}");
                 if (optionChecked)
-                    Toolbox.settings.AddWindow(WindowItem.Create(selProc, options));
+                    Toolbox.settings.AddWindow(WindowItem.Create(selProc.Process, options, selProc.Title));
                 else
-                    Toolbox.settings.AddWindow(WindowItem.Create(selProc));
+                    Toolbox.settings.AddWindow(WindowItem.Create(selProc.Process, null, selProc.Title));
                 uDebugLogAdd("Added process to window list");
-                SendUserUpdateNotification($"Added entry for this process: {selProc.ProcessName} ");
+                SendUserUpdateNotification($"Added entry for this process: {selProc.Display} ");
                 //lbProcList.Items.Remove(selProc);
                 //uDebugLogAdd("Removed existing selected item from the window list");
             }

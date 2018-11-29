@@ -25,6 +25,11 @@ namespace Panacea.Windows
             InitializeComponent();
             UpdateLocation(windowItem);
         }
+        public ProcessOutline(IntPtr handle)
+        {
+            InitializeComponent();
+            UpdateLocation(handle);
+        }
 
         public void UpdateLocation(WindowItem windowItem)
         {
@@ -35,6 +40,22 @@ namespace Panacea.Windows
                 this.Height = windowItem.WindowInfo.Height;
                 this.Width = windowItem.WindowInfo.Width;
                 Toolbox.uAddDebugLog($"Updated Process Outline Location: L{this.Left} T{this.Top} H{this.Height} W{this.Width}");
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+        }
+
+        public void UpdateLocation(IntPtr handle)
+        {
+            try
+            {
+                var rect = WindowInfo.GetHandleDimensions(handle);
+                this.Left = rect.Left;
+                this.Top = rect.Top;
+                this.Width = rect.Right - rect.Left;
+                this.Height = rect.Bottom - rect.Top;
             }
             catch (Exception ex)
             {

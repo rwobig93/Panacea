@@ -25,6 +25,9 @@ using NAudio.CoreAudioApi;
 using System.Collections;
 using System.Reflection;
 using System.Net.Sockets;
+using System.Net.Http;
+using System.IO.Compression;
+using System.Net.Mail;
 
 namespace Panacea
 {
@@ -826,6 +829,11 @@ namespace Panacea
             }
         }
 
+        private void btnSendDiag_Click(object sender, RoutedEventArgs e)
+        {
+            SendDiagnostics();
+        }
+
         #endregion
 
         #endregion
@@ -1256,6 +1264,9 @@ namespace Panacea
         {
             try
             {
+                uDebugLogAdd("Starting old file cleanup");
+                uDebugLogAdd($"Cleaning up logDir: {logDir}");
+                var logDirRemoves = 0;
                 foreach (var file in Directory.EnumerateFiles(logDir))
                 {
                     FileInfo fileInfo = new FileInfo(file);
@@ -1266,6 +1277,7 @@ namespace Panacea
                         {
                             fileInfo.Delete();
                             uStatusUpdate($"Deleted old log file: {fileNaem}");
+                            logDirRemoves++;
                         }
                         catch (IOException io)
                         {
@@ -1277,6 +1289,61 @@ namespace Panacea
                         }
                     }
                 }
+                uDebugLogAdd($"Removed {logDirRemoves} old log(s)");
+                uDebugLogAdd($"Cleaning up exDir: {exDir}");
+                var exDirRemoves = 0;
+                foreach (var file in Directory.EnumerateFiles(exDir))
+                {
+                    FileInfo fileInfo = new FileInfo(file);
+                    string fileNaem = fileInfo.Name;
+                    if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
+                    {
+                        try
+                        {
+                            fileInfo.Delete();
+                            uStatusUpdate($"Deleted old exception file: {fileNaem}");
+                            exDirRemoves++;
+                        }
+                        catch (IOException io)
+                        {
+                            uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            LogException(ex);
+                        }
+                    }
+                }
+                uDebugLogAdd($"Removed {exDirRemoves} old exception log(s)");
+                var diagRemoves = 0;
+                if (Directory.Exists($@"{currentDir}\Diag"))
+                {
+                    uDebugLogAdd($"Cleaning up diagDir: {$@"{currentDir}\Diag"}");
+                    foreach (var file in Directory.EnumerateFiles($@"{currentDir}\Diag"))
+                    {
+                        FileInfo fileInfo = new FileInfo(file);
+                        string fileNaem = fileInfo.Name;
+                        if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
+                        {
+                            try
+                            {
+                                fileInfo.Delete();
+                                uStatusUpdate($"Deleted old diag zip file: {fileNaem}");
+                                diagRemoves++;
+                            }
+                            catch (IOException io)
+                            {
+                                uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
+                            }
+                            catch (Exception ex)
+                            {
+                                LogException(ex);
+                            }
+                        }
+                    }
+                    uDebugLogAdd($"Removed {diagRemoves} diag zip(s)");
+                }
+                uDebugLogAdd($"Finished old file cleanup, removed {diagRemoves + exDirRemoves + logDirRemoves} file(s)");
             }
             catch (Exception ex)
             {
@@ -1657,7 +1724,7 @@ namespace Panacea
                     {
                         MissingMemberHandling = MissingMemberHandling.Ignore,
                         DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-                        NullValueHandling = NullValueHandling.Include,
+                        NullValueHandling = NullValueHandling.Ignore,
                     };
                     string serializedObj = JsonConvert.SerializeObject(Toolbox.settings, Formatting.Indented, settings);
                     using (StreamWriter sw = new StreamWriter($@"{confDir}Settings.conf"))
@@ -1687,7 +1754,7 @@ namespace Panacea
                     {
                         MissingMemberHandling = MissingMemberHandling.Ignore,
                         DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-                        NullValueHandling = NullValueHandling.Include,
+                        NullValueHandling = NullValueHandling.Ignore,
                     };
                     using (StreamReader sr = new StreamReader($@"{confDir}Settings.conf"))
                     {
@@ -1754,7 +1821,7 @@ namespace Panacea
                 }
                 uDebugLogAdd("SettingsWIN: working on window process settings");
                 ChangeWindowProfiles(Toolbox.settings.CurrentWindowProfile);
-                lbSavedWindows.ItemsSource = Toolbox.settings.ActiveWindowList;
+                RefreshSavedWindows();
                 uDebugLogAdd("SettingsGEN: working on general settings");
                 chkSettingsBeta.IsChecked = Toolbox.settings.BetaUpdate;
                 uDebugLogAdd("Default settings set");
@@ -1847,6 +1914,59 @@ namespace Panacea
             }
         }
 
+        private void SendDiagnostics()
+        {
+            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+            worker.DoWork += (sender, e) =>
+            {
+                try
+                {
+                    uDebugLogAdd("Attempting to send diagnostic info...");
+                    var diagDir = $@"{currentDir}\Diag";
+                    if (!Directory.Exists(diagDir))
+                    {
+                        uDebugLogAdd($"Diag directory not found, creating: {diagDir}");
+                        Directory.CreateDirectory(diagDir);
+                        uDebugLogAdd("Created diagDir");
+                    }
+                    var zipName = $"Panacea_Diag_{ DateTime.Today.ToString("MM_dd_yy")}";
+                    var zipPath = $@"{diagDir}\{zipName}.zip";
+                    uDebugLogAdd($"zipPath: {zipPath}");
+                    if (File.Exists(zipPath))
+                    {
+                        zipPath = $@"{diagDir}\{zipName}{Toolbox.GenerateRandomNumber(0, 1000)}.zip";
+                        uDebugLogAdd($"Diag zip file for today already exists, added random string: {zipPath}");
+                    }
+                    DumpDebugLog();
+                    ZipFile.CreateFromDirectory(logDir, zipPath);
+                    using (SmtpClient smtp = new SmtpClient("mail.wobigtech.net"))
+                    {
+                        uDebugLogAdd("Generating mail");
+                        MailMessage message = new MailMessage();
+                        MailAddress from = new MailAddress("PanaceaLogs@WobigTech.net");
+                        smtp.UseDefaultCredentials = true;
+                        smtp.Timeout = TimeSpan.FromMinutes(5.0).Seconds;
+
+                        message.From = from;
+                        message.Subject = $"Panacea Diag {DateTime.Today.ToString("MM-dd-yy_hh:mm_tt")}";
+                        message.IsBodyHtml = false;
+                        message.Body = "Panacea Diag Attached";
+                        message.To.Add("rick@wobigtech.net");
+                        message.Attachments.Add(new Attachment(zipPath) { Name = $"{zipName}.zip" });
+                        uDebugLogAdd("Attempting to send mail");
+                        smtp.Send(message);
+                        uDebugLogAdd("Mail sent");
+                    }
+                    ShowNotification("Diagnostic info sent to the developer, Thank You!");
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex);
+                }
+            };
+            worker.RunWorkerAsync();
+        }
+
         #endregion
 
         #region WindowPreferences
@@ -1883,7 +2003,7 @@ namespace Panacea
                         return;
                     }
                     uDebugLogAdd("Got selected saved window");
-                    MoveProcessHandle(selectedWindow);
+                    MoveProcessHandleThreaded(selectedWindow);
                 }
             }
             catch (Exception ex)
@@ -1894,50 +2014,166 @@ namespace Panacea
 
         private void MoveProcessHandle(WindowItem selectedWindow)
         {
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.DoWork += (ws, we) =>
+            try
             {
-                try
+                bool moveAll = false;
+
+                /// Title is a wildcard, lets move ALL THE WINDOWS!!!
+                if (selectedWindow.WindowInfo.Title == "*")
                 {
-                    bool moveAll = false;
+                    moveAll = true;
+                    uDebugLogAdd($"WindowInfo title for {selectedWindow.WindowInfo.Name} is {selectedWindow.WindowInfo.Title} so we will be MOVING ALL THE WINDOWS!!!!");
+                }
+                /// Title isn't a wildcard, lets only move the windows we want
+                else
+                    uDebugLogAdd($"WindowInfo title for {selectedWindow.WindowInfo.Name} is {selectedWindow.WindowInfo.Title} so I can only move matching handles... :(");
 
-                    /// Title is a wildcard, lets move ALL THE WINDOWS!!!
-                    if (selectedWindow.WindowInfo.Title == "*")
+                List<DetailedProcess> foundList = new List<DetailedProcess>();
+                foreach (var proc in Process.GetProcessesByName(selectedWindow.WindowInfo.Name))
+                {
+                    foreach (var handle in WinAPIWrapper.EnumerateProcessWindowHandles(proc.Id))
                     {
-                        moveAll = true;
-                        uDebugLogAdd($"WindowInfo title for {selectedWindow.WindowInfo.Name} is {selectedWindow.WindowInfo.Title} so we will be MOVING ALL THE WINDOWS!!!!");
-                    }
-                    /// Title isn't a wildcard, lets only move the windows we want
-                    else
-                        uDebugLogAdd($"WindowInfo title for {selectedWindow.WindowInfo.Name} is {selectedWindow.WindowInfo.Title} so I can only move matching handles... :(");
-
-                    List<DetailedProcess> foundList = new List<DetailedProcess>();
-                    foreach (var proc in Process.GetProcessesByName(selectedWindow.WindowInfo.Name))
-                    {
-                        foreach (var handle in WinAPIWrapper.EnumerateProcessWindowHandles(proc.Id))
+                        try
                         {
                             var detProc = DetailedProcess.Create(proc, handle);
                             foundList.Add(detProc);
                             uDebugLogAdd($"Added to list | [{detProc.Handle}]{detProc.Name} :: {detProc.Title}");
                         }
-                    }
-                    if (moveAll)
-                        foreach (var detProc in foundList)
+                        catch (Exception ex)
                         {
-                            uDebugLogAdd($"Moving handle | [{detProc.Handle}]{detProc.Name} :: {detProc.Title}");
-                            WinAPIWrapper.MoveWindow(detProc.Handle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                            uDebugLogAdd($"Unable to add handle to the list | [{handle}]{proc.ProcessName}: {ex.Message}");
                         }
-                    else
+                    }
+                }
+                if (moveAll)
+                    foreach (var detProc in foundList)
                     {
-                        foreach (var detProc in foundList)
+                        try
+                        {
+                            if (Toolbox.settings.ActiveWindowList.Find(x =>
+                            x.WindowInfo.Name == detProc.Name &&
+                            x.WindowInfo.Title == detProc.Title
+                            ) == null)
+                            {
+                                uDebugLogAdd($"Moving handle | [{detProc.Handle}]{detProc.Name} :: {detProc.Title}");
+                                WinAPIWrapper.MoveWindow(detProc.Handle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                            }
+                            else
+                                uDebugLogAdd($"Skipping handle window as it has another place to be | [{detProc.Handle}]{detProc.Name} {detProc.Title}");
+                        }
+                        catch (Exception ex)
+                        {
+                            uDebugLogAdd($"Unable to move handle window | [{detProc.Handle}]{detProc.Name} {detProc.Title}: {ex.Message}");
+                        }
+                    }
+                else
+                {
+                    foreach (var detProc in foundList)
+                    {
+                        try
                         {
                             if (detProc.Name == selectedWindow.WindowInfo.Name &&
-                                detProc.Title == selectedWindow.WindowInfo.Title)
+                                            detProc.Title == selectedWindow.WindowInfo.Title)
                             {
                                 uDebugLogAdd($"Matched window & title, moving: [{detProc.Handle}]{detProc.Name} | {detProc.Title}");
                                 WinAPIWrapper.MoveWindow(detProc.Handle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            uDebugLogAdd($"Unable to move handle window | [{detProc.Handle}]{detProc.Name} {detProc.Title}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveProcessHandleThreaded(WindowItem selectedWindow)
+        {
+            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+            worker.DoWork += (sender, e) =>
+            {
+                try
+                {
+                    try
+                    {
+                        bool moveAll = false;
+
+                        /// Title is a wildcard, lets move ALL THE WINDOWS!!!
+                        if (selectedWindow.WindowInfo.Title == "*")
+                        {
+                            moveAll = true;
+                            uDebugLogAdd($"WindowInfo title for {selectedWindow.WindowInfo.Name} is {selectedWindow.WindowInfo.Title} so we will be MOVING ALL THE WINDOWS!!!!");
+                        }
+                        /// Title isn't a wildcard, lets only move the windows we want
+                        else
+                            uDebugLogAdd($"WindowInfo title for {selectedWindow.WindowInfo.Name} is {selectedWindow.WindowInfo.Title} so I can only move matching handles... :(");
+
+                        List<DetailedProcess> foundList = new List<DetailedProcess>();
+                        foreach (var proc in Process.GetProcessesByName(selectedWindow.WindowInfo.Name))
+                        {
+                            foreach (var handle in WinAPIWrapper.EnumerateProcessWindowHandles(proc.Id))
+                            {
+                                try
+                                {
+                                    var detProc = DetailedProcess.Create(proc, handle);
+                                    foundList.Add(detProc);
+                                    uDebugLogAdd($"Added to list | [{detProc.Handle}]{detProc.Name} :: {detProc.Title}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    uDebugLogAdd($"Unable to add handle to the list | [{handle}]{proc.ProcessName}: {ex.Message}");
+                                }
+                            }
+                        }
+                        if (moveAll)
+                            foreach (var detProc in foundList)
+                            {
+                                try
+                                {
+                                    if (Toolbox.settings.ActiveWindowList.Find(x =>
+                                    x.WindowInfo.Name == detProc.Name &&
+                                    x.WindowInfo.Title == detProc.Title
+                                    ) == null)
+                                    {
+                                        uDebugLogAdd($"Moving handle | [{detProc.Handle}]{detProc.Name} :: {detProc.Title}");
+                                        WinAPIWrapper.MoveWindow(detProc.Handle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                                    }
+                                    else
+                                        uDebugLogAdd($"Skipping handle window as it has another place to be | [{detProc.Handle}]{detProc.Name} {detProc.Title}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    uDebugLogAdd($"Unable to move handle window | [{detProc.Handle}]{detProc.Name} {detProc.Title}: {ex.Message}");
+                                }
+                            }
+                        else
+                        {
+                            foreach (var detProc in foundList)
+                            {
+                                try
+                                {
+                                    if (detProc.Name == selectedWindow.WindowInfo.Name &&
+                                                    detProc.Title == selectedWindow.WindowInfo.Title)
+                                    {
+                                        uDebugLogAdd($"Matched window & title, moving: [{detProc.Handle}]{detProc.Name} | {detProc.Title}");
+                                        WinAPIWrapper.MoveWindow(detProc.Handle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    uDebugLogAdd($"Unable to move handle window | [{detProc.Handle}]{detProc.Name} {detProc.Title}: {ex.Message}");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
                     }
                 }
                 catch (Exception ex)
@@ -2272,7 +2508,7 @@ namespace Panacea
             try
             {
                 lbSavedWindows.ItemsSource = null;
-                lbSavedWindows.ItemsSource = Toolbox.settings.ActiveWindowList;
+                lbSavedWindows.ItemsSource = Toolbox.settings.ActiveWindowList.OrderBy(x => x.WindowSum).ToList();
             }
             catch (Exception ex)
             {
@@ -2411,10 +2647,42 @@ namespace Panacea
         {
             try
             {
+                uDebugLogAdd("Starting All Window Move");
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                var workerCount = 0;
                 foreach (var window in Toolbox.settings.ActiveWindowList.ToList())
                 {
-                    MoveProcessHandle(window);
+                    workerCount++;
+                    BackgroundWorker worker = new BackgroundWorker();
+                    worker.DoWork += (sender, e) =>
+                    {
+                        try
+                        {
+                            MoveProcessHandle(window);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogException(ex);
+                        }
+                        finally
+                        {
+                            workerCount--;
+                        }
+                    };
+                    worker.RunWorkerAsync();
                 }
+                BackgroundWorker verifyier = new BackgroundWorker() { WorkerReportsProgress = true };
+                verifyier.DoWork += (ws, we) =>
+                {
+                    while (workerCount != 0)
+                    {
+                        Thread.Sleep(100);
+                    }
+                    stopwatch.Stop();
+                    uDebugLogAdd($"Finished All Window Move after {stopwatch.Elapsed.Seconds}s {stopwatch.Elapsed.Milliseconds}ms");
+                };
+                verifyier.RunWorkerAsync();
             }
             catch (Exception ex)
             {
@@ -3127,7 +3395,7 @@ namespace Panacea
                 var appName = appUpdate.ToString();
                 uDebugLogAdd($"Getting update for: {appName}");
                 if (Toolbox.settings.BetaUpdate)
-                    recentRelease = releases.ToList().FindAll(x => x.Prerelease == true && x.Assets[0].Name.Contains(appName)).OrderBy(x => x.TagName).Last();
+                    recentRelease = releases.ToList().FindAll(x => x.Assets[0].Name.Contains(appName)).OrderBy(x => x.TagName).Last();
                 else
                     recentRelease = releases.ToList().FindAll(x => x.Prerelease == false && x.Assets[0].Name.Contains(appName)).OrderBy(x => x.TagName).Last();
                 Version prodVersion = new Version(recentRelease.TagName);
@@ -3152,6 +3420,7 @@ namespace Panacea
                 }
                 uDebugLogAdd($"Finished getting github recent version");
             }
+            catch (HttpRequestException hre) { uDebugLogAdd($"Unable to reach site, error: {hre.Message}"); }
             catch (InvalidOperationException ioe)
             {
                 uDebugLogAdd($"Unable to get updates, reason: {ioe.Message}");
