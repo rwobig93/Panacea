@@ -17,7 +17,6 @@
 *.dll
 *.json
 *.props
-*.xml
 *.targets
 /packages
 /Upstaller/bin/x64
