@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using static Panacea.MainWindow;
@@ -198,6 +199,13 @@ namespace Panacea.Classes
                 Display = $"{process.ProcessName} | {title}"
             };
         }
+    }
+    public class ChangeLogItem
+    {
+        public string Version { get; set; }
+        public Visibility BugFixes { get; set; }
+        public Visibility NewFeatures { get; set; }
+        public Visibility BetaRelease { get; set; }
     }
 
     public enum Direction

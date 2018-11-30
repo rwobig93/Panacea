@@ -438,5 +438,6 @@
             <Button x:Name="btnViewChangeLog" Click="btnViewChangeLog_Click" Content="View Changelog" HorizontalAlignment="Left" Margin="84,111,0,0" VerticalAlignment="Top" Width="102"/>
             <Button x:Name="btnSendDiag" Click="btnSendDiag_Click" Content="Send Diagnostic Logs" HorizontalAlignment="Left" Margin="307,111,0,0" VerticalAlignment="Top" Width="133"/>
         </Grid>
+        <Button x:Name="btnMinimize" Click="btnMinimize_Click" Style="{StaticResource ExitButton}" Content="_" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" FontSize="18" Margin="0,0,29,0"/>
     </Grid>
 </Window>

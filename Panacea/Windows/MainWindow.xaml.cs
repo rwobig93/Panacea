@@ -125,6 +125,19 @@ namespace Panacea
             this.Close();
         }
 
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                uDebugLogAdd("Minimizing window");
+                this.WindowState = WindowState.Minimized;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         #endregion
 
         #region Event Handlers
@@ -229,6 +242,12 @@ namespace Panacea
             {
                 LogException(ex);
             }
+        }
+
+        private void BtnTest_Click(object sender, RoutedEventArgs e)
+        {
+            //TestWifi();
+            OpenNewChangelog();
         }
 
         private void lblTitle_MouseDown(object sender, MouseButtonEventArgs e)
@@ -768,11 +787,6 @@ namespace Panacea
             {
                 LogException(ex);
             }
-        }
-
-        private void BtnTest_Click(object sender, RoutedEventArgs e)
-        {
-            TestWifi();
         }
 
         #endregion
@@ -1965,6 +1979,19 @@ namespace Panacea
                 }
             };
             worker.RunWorkerAsync();
+        }
+
+        private void OpenNewChangelog()
+        {
+            try
+            {
+                Changelog changelog = new Changelog();
+                changelog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion
