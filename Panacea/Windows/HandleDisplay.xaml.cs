@@ -312,7 +312,7 @@ namespace Panacea.Windows
                                         {
                                             try
                                             {
-                                                if (WindowInfo.DoesHandleHaveSize(handle))
+                                                if (WindowInfo.DoesHandleHaveSize(handle) && WinAPIWrapper.IsWindowVisible(handle))
                                                 {
                                                     var windowListItem = WindowListItem.Create(proc, handle);
                                                     if (tempWindowList.Find(x => x.Display == windowListItem.Display) == null)

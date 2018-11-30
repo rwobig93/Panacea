@@ -3419,17 +3419,22 @@ namespace Panacea
                     var panaceaReleases = releases.ToList().FindAll(x => x.Assets[0].Name.Contains(appName)).OrderBy(x => x.TagName);
                     foreach (var release in panaceaReleases)
                     {
-                        uDebugLogAdd($"Adding release to changelog list: {release.TagName}");
-                        var changeLog = new ChangeLogItem()
+                        if (!string.IsNullOrWhiteSpace(release.Body))
                         {
-                            Version = $"v{release.TagName}",
-                            Body = release.Body,
-                            BugFixes = release.Body.Contains("Bug Fixes:") ? Visibility.Visible : Visibility.Hidden,
-                            NewFeatures = release.Body.Contains("New Features:") ? Visibility.Visible : Visibility.Hidden,
-                            BetaRelease = release.Prerelease ? Visibility.Visible : Visibility.Hidden
-                        };
-                        Toolbox.changeLogs.Add(changeLog);
-                        uDebugLogAdd($"Added release [v]{changeLog.Version} [fix]{changeLog.BugFixes.ToString()} [feat]{changeLog.NewFeatures.ToString()} [beta]{changeLog.BetaRelease.ToString()}");
+                            uDebugLogAdd($"Adding release to changelog list: {release.TagName}");
+                            var changeLog = new ChangeLogItem()
+                            {
+                                Version = $"v{release.TagName}",
+                                Body = release.Body,
+                                BugFixes = release.Body.Contains("Bug Fixes:") ? Visibility.Visible : Visibility.Hidden,
+                                NewFeatures = release.Body.Contains("New Features:") ? Visibility.Visible : Visibility.Hidden,
+                                BetaRelease = release.Prerelease ? Visibility.Visible : Visibility.Hidden
+                            };
+                            Toolbox.changeLogs.Add(changeLog);
+                            uDebugLogAdd($"Added release [v]{changeLog.Version} [fix]{changeLog.BugFixes.ToString()} [feat]{changeLog.NewFeatures.ToString()} [beta]{changeLog.BetaRelease.ToString()}");
+                        }
+                        else
+                            uDebugLogAdd($"Release {release.TagName} is a {release.Name} release, skipping changeLog add");
                     }
                     uDebugLogAdd("Finished gathering all changelogs");
                 }
