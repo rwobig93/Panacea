@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -14,8 +15,9 @@ namespace Panacea.Classes
     {
         public static StringBuilder debugLog = new StringBuilder();
         public static Settings settings = new Settings();
-        private static string logDir = string.Format(@"{0}\Logs\", Directory.GetCurrentDirectory());
-        private static string exDir = string.Format(@"{0}\Logs\Exceptions\", Directory.GetCurrentDirectory());
+        public static List<ChangeLogItem> changeLogs = new List<ChangeLogItem>();
+        private static string logDir = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\";
+        private static string exDir = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\Exceptions\";
         private static Random random = new Random((int)(DateTime.Now.Ticks & 0x7FFFFFFF));
         
         public static void LogException(Exception ex, [CallerLineNumber] int lineNum = 0, [CallerMemberName] string caller = "", [CallerFilePath] string path = "")

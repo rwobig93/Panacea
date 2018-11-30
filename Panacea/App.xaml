@@ -690,6 +690,42 @@
             </Style.Triggers>
         </Style>
         <!--#endregion-->
+        <!--#region TextboxNoReaction-->
+        <Style x:Name="TextboxNoReaction" x:Key="TextboxNoReaction" TargetType="{x:Type TextBox}">
+            <Setter Property="Foreground" Value="#FF8D8D8D" />
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderBrush">
+                <Setter.Value>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF4B4A4A"/>
+                        <GradientStop Color="#FF303030" Offset="0.497"/>
+                        <GradientStop Color="#FF4B4A4A" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBoxBase}">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" TargetName="border" Value="0.56"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!--#endregion-->
         <!--#region BaseListBox-->
         <Style x:Name="BaseListBox" TargetType="{x:Type ListBox}">
             <Setter Property="Foreground" Value="#FF8D8D8D" />

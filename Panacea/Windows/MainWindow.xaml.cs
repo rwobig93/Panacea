@@ -246,8 +246,7 @@ namespace Panacea
 
         private void BtnTest_Click(object sender, RoutedEventArgs e)
         {
-            //TestWifi();
-            OpenNewChangelog();
+            TestWifi();
         }
 
         private void lblTitle_MouseDown(object sender, MouseButtonEventArgs e)
@@ -1918,9 +1917,11 @@ namespace Panacea
         {
             try
             {
-                uDebugLogAdd("Showing Changelog Window");
-                Prompt.OK($"Changelog for v{Toolbox.settings.CurrentVersion}:{Environment.NewLine}{Toolbox.settings.LatestChangelog}", TextAlignment.Left);
-                uDebugLogAdd("Closed changelog window");
+                Changelog changelog = new Changelog();
+                changelog.ShowDialog();
+                //uDebugLogAdd("Showing Changelog Window");
+                //Prompt.OK($"Changelog for v{Toolbox.settings.CurrentVersion}:{Environment.NewLine}{Toolbox.settings.LatestChangelog}", TextAlignment.Left);
+                //uDebugLogAdd("Closed changelog window");
             }
             catch (Exception ex)
             {
@@ -1979,19 +1980,6 @@ namespace Panacea
                 }
             };
             worker.RunWorkerAsync();
-        }
-
-        private void OpenNewChangelog()
-        {
-            try
-            {
-                Changelog changelog = new Changelog();
-                changelog.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
         }
 
         #endregion
@@ -3348,7 +3336,7 @@ namespace Panacea
                         Toolbox.settings.CurrentVersion = currVer;
                         uDebugLogAdd($"Current Version: {Toolbox.settings.CurrentVersion}");
                         Task t = Task.Run(async () => { await GetUpdate(AppUpdate.Panacea); });
-                        while (!t.IsCompleted && upstallerUpdateInProg)
+                        while ((!t.IsCompleted) || upstallerUpdateInProg)
                         {
                             Thread.Sleep(500);
                         }
@@ -3382,6 +3370,12 @@ namespace Panacea
                                     Toolbox.settings.ShowChangelog = false;
                                     ShowChangelog();
                                 }
+                            }
+                            if (Toolbox.changeLogs.Find(x => x.Version == Toolbox.settings.CurrentVersion.ToString()) != null)
+                            {
+                                uDebugLogAdd("Found changelog item for current running version, verifying if beta release");
+                                txtBetaLabel.Visibility = Toolbox.changeLogs.Find(x => x.Version == Toolbox.settings.CurrentVersion.ToString()).BetaRelease;
+                                uDebugLogAdd($"Beta label has been set to: {txtBetaLabel.Visibility.ToString()} based on the changelog of this release");
                             }
                             SaveSettings();
                         }
@@ -3417,9 +3411,29 @@ namespace Panacea
             try
             {
                 var releases = await gitClient.Repository.Release.GetAll("rwobig93", "Panacea");
-                uDebugLogAdd($"Releases found: {releases.Count}");
-                Octokit.Release recentRelease;
                 var appName = appUpdate.ToString();
+                uDebugLogAdd($"Releases found: {releases.Count}");
+                if (appUpdate == AppUpdate.Panacea)
+                {
+                    uDebugLogAdd("Gathering changelog from each release");
+                    var panaceaReleases = releases.ToList().FindAll(x => x.Assets[0].Name.Contains(appName)).OrderBy(x => x.TagName);
+                    foreach (var release in panaceaReleases)
+                    {
+                        uDebugLogAdd($"Adding release to changelog list: {release.TagName}");
+                        var changeLog = new ChangeLogItem()
+                        {
+                            Version = $"v{release.TagName}",
+                            Body = release.Body,
+                            BugFixes = release.Body.Contains("Bug Fixes:") ? Visibility.Visible : Visibility.Hidden,
+                            NewFeatures = release.Body.Contains("New Features:") ? Visibility.Visible : Visibility.Hidden,
+                            BetaRelease = release.Prerelease ? Visibility.Visible : Visibility.Hidden
+                        };
+                        Toolbox.changeLogs.Add(changeLog);
+                        uDebugLogAdd($"Added release [v]{changeLog.Version} [fix]{changeLog.BugFixes.ToString()} [feat]{changeLog.NewFeatures.ToString()} [beta]{changeLog.BetaRelease.ToString()}");
+                    }
+                    uDebugLogAdd("Finished gathering all changelogs");
+                }
+                Octokit.Release recentRelease;
                 uDebugLogAdd($"Getting update for: {appName}");
                 if (Toolbox.settings.BetaUpdate)
                     recentRelease = releases.ToList().FindAll(x => x.Assets[0].Name.Contains(appName)).OrderBy(x => x.TagName).Last();

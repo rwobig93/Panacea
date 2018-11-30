@@ -203,6 +203,7 @@ namespace Panacea.Classes
     public class ChangeLogItem
     {
         public string Version { get; set; }
+        public string Body { get; set; }
         public Visibility BugFixes { get; set; }
         public Visibility NewFeatures { get; set; }
         public Visibility BetaRelease { get; set; }

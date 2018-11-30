@@ -170,7 +170,7 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <TextBlock x:Name="lblTitle" MouseDown="lblTitle_MouseDown" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Panacea" VerticalAlignment="Top" Height="30" Width="91" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Panel.ZIndex="100"/>
+        <TextBlock x:Name="lblTitle" MouseDown="lblTitle_MouseDown" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Panacea" VerticalAlignment="Top" Height="30" Width="91" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Panel.ZIndex="101"/>
         <Grid x:Name="grdNotification" Height="30" VerticalAlignment="Top" Panel.ZIndex="50" d:IsLocked="True">
             <TextBlock x:Name="lblNotification" TextWrapping="Wrap" Foreground="#FF368DB6" TextAlignment="Center" FontSize="16" Margin="0,30,0,0" Height="45" VerticalAlignment="Top">
                 <TextBlock.Background>
@@ -439,5 +439,6 @@
             <Button x:Name="btnSendDiag" Click="btnSendDiag_Click" Content="Send Diagnostic Logs" HorizontalAlignment="Left" Margin="307,111,0,0" VerticalAlignment="Top" Width="133"/>
         </Grid>
         <Button x:Name="btnMinimize" Click="btnMinimize_Click" Style="{StaticResource ExitButton}" Content="_" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" FontSize="18" Margin="0,0,29,0"/>
+        <TextBox x:Name="txtBetaLabel" HorizontalAlignment="Center" Style="{StaticResource TextboxNoReaction}" Height="20" Visibility="Hidden" Margin="354,6,241,0" TextWrapping="Wrap" Text="Beta" VerticalAlignment="Top" Width="30" Panel.ZIndex="100" Focusable="False" AllowDrop="False" IsReadOnly="True" IsTabStop="False" Foreground="Red" BorderBrush="Red"/>
     </Grid>
 </Window>

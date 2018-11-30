@@ -42,7 +42,7 @@
                 </LinearGradientBrush>
             </Rectangle.Stroke>
         </Rectangle>
-        <ListBox x:Name="lbVersions" Margin="1,31,0,10" HorizontalAlignment="Left" Width="180">
+        <ListBox x:Name="lbVersions" SelectionChanged="LbVersions_SelectionChanged" Margin="1,31,0,10" HorizontalAlignment="Left" Width="180">
             <ListBox.Background>
                 <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
                     <GradientStop Color="#FF111111"/>
@@ -64,14 +64,14 @@
                             </LinearGradientBrush>
                         </Grid.Background>
                         <TextBlock TextWrapping="Wrap" Text="{Binding Version}" VerticalAlignment="Top" Height="15" Foreground="#FFA0A0A0" TextAlignment="Center"/>
-                        <TextBox HorizontalAlignment="Left" Visibility="{Binding BugFixes}" Height="16" Margin="4,18,0,0" TextWrapping="Wrap" Text="BugFix" VerticalAlignment="Top" Width="36" FontSize="10" IsReadOnly="True" Background="{x:Null}" SelectionBrush="{x:Null}" BorderBrush="#FF0B22B0"/>
-                        <TextBox HorizontalAlignment="Left" Visibility="{Binding NewFeatures}" Height="16" Margin="43,18,0,0" TextWrapping="Wrap" Text="New Feature" VerticalAlignment="Top" Width="62" FontSize="10" IsReadOnly="True" Background="{x:Null}" SelectionBrush="{x:Null}" BorderBrush="#FF03A012"/>
-                        <TextBox HorizontalAlignment="Left" Visibility="{Binding BetaRelease}" Height="16" Margin="108,18,0,0" TextWrapping="Wrap" Text="Beta" VerticalAlignment="Top" Width="26" FontSize="10" IsReadOnly="True" Background="{x:Null}" SelectionBrush="{x:Null}" BorderBrush="#FFBD1010"/>
+                        <TextBox HorizontalAlignment="Left" Visibility="{Binding BugFixes}" Height="16" Style="{StaticResource TextboxNoReaction}" Margin="4,18,0,0" TextWrapping="Wrap" Text="BugFix" VerticalAlignment="Top" Width="36" FontSize="10" Focusable="False" AllowDrop="False" IsReadOnly="True" IsTabStop="False" Background="{x:Null}" SelectionBrush="{x:Null}" BorderBrush="#FF0B22B0"/>
+                        <TextBox HorizontalAlignment="Left" Visibility="{Binding NewFeatures}" Height="16" Margin="43,18,0,0" TextWrapping="Wrap" Text="New Feature" VerticalAlignment="Top" Width="62" FontSize="10" Focusable="False" AllowDrop="False" IsReadOnly="True" IsTabStop="False" Background="{x:Null}" SelectionBrush="{x:Null}" BorderBrush="#FF03A012"/>
+                        <TextBox HorizontalAlignment="Left" Visibility="{Binding BetaRelease}" Height="16" Margin="108,18,0,0" TextWrapping="Wrap" Text="Beta" VerticalAlignment="Top" Width="26" FontSize="10" Focusable="False" AllowDrop="False" IsReadOnly="True" IsTabStop="False" Background="{x:Null}" SelectionBrush="{x:Null}" BorderBrush="#FFBD1010"/>
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <TextBox x:Name="txtChangeLogText" Margin="186,31,10,10" TextWrapping="Wrap" IsReadOnly="True" Background="{x:Null}"/>
+        <TextBox x:Name="txtChangeLogText" Margin="186,31,10,10" TextWrapping="Wrap" Style="{StaticResource TextboxNoReaction}" Focusable="False" AllowDrop="False" IsReadOnly="True" IsTabStop="False" Background="{x:Null}"/>
         <Rectangle x:Name="rectTitle" Height="30" VerticalAlignment="Top" Panel.ZIndex="99" Margin="1,1,0,0">
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">

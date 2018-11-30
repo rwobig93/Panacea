@@ -24,9 +24,57 @@ namespace Panacea.Windows
         public Changelog()
         {
             InitializeComponent();
+            Startup();
         }
 
-        List<ChangeLogItem> changeLogs = new List<ChangeLogItem>();
+        private void Startup()
+        {
+            DisplayChangeLogs();
+            SelectCurrentVersion();
+        }
+
+        private void SelectCurrentVersion()
+        {
+            try
+            {
+                var currentVersion = Toolbox.settings.CurrentVersion.ToString();
+                ChangeLogItem curVerItem = null;
+                foreach (var item in lbVersions.Items)
+                {
+                    if (((ChangeLogItem)item).Version == currentVersion)
+                    {
+                        Toolbox.uAddDebugLog($"Found current version changelog item | [v]{currentVersion} [iv]{((ChangeLogItem)item).Version}");
+                        curVerItem = ((ChangeLogItem)item);
+                        break;
+                    }
+                }
+                if (curVerItem != null)
+                {
+                    Toolbox.uAddDebugLog("We found the changelog item for the current version, changing current selected item");
+                    lbVersions.SelectedItem = curVerItem;
+                    Toolbox.uAddDebugLog($"Changed selected item to: {curVerItem.Version}");
+                }
+                else
+                    Toolbox.uAddDebugLog("Couldn't find a matching changelog item for the current running version, didn't auto select");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void DisplayChangeLogs()
+        {
+            try
+            {
+                lbVersions.ItemsSource = null;
+                lbVersions.ItemsSource = Toolbox.changeLogs.OrderByDescending(x => x.Version);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -35,37 +83,12 @@ namespace Panacea.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            PopulateTestVersions();
+            
         }
 
         private void LogException(Exception ex, [CallerLineNumber] int lineNum = 0, [CallerMemberName] string caller = "", [CallerFilePath] string path = "")
         {
             Toolbox.LogException(ex, lineNum, caller, path);
-        }
-
-        private void PopulateTestVersions()
-        {
-            try
-            {
-                for (int i = 0; i < 20; i++)
-                {
-                    int bugs = Toolbox.GenerateRandomNumber(0, 2);
-                    int features = Toolbox.GenerateRandomNumber(0, 2);
-                    int beta = Toolbox.GenerateRandomNumber(0, 1);
-                    changeLogs.Add(new ChangeLogItem()
-                    {
-                        Version = $"0.1.6903.387{i}",
-                        BugFixes = bugs == 1 ? Visibility.Visible : Visibility.Hidden,
-                        NewFeatures = features == 1 ? Visibility.Visible : Visibility.Hidden,
-                        BetaRelease = Visibility.Visible
-                    });
-                }
-                lbVersions.ItemsSource = changeLogs.OrderBy(x => x.Version);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -86,6 +109,20 @@ namespace Panacea.Windows
             try
             {
                 this.Close();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void LbVersions_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                Toolbox.uAddDebugLog("Setting changelog textbox to selected changelog body");
+                txtChangeLogText.Text = Toolbox.changeLogs.Find(x => x.Version == ((ChangeLogItem)lbVersions.SelectedItem).Version).Body;
+                Toolbox.uAddDebugLog("Now showing changelog body");
             }
             catch (Exception ex)
             {
