@@ -81,7 +81,7 @@
             </Rectangle.Fill>
         </Rectangle>
         <TextBlock x:Name="lblTitle" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Changelog" VerticalAlignment="Top" Height="30" Width="97" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Panel.ZIndex="100" Margin="286,1,286,0"/>
-        <Button x:Name="btnExit" Click="btnExit_Click" Style="{StaticResource ExitButton}" Content="X" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="32" FontSize="18" Margin="0,1,0,0" BorderBrush="{x:Null}"/>
+        <Button x:Name="btnExit" Click="btnExit_Click" Style="{StaticResource ExitButtonHoverColor}" Content="X" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="32" FontSize="18" Margin="0,1,0,0" BorderBrush="{x:Null}"/>
 
 
     </Grid>

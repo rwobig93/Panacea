@@ -34,6 +34,7 @@ namespace Panacea.Windows
         private List<WindowListItem> _windowList = new List<WindowListItem>();
         private List<string> _notificationList = new List<string>();
         private bool _playingNotification = false;
+        private LoadingType _loadingInProgress = LoadingType.Done;
         public List<Process> ProcessList
         {
             get { return _procList; }
@@ -51,6 +52,11 @@ namespace Panacea.Windows
                 _windowList = value;
                 OnPropertyChanged("WindowList");
             }
+        }
+        private enum LoadingType
+        {
+            Start,
+            Done
         }
 
         #endregion
@@ -290,6 +296,9 @@ namespace Panacea.Windows
         {
             try
             {
+                ToggleLoading(LoadingType.Start);
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
                 var tempWindowList = new List<WindowListItem>();
                 BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
                 worker.DoWork += (ws, we) =>
@@ -356,7 +365,9 @@ namespace Panacea.Windows
                         lbProcList.ItemsSource = null;
                         WindowList = tempWindowList.OrderBy(x => x.Display).ToList();
                         lbProcList.ItemsSource = WindowList;
-                        uDebugLogAdd("Updated window list");
+                        stopWatch.Stop();
+                        uDebugLogAdd($"Updated window list, took: {stopWatch.Elapsed.Seconds}s {stopWatch.Elapsed.Milliseconds}ms");
+                        ToggleLoading(LoadingType.Done);
                     }
                 };
                 worker.RunWorkerAsync();
@@ -456,10 +467,13 @@ namespace Panacea.Windows
         {
             try
             {
-                uDebugLogAdd("Closing process outline window");
-                processOutline.Close();
-                processOutline = null;
-                uDebugLogAdd("Closed and null'd process outline window");
+                if (processOutline != null)
+                {
+                    uDebugLogAdd("Closing process outline window");
+                    processOutline.Close();
+                    processOutline = null;
+                    uDebugLogAdd("Closed and null'd process outline window");
+                }
             }
             catch (Exception ex)
             {
@@ -495,6 +509,31 @@ namespace Panacea.Windows
                     uDebugLogAdd("Notification wasn't previously playing, starting Notification Helper");
                     tNotificationHelper();
                 }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ToggleLoading(LoadingType loadingType)
+        {
+            try
+            {
+                uDebugLogAdd($"Toggling loading label to: {loadingType.ToString()}");
+                if (_loadingInProgress != LoadingType.Start && loadingType == LoadingType.Start)
+                {
+                    uDebugLogAdd($"Current loading: {_loadingInProgress.ToString()} | Toggled to: {loadingType.ToString()} | Starting loading label up");
+                    tLoadingStart();
+                }
+                else if (loadingType == LoadingType.Done)
+                {
+                    uDebugLogAdd($"Setting loading to: {loadingType.ToString()}");
+                    _loadingInProgress = LoadingType.Done;
+                }
+                else
+                    _loadingInProgress = LoadingType.Done;
+                uDebugLogAdd($"Loading now: {loadingType.ToString()}");
             }
             catch (Exception ex)
             {
@@ -540,6 +579,78 @@ namespace Panacea.Windows
                         {
                             lblUpdateNotification.Text = _notificationList.ToList()[0];
                             lblUpdateNotification.BeginAnimation(TextBlock.OpacityProperty, animation);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                };
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void tLoadingStart()
+        {
+            try
+            {
+                _loadingInProgress = LoadingType.Start;
+                DoubleAnimation animateOut = new DoubleAnimation()
+                {
+                    From = 1.0,
+                    To = 0.0,
+                    Duration = TimeSpan.FromSeconds(.51)
+                };
+                DoubleAnimation animateIn = new DoubleAnimation()
+                {
+                    From = 0.0,
+                    To = 1.0,
+                    Duration = TimeSpan.FromSeconds(.51)
+                };
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (ws, we) =>
+                {
+                    try
+                    {
+                        uDebugLogAdd("Starting loading label");
+                        worker.ReportProgress(1);
+                        while (_loadingInProgress == LoadingType.Start)
+                        {
+                            worker.ReportProgress(3);
+                            Thread.Sleep(500);
+                            worker.ReportProgress(4);
+                            Thread.Sleep(500);
+                        }
+                        worker.ReportProgress(2);
+                        uDebugLogAdd("Finishing loading label");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                };
+                worker.ProgressChanged += (ps, pe) =>
+                {
+                    try
+                    {
+                        switch (pe.ProgressPercentage)
+                        {
+                            case 1:
+                                lblLoading.Visibility = Visibility.Visible;
+                                break;
+                            case 2:
+                                lblLoading.Visibility = Visibility.Hidden;
+                                break;
+                            case 3:
+                                lblLoading.BeginAnimation(TextBlock.OpacityProperty, animateOut);
+                                break;
+                            case 4:
+                                lblLoading.BeginAnimation(TextBlock.OpacityProperty, animateIn);
+                                break;
                         }
                     }
                     catch (Exception ex)

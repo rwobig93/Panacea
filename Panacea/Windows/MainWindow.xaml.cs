@@ -1415,6 +1415,7 @@ namespace Panacea
                 try
                 {
                     CloseUpstallerInstances();
+                    BackupEverything();
                     PrepStagingArea();
                     DownloadWhatWeCameFor();
                     PutUpstallerInItsPlace();
@@ -1425,6 +1426,142 @@ namespace Panacea
                 }
             };
             worker.RunWorkerAsync();
+        }
+
+        private void BackupEverything()
+        {
+            try
+            {
+                uDebugLogAdd("Starting backup of everything");
+                BackupData();
+                BackupOldClient();
+                uDebugLogAdd("Finished backing up everything");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void BackupData()
+        {
+            try
+            {
+                var dataDir = $@"{currentDir}\Config";
+                var backupDir = $@"{currentDir}\Backup";
+                var backupDataDir = $@"{currentDir}\Backup\Config";
+                if (!Directory.Exists(backupDir))
+                {
+                    Directory.CreateDirectory(backupDir);
+                    uDebugLogAdd("Backup dir didn't exist, created");
+                }
+                if (!Directory.Exists(backupDataDir))
+                {
+                    Directory.CreateDirectory(backupDataDir);
+                    uDebugLogAdd("Backup data dir didn't exist, created");
+                }
+                if (Directory.Exists(dataDir))
+                {
+                    uDebugLogAdd($@"Found existing data stored at {dataDir}");
+                    CleanupOldBackupData();
+                    DirectoryInfo di = new DirectoryInfo(dataDir);
+                    foreach (var fi in di.EnumerateFiles())
+                    {
+                        uDebugLogAdd($"Copying file {fi.Name}");
+                        fi.CopyTo($@"{backupDataDir}\{fi.Name}", true);
+                        uDebugLogAdd($@"Copied data file to backup: {backupDataDir}\{fi.Name}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void BackupOldClient()
+        {
+            try
+            {
+                uDebugLogAdd("Starting old client backup");
+                VerifyBackupDirectory();
+                CleanupBackupClient();
+                FileInfo fi = new FileInfo($@"{currentDir}\Upstaller.exe");
+                uDebugLogAdd($@"Moving old client to it's new home, Before: {fi.FullName}");
+                fi.MoveTo($@"{currentDir}\Backup\Upstaller.exe");
+                uDebugLogAdd($@"Finished old client backup, After: {fi.FullName}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void CleanupOldBackupData()
+        {
+            try
+            {
+                var backupDataDir = $@"{currentDir}\Backup\Config";
+                DirectoryInfo di = new DirectoryInfo(backupDataDir);
+                if (di.Exists)
+                {
+                    foreach (var fi in di.EnumerateFiles())
+                    {
+                        uDebugLogAdd($"Removing old backed up file: {fi.FullName}");
+                        fi.Delete();
+                        uDebugLogAdd("Deleted file");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void CleanupBackupClient()
+        {
+            try
+            {
+                if (File.Exists($@"{currentDir}\Backup\Upstaller.exe"))
+                {
+                    uDebugLogAdd("Existing old client found, removing that sucka!");
+                    FileInfo fi = new FileInfo($@"{currentDir}\Backup\Upstaller.exe");
+                    fi.Delete();
+                    uDebugLogAdd("Deleted old backed up client, it's gone, like for real");
+                }
+                else
+                    uDebugLogAdd("Old backup client not found, skipping...");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void VerifyBackupDirectory()
+        {
+            try
+            {
+                var backupDir = $@"{currentDir}\Backup";
+                if (!Directory.Exists(backupDir))
+                {
+                    uDebugLogAdd($@"Backup dir didn't exist at {backupDir}, creating dir");
+                    Directory.CreateDirectory(backupDir);
+                    if (!Directory.Exists(backupDir))
+                    {
+                        uDebugLogAdd($@"I attempted creating the backup dir at {backupDir} but it never showed up to the party");
+                    }
+                    else
+                        uDebugLogAdd($"Backup dir created at {backupDir}");
+                }
+                else
+                    uDebugLogAdd($@"Backup dir exists at {backupDir}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void FinishUpstallerUpdate()
@@ -1448,24 +1585,38 @@ namespace Panacea
                 BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
                 worker.DoWork += (ws, we) =>
                 {
-                    uDebugLogAdd("Starting sleep thread to wait for the SLOOOOOW download to finish");
-                    while (downloadInProgress)
+                    try
                     {
-                        Thread.Sleep(100);
+                        uDebugLogAdd("Starting sleep thread to wait for the SLOOOOOW download to finish");
+                        while (downloadInProgress)
+                        {
+                            Thread.Sleep(100);
+                        }
+                        uDebugLogAdd("Download FINALLY finished, jeez we need better throughput!");
+                        worker.ReportProgress(1);
                     }
-                    uDebugLogAdd("Download FINALLY finished, jeez we need better throughput!");
-                    worker.ReportProgress(1);
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
                 };
                 worker.ProgressChanged += (ps, pe) =>
                 {
-                    if (pe.ProgressPercentage == 1)
+                    try
                     {
-                        FileInfo fi = new FileInfo($@"{currentDir}\TopSecret\Upstaller.exe");
-                        uDebugLogAdd($@"Moving Upstaller.exe to it's place | Before: {fi.FullName}");
-                        fi.MoveTo($@"{currentDir}\Upstaller.exe");
-                        uDebugLogAdd($@"Moved Upstaller.exe to it's place | After: {fi.FullName}");
-                        uDebugLogAdd("Finished Upstaller update process.");
-                        FinishUpstallerUpdate();
+                        if (pe.ProgressPercentage == 1)
+                        {
+                            FileInfo fi = new FileInfo($@"{currentDir}\TopSecret\Upstaller.exe");
+                            uDebugLogAdd($@"Moving Upstaller.exe to it's place | Before: {fi.FullName}");
+                            fi.MoveTo($@"{currentDir}\Upstaller.exe");
+                            uDebugLogAdd($@"Moved Upstaller.exe to it's place | After: {fi.FullName}");
+                            uDebugLogAdd("Finished Upstaller update process.");
+                            FinishUpstallerUpdate();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
                     }
                 };
                 worker.RunWorkerAsync();
@@ -1505,25 +1656,7 @@ namespace Panacea
             try
             {
                 uDebugLogAdd("Starting staging area prep");
-                var whereTheThingGoes = $@"{currentDir}";
-                if (!currentDir.ToLower().EndsWith("panacea"))
-                {
-                    uDebugLogAdd($"Directory didn't have Panacea in the name, preposterous. I fixed the glitch, before: {whereTheThingGoes}");
-                    if (!Directory.Exists($@"{currentDir}\Panacea"))
-                        Directory.CreateDirectory($@"{currentDir}\Panacea");
-                    currentDir = $@"{currentDir}\Panacea";
-                    whereTheThingGoes = $@"{currentDir}";
-                    uDebugLogAdd($"After: {whereTheThingGoes} | There, that's much better");
-                }
-                var stagingArea = $@"{whereTheThingGoes}\TopSecret";
-                if (!Directory.Exists(whereTheThingGoes))
-                {
-                    uDebugLogAdd($"Panacea directory didn't exist, making love and creating a directory, I'll name it: {whereTheThingGoes}");
-                    Directory.CreateDirectory(whereTheThingGoes);
-                    uDebugLogAdd($"{whereTheThingGoes} is born! Man I feel bad for that kid");
-                }
-                else
-                    uDebugLogAdd($"The holy place already exists, lets move on: {whereTheThingGoes}");
+                var stagingArea = $@"{currentDir}\TopSecret";
                 if (!Directory.Exists(stagingArea))
                 {
                     uDebugLogAdd($"The staging area doesn't exist, I need a place to stage stuff damnit! {stagingArea}");
@@ -3466,7 +3599,7 @@ namespace Panacea
                 }
                 uDebugLogAdd($"Finished getting github recent version");
             }
-            catch (HttpRequestException hre) { uDebugLogAdd($"Unable to reach site, error: {hre.Message}"); }
+            catch (HttpRequestException hre) { uDebugLogAdd($"Unable to reach site, error: {hre.Message}"); Toolbox.changeLogs.Add(new ChangeLogItem() { BetaRelease = Visibility.Visible, BugFixes = Visibility.Visible, NewFeatures = Visibility.Visible, Version = @"¯\_(ツ)_/¯", Body = "Github is unreachable, couldn't get the changelogzzzz :(" }); }
             catch (InvalidOperationException ioe)
             {
                 uDebugLogAdd($"Unable to get updates, reason: {ioe.Message}");

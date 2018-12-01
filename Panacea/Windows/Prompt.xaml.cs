@@ -182,11 +182,11 @@ namespace Panacea.Windows
                     additionalHeight = (lines - 4) * 27;
                 else if (lines > 17)
                     additionalHeight = 13 * 27;
-                for (int i = longerLineCounter; i > 0; i--)
-                {
-                    if (additionalHeight < 13 * 27)
-                        additionalHeight = additionalHeight + 27;
-                }
+                //for (int i = longerLineCounter; i > 0; i--)
+                //{
+                //    if (additionalHeight < 13 * 27)
+                //        additionalHeight = additionalHeight + 27;
+                //}
                 prompt.Height = prompt.Height + additionalHeight;
             }
             catch (Exception ex)

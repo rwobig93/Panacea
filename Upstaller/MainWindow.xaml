@@ -25,7 +25,7 @@
             </Rectangle.Fill>
         </Rectangle>
         <TextBlock x:Name="lblTitle" MouseDown="lblTitle_MouseDown" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Upstaller" VerticalAlignment="Top" Height="30" Width="91" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Panel.ZIndex="100"/>
-        <TextBox x:Name="txtStatus" Height="44" TextWrapping="Wrap" VerticalAlignment="Bottom" VerticalContentAlignment="Stretch" IsReadOnly="True" FontSize="10">
+        <TextBox x:Name="txtStatus" local:TextBoxBehaviour.ScrollOnTextChanged="True" Height="44" TextWrapping="Wrap" VerticalAlignment="Bottom" VerticalContentAlignment="Stretch" IsReadOnly="True" Foreground="#FF8D8D8D" SelectionBrush="#FF444444" FontSize="10">
             <TextBox.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1C1C1C" Offset="0"/>

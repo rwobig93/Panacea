@@ -132,15 +132,7 @@ namespace Upstaller
         {
             try
             {
-                var response = Prompt.YesNo(string.Format("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM{0}" +
-                    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM{0}" +
-                    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM{0}" +
-                    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM{0}" +
-                    "5{0}" +
-                    "6{0}" +
-                    "7{0}" +
-                    "8", Environment.NewLine));
-                uStatusUpdate($"You said: {response.ToString()}");
+                uStatusUpdate("I'm a test string!");
             }
             catch (Exception ex)
             {
@@ -1036,6 +1028,42 @@ namespace Upstaller
             }
         }
 
+        private void BackupData()
+        {
+            try
+            {
+                var dataDir = $@"{currentDir}\Config";
+                var backupDir = $@"{currentDir}\Backup";
+                var backupDataDir = $@"{currentDir}\Backup\Config";
+                if (!Directory.Exists(backupDir))
+                {
+                    Directory.CreateDirectory(backupDir);
+                    uDebugLogAdd("Backup dir didn't exist, created");
+                }
+                if (!Directory.Exists(backupDataDir))
+                {
+                    Directory.CreateDirectory(backupDataDir);
+                    uDebugLogAdd("Backup data dir didn't exist, created");
+                }
+                if (Directory.Exists(dataDir))
+                {
+                    uDebugLogAdd($@"Found existing data stored at {dataDir}");
+                    CleanupOldBackupData();
+                    DirectoryInfo di = new DirectoryInfo(dataDir);
+                    foreach (var fi in di.EnumerateFiles())
+                    {
+                        uDebugLogAdd($"Copying file {fi.Name}");
+                        fi.CopyTo($@"{backupDataDir}\{fi.Name}", true);
+                        uDebugLogAdd($@"Copied data file to backup: {backupDataDir}\{fi.Name}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         private void BackupOldClient()
         {
             try
@@ -1092,42 +1120,6 @@ namespace Upstaller
                 }
                 else
                     uDebugLogAdd("Old backup client not found, skipping...");
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void BackupData()
-        {
-            try
-            {
-                var dataDir = $@"{currentDir}\Config";
-                var backupDir = $@"{currentDir}\Backup";
-                var backupDataDir = $@"{currentDir}\Backup\Config";
-                if (!Directory.Exists(backupDir))
-                {
-                    Directory.CreateDirectory(backupDir);
-                    uDebugLogAdd("Backup dir didn't exist, created");
-                }
-                if (!Directory.Exists(backupDataDir))
-                {
-                    Directory.CreateDirectory(backupDataDir);
-                    uDebugLogAdd("Backup data dir didn't exist, created");
-                }
-                if (Directory.Exists(dataDir))
-                {
-                    uDebugLogAdd($@"Found existing data stored at {dataDir}");
-                    CleanupOldBackupData();
-                    DirectoryInfo di = new DirectoryInfo(dataDir);
-                    foreach (var fi in di.EnumerateFiles())
-                    {
-                        uDebugLogAdd($"Copying file {fi.Name}");
-                        fi.CopyTo($@"{backupDataDir}\{fi.Name}", true);
-                        uDebugLogAdd($@"Copied data file to backup: {backupDataDir}\{fi.Name}");
-                    }
-                }
             }
             catch (Exception ex)
             {

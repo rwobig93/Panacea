@@ -51,7 +51,8 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <CheckBox x:Name="chkIgnoreWinTitle" IsChecked="True" Content="Ignore Window Title / Move All Windows" HorizontalAlignment="Left" Margin="102,192,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D" BorderBrush="{StaticResource BaseBorderBrush}" Height="16" Background="#FF8D8D8D"/>
+        <CheckBox x:Name="chkIgnoreWinTitle" IsChecked="True" Content="Ignore Window Title / Move All Windows For Process" HorizontalAlignment="Left" Margin="102,192,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D" BorderBrush="{StaticResource BaseBorderBrush}" Height="16" Background="#FF8D8D8D"/>
         <TextBlock x:Name="lblUpdateNotification" Margin="10,0,19,0" TextWrapping="Wrap" VerticalAlignment="Bottom" Foreground="#FF368DB6" FontSize="24" Height="32"/>
+        <TextBlock x:Name="lblLoading" TextWrapping="Wrap" Foreground="#FF368DB6" FontSize="24" Text="Gathering..." Visibility="Hidden" HorizontalAlignment="Right" Width="129" Height="32" VerticalAlignment="Top"/>
     </Grid>
 </Window>
