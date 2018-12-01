@@ -41,7 +41,7 @@ namespace Panacea.Windows
                 ChangeLogItem curVerItem = null;
                 foreach (var item in lbVersions.Items)
                 {
-                    if (((ChangeLogItem)item).Version == currentVersion)
+                    if (((ChangeLogItem)item).Version == $"v{currentVersion}")
                     {
                         Toolbox.uAddDebugLog($"Found current version changelog item | [v]{currentVersion} [iv]{((ChangeLogItem)item).Version}");
                         curVerItem = ((ChangeLogItem)item);
