@@ -3486,7 +3486,7 @@ namespace Panacea
                     {
                         if (pe.ProgressPercentage == 1)
                         {
-                            if (Toolbox.settings.CurrentVersion.CompareTo(Toolbox.settings.ProductionVersion) < 0)
+                            if ((Toolbox.settings.CurrentVersion.CompareTo(Toolbox.settings.ProductionVersion) < 0) && Toolbox.settings.UpdateAvailable != true)
                             {
                                 uDebugLogAdd($"New version found: [c]{Toolbox.settings.CurrentVersion} [p]{Toolbox.settings.ProductionVersion}");
                                 ShowNotification("A new version is available, update when ready");
