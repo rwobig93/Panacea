@@ -3549,6 +3549,7 @@ namespace Panacea
                 if (appUpdate == AppUpdate.Panacea)
                 {
                     uDebugLogAdd("Gathering changelog from each release");
+                    Toolbox.changeLogs.Clear();
                     var panaceaReleases = releases.ToList().FindAll(x => x.Assets[0].Name.Contains(appName)).OrderBy(x => x.TagName);
                     foreach (var release in panaceaReleases)
                     {
