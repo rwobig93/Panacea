@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -51,6 +52,14 @@ namespace Panacea.Classes
         public DateTime DateTime { get; set; }
         public long TripTime { get; set; }
         public bool Response { get; set; }
+    }
+
+    public class PingDetail
+    {
+        public DateTime TimeStamp { get; set; } = DateTime.Now.ToLocalTime();
+        public long TripTime { get; set; }
+        public IPStatus IPStatus { get; set; }
+        public IPAddress Address { get; set; }
     }
 
     public class PingEntry : INotifyPropertyChanged
@@ -385,8 +394,11 @@ namespace Panacea.Classes
 
     public class BasicPingEntry : INotifyPropertyChanged
     {
+        #region Variables
+
         private SolidColorBrush _colorPingSuccess = new SolidColorBrush(Color.FromArgb(100, 0, 195, 0));
         private SolidColorBrush _colorPingFailure = new SolidColorBrush(Color.FromArgb(100, 195, 0, 0));
+        private List<PingDetail> _pingHistory = new List<PingDetail>();
         private string _displayName { get { return $"{_address} | {_hostName}"; } set { _displayName = value; } }
         private string _address { get; set; }
         private string _hostName { get; set; }
@@ -443,6 +455,13 @@ namespace Panacea.Classes
             get { return _pingResultColor; }
             set { _pingResultColor = value; OnPropertyChanged("PingResultColor"); }
         }
+        public List<PingDetail> PingHistory
+        {
+            get { return _pingHistory; }
+            set { _pingHistory = value; OnPropertyChanged("PingHistory"); }
+        }
+
+        #endregion
 
         public BasicPingEntry(string address)
         {
@@ -458,9 +477,116 @@ namespace Panacea.Classes
             }
         }
 
+        #region Methods
+
         private void PingAddress(string address)
         {
-            throw new NotImplementedException();
+            try
+            {
+                Pinging = true;
+                Address = address;
+                HostName = "Hostname not found";
+                BackgroundWorker worker = new BackgroundWorker() { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
+                worker.DoWork += (sender2, e2) =>
+                {
+                    Ping ping = new Ping();
+                    while (true)
+                    {
+                        while (Pinging)
+                        {
+                            try
+                            {
+                                var pingReply = ping.Send(address);
+                                AddPingSuccess(pingReply);
+                            }
+                            catch (PingException)
+                            {
+                                worker.ReportProgress(1);
+                            }
+                            catch (Exception ex)
+                            {
+                                LogException(ex);
+                            }
+                            Thread.Sleep(TimeSpan.FromSeconds(1));
+                        }
+                        Thread.Sleep(TimeSpan.FromSeconds(1));
+                    }
+                };
+                worker.ProgressChanged += (sender3, e3) =>
+                {
+                    if (e3.ProgressPercentage == 1)
+                    {
+                        AddPingFailure();
+                    }
+                };
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void AddPingFailure()
+        {
+            try
+            {
+                IPAddress ip;
+                IPAddress.TryParse(Address, out ip);
+                var pingDetail = new PingDetail()
+                {
+                    Address = ip,
+                    IPStatus = IPStatus.DestinationUnreachable,
+                    TimeStamp = DateTime.Now.ToLocalTime(),
+                    TripTime = -1
+                };
+                PingHistory.Add(pingDetail);
+                HighPing = Convert.ToInt32(PingHistory.OrderBy(x => x.TripTime).Last().TripTime);
+                LowPing = Convert.ToInt32(PingHistory.OrderBy(x => x.TripTime).First().TripTime);
+                AvgPing = CalculateRTTAvg(PingHistory);
+                CurrentPing = Convert.ToInt32(pingDetail.TripTime);
+                PingResultColor = _colorPingFailure;
+            }
+            catch (Exception ex)
+            {
+                Toolbox.uAddDebugLog($"Unable to get ping failure: [{ex.GetType().ToString()}]{ex.Message}", MainWindow.DebugType.FAILURE);
+            }
+        }
+
+        private void AddPingSuccess(PingReply pingReply)
+        {
+            try
+            {
+                var pingDetail = new PingDetail()
+                {
+                    Address = pingReply.Address,
+                    IPStatus = pingReply.Status,
+                    TimeStamp = DateTime.Now.ToLocalTime(),
+                    TripTime = pingReply.RoundtripTime
+                };
+                PingHistory.Add(pingDetail);
+                HighPing = Convert.ToInt32(PingHistory.OrderBy(x => x.TripTime).Last().TripTime);
+                LowPing = Convert.ToInt32(PingHistory.OrderBy(x => x.TripTime).First().TripTime);
+                AvgPing = CalculateRTTAvg(PingHistory);
+                CurrentPing = Convert.ToInt32(pingDetail.TripTime);
+                PingResultColor = _colorPingSuccess;
+            }
+            catch (Exception ex)
+            {
+                Toolbox.uAddDebugLog($"Unable to get ping success: [{ex.GetType().ToString()}]{ex.Message}", MainWindow.DebugType.FAILURE);
+            }
+        }
+
+        private int CalculateRTTAvg(List<PingDetail> pingHistory)
+        {
+            int sum = 0;
+            int count = 0;
+            foreach (var ping in pingHistory)
+            {
+                count++;
+                sum = sum + Convert.ToInt32(ping.TripTime);
+            }
+            return sum / count;
         }
 
         private void LogException(Exception ex, [CallerLineNumber] int lineNum = 0, [CallerMemberName] string caller = "", [CallerFilePath] string path = "")
@@ -536,6 +662,9 @@ namespace Panacea.Classes
                 LogException(ex);
             }
         }
+
+        #endregion
+
 
         #region INotifyPropertyChanged implementation
 

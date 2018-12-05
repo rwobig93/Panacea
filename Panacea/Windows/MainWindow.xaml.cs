@@ -2700,8 +2700,20 @@ namespace Panacea
             {
                 var addressNoSpace = Regex.Replace(address, @"\s+", "");
                 var entries = addressNoSpace.Split(',');
-                foreach (var entry in entries)
-                    lbPingSessions.Items.Add(new PingEntry(entry));
+                if (Toolbox.settings.BasicPing)
+                {
+                    lbBasicPingSessions.Visibility = Visibility.Visible;
+                    lbPingSessions.Visibility = Visibility.Hidden;
+                    foreach (var entry in entries)
+                        lbPingSessions.Items.Add(new PingEntry(entry));
+                }
+                else
+                {
+                    lbBasicPingSessions.Visibility = Visibility.Hidden;
+                    lbPingSessions.Visibility = Visibility.Visible;
+                    foreach (var entry in entries)
+                        lbBasicPingSessions.Items.Add(new BasicPingEntry(entry));
+                }
             }
             catch (Exception ex)
             {
