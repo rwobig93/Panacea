@@ -28,6 +28,7 @@ using System.Net.Sockets;
 using System.Net.Http;
 using System.IO.Compression;
 using System.Net.Mail;
+using MahApps.Metro.Controls;
 
 namespace Panacea
 {
@@ -509,15 +510,7 @@ namespace Panacea
                     ShowNotification("Address(es) entered incorrect or duplicate, added non duplicate(s)");
                     address = validEntries;
                 }
-                if (!Toolbox.settings.BasicPing)
-                {
-                    if (lbPingSessions.Visibility == Visibility.Visible)
-                        AddPingEntry(address);
-                    else
-                        AddBasicPing(address);
-                }
-                else
-                    AddBasicPing(address);
+                AddPingEntry(address);
             }
             catch (Exception ex)
             {
@@ -578,66 +571,6 @@ namespace Panacea
             }
         }
 
-        private void BtnTraceEntryUpArrow_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var lbItem = (TraceEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
-                MoveTraceEntry(lbItem, Direction.Up);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void BtnTraceEntryDownArrow_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var lbItem = (TraceEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
-                MoveTraceEntry(lbItem, Direction.Down);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void BtnTraceEntryClose_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var lbItem = (TraceEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
-                lbTraceSessions.Items.Remove(lbItem);
-                lbItem.Dispose();
-                if (lbTraceSessions.Items.Count <= 0)
-                {
-                    ToggleListBox(lbTraceSessions);
-                    if (Toolbox.settings.BasicPing)
-
-                        SwapPingGrids();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void BtnTraceEntryToggle_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var lbItem = (TraceEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
-                lbItem.ToggleTrace();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
         private void btnNetPingToggleAll_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -646,18 +579,8 @@ namespace Panacea
                     glblPinging = false;
                 else
                     glblPinging = true;
-                if (lbPingSessions.Visibility == Visibility.Visible)
-                {
-                    foreach (PingEntry entry in lbPingSessions.Items)
-                        entry.TogglePing(glblPinging);
-                }
-                else
-                {
-                    foreach (PingBasic entry in lbPingBasic.Items)
-                        entry.TogglePing(glblPinging);
-                }
-                foreach (TraceEntry entry in lbTraceSessions.Items)
-                    entry.ToggleTrace(glblPinging);
+                foreach (PingEntry entry in lbPingSessions.Items)
+                    entry.TogglePing(glblPinging);
             }
             catch (Exception ex)
             {
@@ -678,9 +601,6 @@ namespace Panacea
                             break;
                         case EnterAction.Ping:
                             btnNetPing_Click(sender, e);
-                            break;
-                        case EnterAction.Trace:
-                            btnNetTrace_Click(sender, e);
                             break;
                     }
                 }
@@ -738,53 +658,6 @@ namespace Panacea
                     else
                         LogException(ex);
                 }
-            }
-        }
-
-        private void btnNetTrace_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (traceLoading)
-                    return;
-                if (lbTraceSessions.Items.Count <= 0)
-                {
-                    ToggleListBox(lbTraceSessions);
-                }
-                if (lbPingSessions.Items.Count > 0)
-                {
-                    SwapPingGrids();
-                }
-                var address = txtNetAddress.Text;
-                var sendNotif = false;
-                var addressNoSpace = Regex.Replace(address, @"\s+", "");
-                var entries = addressNoSpace.Split(',');
-                var validEntries = string.Empty;
-                foreach (var entry in entries)
-                {
-                    if (!VerifyInput(entry))
-                    {
-                        uDebugLogAdd($"Input entered was invalid, sending notification and canceling trace | Input: {entry}");
-                        sendNotif = true;
-                    }
-                    else
-                        validEntries = $"{validEntries}{entries},";
-                }
-                if (sendNotif && validEntries == string.Empty)
-                {
-                    ShowNotification("Address(es) entered incorrect or duplicate, try again");
-                    return;
-                }
-                else if (sendNotif && validEntries != string.Empty)
-                {
-                    ShowNotification("Address(es) entered incorrect or duplicate, added non duplicate(s)");
-                    address = validEntries;
-                }
-                AddTraceEntry(address);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
             }
         }
 
@@ -1174,31 +1047,6 @@ namespace Panacea
             return hiddenArea;
         }
 
-        private void ToggleListBox(ListBox lb)
-        {
-            try
-            {
-                if (lb.Margin != Defaults.TraceLBIn)
-                {
-                    lb.Visibility = Visibility.Visible;
-                    lbPingBasic.Visibility = Visibility.Visible;
-                    Toolbox.AnimateListBox(lb, Defaults.TraceLBIn);
-                    Toolbox.AnimateListBox(lbPingBasic, Defaults.PingLBasicIn);
-                }
-                else
-                {
-                    Toolbox.AnimateListBox(lbPingBasic, Defaults.PingLBasicOut);
-                    Toolbox.AnimateListBox(lb, Defaults.TraceLBOut);
-                    lb.Visibility = Visibility.Hidden;
-                    lbPingBasic.Visibility = Visibility.Hidden;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
         private void HideUnusedMenuGrids(Grid grid = null)
         {
             try
@@ -1239,7 +1087,7 @@ namespace Panacea
             try
             {
                 HideUnusedMenuGrids();
-                HideElementsThatNeedHidden();
+                //HideElementsThatNeedHidden();
             }
             catch (Exception ex)
             {
@@ -1249,22 +1097,8 @@ namespace Panacea
 
         private void HideElementsThatNeedHidden()
         {
-            lbTraceSessions.Visibility = Visibility.Hidden;
-            SetChosenPing();
-        }
-
-        private void SetChosenPing()
-        {
-            if (Toolbox.settings.BasicPing)
-            {
-                Toolbox.AnimateListBox(lbPingBasic, Defaults.PingLBasicPIn);
-                lbPingSessions.Visibility = Visibility.Hidden;
-            }
-            else
-            {
-                Toolbox.AnimateListBox(lbPingSessions, Defaults.PingLBasicPIn);
-                lbPingBasic.Visibility = Visibility.Hidden;
-            }
+            //Retained for future use
+            throw new NotImplementedException();
         }
 
         public object GetPropertyValue(string propertyName)
@@ -1960,9 +1794,6 @@ namespace Panacea
                         break;
                     case EnterAction.Ping:
                         cmbxSetNetTextboxAction.SelectedItem = ping;
-                        break;
-                    case EnterAction.Trace:
-                        cmbxSetNetTextboxAction.SelectedItem = trace;
                         break;
                 }
                 uDebugLogAdd("SettingsWIN: working on window process settings");
@@ -2750,7 +2581,7 @@ namespace Panacea
             try
             {
                 Toolbox.settings.ChangeWindowProfile(profile);
-                lbSavedWindows.ItemsSource = Toolbox.settings.ActiveWindowList;
+                lbSavedWindows.ItemsSource = Toolbox.settings.ActiveWindowList.OrderBy(x => x.WindowSum).ToList();
                 switch (profile)
                 {
                     case WindowProfile.Profile1:
@@ -2851,12 +2682,6 @@ namespace Panacea
                     if (item.Address == address)
                         exists = true;
                 }
-            else
-                foreach (PingBasic item in lbPingBasic.Items)
-                {
-                    if (item.Address == address)
-                        exists = true;
-                }
             return exists;
         }
 
@@ -2865,20 +2690,8 @@ namespace Panacea
             var isCorrect = true;
             isCorrect = !string.IsNullOrWhiteSpace(input);
             isCorrect = !DoesPingSessionExist(input);
-            isCorrect = !DoesTraceEntryExist(input);
             uDebugLogAdd($"Verified input, answer: {isCorrect} | input: {input}");
             return isCorrect;
-        }
-
-        private bool DoesTraceEntryExist(string input)
-        {
-            var exists = false;
-            foreach (TraceEntry item in lbTraceSessions.Items)
-            {
-                if (item.DestinationAddress == input)
-                    exists = true;
-            }
-            return exists;
         }
 
         private void AddPingEntry(string address)
@@ -2894,102 +2707,6 @@ namespace Panacea
             {
                 LogException(ex);
             }
-        }
-
-        private void AddBasicPing(string address)
-        {
-            try
-            {
-                var addressNoSpace = Regex.Replace(address, @"\s+", "");
-                var entries = addressNoSpace.Split(',');
-                foreach (var entry in entries)
-                    lbPingBasic.Items.Add(new PingBasic(entry));
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void AddTraceEntry(string address)
-        {
-            try
-            {
-                TraceLoading();
-                var addressNoSpace = Regex.Replace(address, @"\s+", "");
-                var entries = addressNoSpace.Split(',');
-                var testRoute = new List<TraceModel>();
-                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
-                worker.DoWork += (ws, we) =>
-                {
-                    TraceRoute trace = new TraceRoute();
-                    Stopwatch stopwatch = new Stopwatch();
-                    foreach (var entry in entries)
-                    {
-                        uDebugLogAdd($"Starting trace entry {entry}");
-                        testRoute.Clear();
-                        uDebugLogAdd("Trace starting now");
-                        stopwatch.Start();
-                        testRoute = trace.TraceRouteAsync(entry).Result;
-                        stopwatch.Stop();
-                        uDebugLogAdd($"Finished trace: {stopwatch.ElapsedMilliseconds}ms");
-                        uDebugLogAdd($"Adding trace entry {entry}");
-                        worker.ReportProgress(1);
-                        uDebugLogAdd($"Finished adding trace entry {entry}");
-                        stopwatch.Reset();
-                    }
-                    traceLoading = false;
-                };
-                worker.ProgressChanged += (ps, pe) =>
-                {
-                    if (pe.ProgressPercentage == 1)
-                    {
-                        lbTraceSessions.Items.Add(new TraceEntry(testRoute));
-                    }
-                };
-                worker.RunWorkerAsync();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void TraceLoading()
-        {
-            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
-            worker.DoWork += (ws, we) =>
-            {
-                traceLoading = true;
-                worker.ReportProgress(0);
-                while (traceLoading)
-                {
-                    Thread.Sleep(500);
-                    worker.ReportProgress(1);
-                }
-                worker.ReportProgress(2);
-            };
-            worker.ProgressChanged += (ps, pe) =>
-            {
-                if (pe.ProgressPercentage == 0)
-                {
-                    lblTraceStatus.Visibility = Visibility.Visible;
-                    lblTraceStatus.Text = "Tracing";
-                }
-                if (pe.ProgressPercentage == 1)
-                {
-                    if (lblTraceStatus.Text != "Tracing.....")
-                        lblTraceStatus.Text = $"{lblTraceStatus.Text}.";
-                    else
-                        lblTraceStatus.Text = "Tracing";
-                }
-                if (pe.ProgressPercentage == 2)
-                {
-                    lblTraceStatus.Text = "Done";
-                    lblTraceStatus.Visibility = Visibility.Hidden;
-                }
-            };
-            worker.RunWorkerAsync();
         }
 
         private void MovePingEntry(PingEntry pingEntry, Direction direction)
@@ -3011,32 +2728,6 @@ namespace Panacea
                 var newIndex = lbPingSessions.Items.IndexOf(pingEntry) + directionInt;
                 lbPingSessions.Items.Remove(pingEntry);
                 lbPingSessions.Items.Insert(newIndex, pingEntry);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void MoveTraceEntry(TraceEntry traceEntry, Direction direction)
-        {
-            try
-            {
-                var currentIndex = lbTraceSessions.Items.IndexOf(traceEntry);
-                if (currentIndex < 0 || currentIndex >= lbTraceSessions.Items.Count)
-                    return;
-                var directionInt = 0;
-                if (direction == Direction.Up && currentIndex == 0)
-                    return;
-                if (direction == Direction.Down && currentIndex == lbTraceSessions.Items.Count - 1)
-                    return;
-                if (direction == Direction.Down)
-                    directionInt = 1;
-                else
-                    directionInt = -1;
-                var newIndex = lbTraceSessions.Items.IndexOf(traceEntry) + directionInt;
-                lbTraceSessions.Items.Remove(traceEntry);
-                lbTraceSessions.Items.Insert(newIndex, traceEntry);
             }
             catch (Exception ex)
             {
@@ -3109,38 +2800,6 @@ namespace Panacea
 
                 // if we reach here, it's a status we don't recognize and we should exit.
                 break;
-            }
-        }
-
-        private void SwapPingGrids()
-        {
-            try
-            {
-                if (Toolbox.settings.BasicPing)
-                {
-                    lbPingSessions.Visibility = Visibility.Hidden;
-                    Toolbox.AnimateListBox(lbPingBasic, Defaults.PingLBasicPIn);
-                    foreach (PingEntry entry in lbPingSessions.Items)
-                    {
-                        lbPingBasic.Items.Add(new PingBasic(entry.Address));
-                    }
-                    lbPingSessions.Items.Clear();
-                }
-                else
-                {
-                    lbPingSessions.Visibility = Visibility.Visible;
-                    lbPingBasic.Visibility = Visibility.Hidden;
-                    Toolbox.AnimateListBox(lbPingSessions, Defaults.PingLBasicPIn);
-                    foreach (PingBasic entry in lbPingBasic.Items)
-                    {
-                        lbPingSessions.Items.Add(new PingEntry(entry.Address));
-                    }
-                    lbPingBasic.Items.Clear();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
             }
         }
 
@@ -3240,18 +2899,6 @@ namespace Panacea
             {
                 try
                 {
-                    //switch (settingsUpdate)
-                    //{
-                    //    case SettingsUpdate.PingCount:
-                    //        break;
-                    //    case SettingsUpdate.PingDTFormat:
-                    //        worker.ReportProgress(2);
-                    //        break;
-                    //    case SettingsUpdate.TextBoxAction:
-                    //        worker.ReportProgress(3);
-                    //        break;
-                    //}
-
                     // Pingcount settings
                     var num = 0;
                     if (value != null)
@@ -3271,10 +2918,6 @@ namespace Panacea
                     }
                     // Update All Settings
                     worker.ReportProgress(1);
-
-                    // Flip ping basic if checked
-                    if (settingsUpdate == SettingsUpdate.BasicPing)
-                        worker.ReportProgress(2);
                 }
                 catch (Exception ex)
                 {
@@ -3310,8 +2953,6 @@ namespace Panacea
                                 Toolbox.settings.ToolboxEnterAction = EnterAction.DNSLookup;
                             else if (cmbxSetNetTextboxAction.Text == "Ping")
                                 Toolbox.settings.ToolboxEnterAction = EnterAction.Ping;
-                            else if (cmbxSetNetTextboxAction.Text == "Trace")
-                                Toolbox.settings.ToolboxEnterAction = EnterAction.Trace;
                             uDebugLogAdd("SETUPDATE: Basic ping");
                             // Set basic ping
                             if (chkNetBasicPing.IsChecked == true)
@@ -3324,10 +2965,6 @@ namespace Panacea
                                 Toolbox.settings.BetaUpdate = true;
                             else
                                 Toolbox.settings.BetaUpdate = false;
-                            break;
-                        case 2:
-                            uDebugLogAdd("Starting ping grid swap from settings update");
-                            SwapPingGrids();
                             break;
                         case 99:
                             ShowNotification("Incorrect format entered");

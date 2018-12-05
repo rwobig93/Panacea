@@ -6,6 +6,7 @@
         xmlns:src="clr-namespace:Panacea.Classes"
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
         mc:Ignorable="d"
         Title="MainWindow" Height="300" MinHeight="300" Width="625" MinWidth="625" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070"
         MouseDown="winMain_MouseDown" Loaded="winMain_Loaded" Closing="winMain_Closing" Closed="winMain_Closed" Background="{x:Null}">
@@ -150,7 +151,6 @@
         </Style>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus204Converter x:Key="Minus204Converter"/>
-        <FrameworkElement x:Key="TargetCursor" Cursor="Resources/Dependencies/target_small.cur"/>
     </Window.Resources>
     <Grid x:Name="grdMain" Focusable="True">
         <Grid.Background>
@@ -203,15 +203,15 @@
                     <GradientStop Color="#FF191919" Offset="0.84"/>
                 </LinearGradientBrush>
             </Grid.Background>
-            <ListBox x:Name="lbAudioDevices" SelectionChanged="lbAudioDevices_SelectionChanged" SelectionMode="Single" Margin="82,33,85,10">
+            <ListBox x:Name="lbAudioDevices" SelectionChanged="lbAudioDevices_SelectionChanged" SelectionMode="Single" Margin="82,33,10,10">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding FriendlyName}"/>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Label x:Name="lblAudioDevices" Content="Windows Playback Devices" HorizontalAlignment="Left" Margin="160,7,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="160"/>
-            <Button x:Name="btnRefreshAudio" Click="btnRefreshAudio_Click" Content="Refresh" HorizontalAlignment="Right" VerticalAlignment="Top" Width="70" Foreground="#FF8D8D8D" Margin="0,33,10,0" Height="24">
+            <Label x:Name="lblAudioDevices" Content="Windows Playback Devices" HorizontalAlignment="Center" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="160"/>
+            <Button x:Name="btnRefreshAudio" Click="btnRefreshAudio_Click" Content="Refresh" HorizontalAlignment="Right" VerticalAlignment="Top" Width="70" Foreground="#FF8D8D8D" Margin="0,4,10,0" Height="24">
             </Button>
         </Grid>
         <StackPanel x:Name="pnlMenu" HorizontalAlignment="Left" Margin="2,30,0,20" Width="72" Panel.ZIndex="90">
@@ -305,7 +305,7 @@
                     <GradientStop Color="#FF191919" Offset="0.84"/>
                 </LinearGradientBrush>
             </Grid.Background>
-            <ListBox x:Name="lbPingSessions" Margin="77,29,10,53">
+            <ListBox x:Name="lbPingSessions" Margin="77,29,10,53" d:IsLocked="True">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid Background="Black" Height="{Binding GridHeight}" Width="{Binding ElementName=lbPingSessions, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" VerticalAlignment="Top">
@@ -348,15 +348,15 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <TextBox x:Name="txtNetAddress" Margin="288,2,10,0" KeyDown="txtNetAddress_KeyDown" TextWrapping="Wrap" Text="8.8.8.8" VerticalAlignment="Top"  Height="22">
+            <TextBox x:Name="txtNetAddress" Margin="241,2,10,0" KeyDown="txtNetAddress_KeyDown" TextWrapping="Wrap" Text="8.8.8.8" VerticalAlignment="Top"  Height="22">
                 <i:Interaction.Behaviors>
                     <src:DoubleClickBehavior/>
                 </i:Interaction.Behaviors>
             </TextBox>
-            <Button x:Name="btnNetPing" Content="Ping" Style="{StaticResource ButtonEdges}" Click="btnNetPing_Click" HorizontalAlignment="Left" Margin="246,2,0,0" VerticalAlignment="Top" Width="37"/>
-            <Button x:Name="btnNetLookup" Content="NsLookup" Style="{StaticResource ResourceKey=ButtonEdges}" Click="btnNetLookup_Click" HorizontalAlignment="Left" Margin="174,2,0,0" VerticalAlignment="Top" Width="67"/>
+            <Button x:Name="btnNetPing" Content="Ping" Style="{StaticResource ButtonEdges}" Click="btnNetPing_Click" HorizontalAlignment="Left" Margin="199,2,0,0" VerticalAlignment="Top" Width="37"/>
+            <Button x:Name="btnNetLookup" Content="NsLookup" Style="{StaticResource ResourceKey=ButtonEdges}" Click="btnNetLookup_Click" HorizontalAlignment="Left" Margin="127,2,0,0" VerticalAlignment="Top" Width="67"/>
             <TextBlock x:Name="lblNetResolved" Margin="76,0,0,17" TextWrapping="Wrap" Text="NSlookup:" Foreground="#FF8D8D8D" Height="18" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="60"/>
-            <Button x:Name="btnNetPingToggleAll" Content="⏯ All" Click="btnNetPingToggleAll_Click" Style="{StaticResource ResourceKey=ButtonEdges}" HorizontalAlignment="Left" Margin="77,2,0,0" VerticalAlignment="Top" Width="45"/>
+            <Button x:Name="btnNetPingToggleAll" Content="⏯ All" Click="btnNetPingToggleAll_Click" Style="{StaticResource ResourceKey=ButtonEdges}" HorizontalAlignment="Left" Margin="77,2,0,0" VerticalAlignment="Top" Width="45" />
             <ListBox x:Name="lbResolvedAddresses" Margin="136,0,10,3" Height="45" VerticalAlignment="Bottom">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -368,44 +368,26 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Button x:Name="btnNetTrace" Content="Trace" Click="btnNetTrace_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="127,2,0,0" VerticalAlignment="Top" Width="42" Height="22"/>
-            <ListBox x:Name="lbTraceSessions" Margin="465,29,-213,53" Visibility="Hidden">
+            <ListBox x:Name="lbBasicPingSessions" Margin="77,29,10,53">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid Background="Black" Height="{Binding GridHeight}" Width="{Binding ElementName=lbTraceSessions, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" VerticalAlignment="Top">
-                            <lvc:CartesianChart Series="{Binding SeriesCollection}" Foreground="#FFC90C0C" Margin="26,0,0,0" BorderBrush="#FFB20909" Background="Black">
-                                <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis Labels="{Binding Labels}"/>
-                                </lvc:CartesianChart.AxisX>
-                                <lvc:LineSeries 
-                                    PointGeometry="{x:Null}" 
-                                    LineSmoothness="1"
-                                    StrokeThickness="2" 
-                                    DataLabels="True"
-                                    Foreground="#FF176DD4"/>
-                            </lvc:CartesianChart>
-                            <TextBlock Margin="27,0,0,0" TextWrapping="Wrap" Text="{Binding ChartTitle}" LineStackingStrategy="BlockLineHeight" Foreground="#FF00CFF0" Height="18" VerticalAlignment="Top"/>
-                            <Button Content="⏯" Click="BtnTraceEntryToggle_Click" HorizontalAlignment="Left" Margin="1,0,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
-                            <Button Content="Dn" Click="BtnTraceEntryDownArrow_Click" HorizontalAlignment="Left" Margin="1,51,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
-                            <Button Content="Up" Click="BtnTraceEntryUpArrow_Click" HorizontalAlignment="Left" Margin="1,26,0,0" VerticalAlignment="Top" Width="26" Height="26"/>
-                            <Button Content="X" Click="BtnTraceEntryClose_Click" HorizontalAlignment="Left" VerticalAlignment="Top" Width="26" Height="26" Margin="0,77,427,0" FontSize="14"/>
+                        <Grid Height="30" Width="{Binding ElementName=lbBasicPingSessions, Path=ActualWidth, Converter={StaticResource Minus15Converter}}">
+                            <Border BorderThickness="2,2,2,2" CornerRadius="13,13,13,13" BorderBrush="{Binding PingResultColor}" />
+                            <Label Content="H:" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="19" Foreground="#FF8D8D8D" FontSize="15" Margin="7,0,0,0" />
+                            <Label Content="{Binding HighPing}" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="38" Foreground="#FF8D8D8D" FontSize="15" Margin="21,0,0,0" />
+                            <Label Content="L:" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="19" Foreground="#FF8D8D8D" FontSize="15" Margin="56,0,0,0" />
+                            <Label Content="" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="38" Foreground="#FF8D8D8D" FontSize="15" Margin="68,0,0,0" />
+                            <Label Content="A:" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="19" Foreground="#FF8D8D8D" FontSize="15" Margin="104,0,0,0" />
+                            <Label Content="" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="38" Foreground="#FF8D8D8D" FontSize="15" Margin="118,0,0,0" />
+                            <Label Content="C:" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="19" Foreground="#FF8D8D8D" FontSize="15" Margin="153,0,0,0" />
+                            <Label Content="" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="38" Foreground="#FF8D8D8D" FontSize="15" Margin="167,0,0,0" />
+                            <Label Content="" VerticalContentAlignment="Center" Foreground="#FF8D8D8D" Margin="217,0,50,0"/>
+                            <Button Style="{StaticResource MahApps.Metro.Styles.MetroCircleButtonStyle}" Padding="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Foreground="#FF8D8D8D" BorderBrush="{Binding PingResultColor}" Margin="0,3,4,3" Content="X" Background="#02000000" FontWeight="Bold" HorizontalAlignment="Right" Width="23" />
+                            <Button Style="{StaticResource MahApps.Metro.Styles.MetroCircleButtonStyle}" Padding="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Foreground="#FF8D8D8D" BorderBrush="{Binding PingResultColor}" Margin="0,3,27,3" Content="❚❚" Background="#02000000" HorizontalAlignment="Right" Width="23" />
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <ListBox x:Name="lbPingBasic" HorizontalAlignment="Left" Margin="549,29,-260,53" Width="165">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid HorizontalAlignment="Left" Height="{Binding GridHeight}" VerticalAlignment="Top" Width="{Binding ElementName=lbPingBasic, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" Background="Black">
-                            <Rectangle Fill="{Binding PingStatusColor}" HorizontalAlignment="Left" Height="19" Stroke="{StaticResource BaseBorderBrush}" VerticalAlignment="Top" Width="19" Margin="2,0,0,0"/>
-                            <TextBlock Margin="23,-2,0,0" TextWrapping="Wrap" Text="{Binding HostName}" VerticalAlignment="Top" Height="15" FontSize="10"/>
-                            <TextBlock Margin="23,7,0,-3" TextWrapping="Wrap" Text="{Binding Address}" VerticalAlignment="Top" Height="15" FontSize="10"/>
-                            <TextBlock HorizontalAlignment="Left" Margin="3,1,0,0" TextWrapping="Wrap" Text="{Binding RTT}" VerticalAlignment="Top" Height="17" Width="17" Foreground="#FF0BAAB9" FontSize="10" TextAlignment="Center"/>
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <TextBlock x:Name="lblTraceStatus" Margin="219,32,0,0" TextWrapping="Wrap" Text="Tracing" VerticalAlignment="Top" Foreground="#FFD61212" FontSize="24" TextAlignment="Center" HorizontalAlignment="Left" Width="204" Visibility="Hidden"/>
         </Grid>
         <Grid x:Name="grdSettings" Margin="638,-252,-638,303">
             <Grid.Background>

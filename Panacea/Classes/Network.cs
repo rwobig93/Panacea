@@ -39,8 +39,7 @@ namespace Panacea.Classes
     public enum EnterAction
     {
         Ping,
-        DNSLookup,
-        Trace
+        DNSLookup
     }
 
     #endregion
@@ -384,76 +383,128 @@ namespace Panacea.Classes
         #endregion
     }
 
-    public class PingBasic : INotifyPropertyChanged
+    public class BasicPingEntry : INotifyPropertyChanged
     {
-        #region Variables
-
+        private SolidColorBrush _colorPingSuccess = new SolidColorBrush(Color.FromArgb(100, 0, 195, 0));
+        private SolidColorBrush _colorPingFailure = new SolidColorBrush(Color.FromArgb(100, 195, 0, 0));
+        private string _displayName { get { return $"{_address} | {_hostName}"; } set { _displayName = value; } }
         private string _address { get; set; }
         private string _hostName { get; set; }
-        private string _responseTime { get; set; }
-        private bool pinging { get; set; }
-        private Int32 _gridHeight { get; set; } = 20;
-        private SolidColorBrush _pingStatusColor { get; set; }
+        private string _toggleButton { get; set; } = @"❚❚";
+        private int _highPing { get; set; }
+        private int _lowPing { get; set; }
+        private int _avgPing { get; set; }
+        private int _currentPing { get; set; }
+        private bool _pinging { get; set; }
+        private SolidColorBrush _pingResultColor { get; set; } = new SolidColorBrush(Color.FromArgb(100, 0, 195, 0));
+        public string DisplayName { get { return _displayName; } }
         public string Address
         {
             get { return _address; }
-        }
-        public Int32 GridHeight
-        {
-            get { return _gridHeight; }
-            set
-            {
-                _gridHeight = value;
-                OnPropertyChanged("GridHeight");
-            }
+            set { _address = value; OnPropertyChanged("Address"); OnPropertyChanged("DisplayName"); }
         }
         public string HostName
         {
             get { return _hostName; }
-            set
-            {
-                _hostName = value;
-                OnPropertyChanged("HostName");
-            }
+            set { _hostName = value; OnPropertyChanged("HostName"); OnPropertyChanged("DisplayName"); }
         }
-        public SolidColorBrush PingStatusColor
+        public string ToggleButton
         {
-            get { return _pingStatusColor; }
-            set
-            {
-                _pingStatusColor = value;
-                OnPropertyChanged("PingStatusColor");
-            }
+            get { return _toggleButton; }
+            set { _toggleButton = value; OnPropertyChanged("ToggleButton"); }
         }
-        public string RTT
+        public int HighPing
         {
-            get { return _responseTime; }
-            set
-            {
-                _responseTime = value;
-                OnPropertyChanged("RTT");
-            }
+            get { return _highPing; }
+            set { _highPing = value; OnPropertyChanged("HighPing"); }
         }
-
-        #endregion
-
-        public PingBasic(string address)
+        public int LowPing
         {
-            _address = address;
-            _hostName = "Host Not Found";
-
-            PingAddress(_address);
-            LookupHostName(_address);
+            get { return _lowPing; }
+            set { _lowPing = value; OnPropertyChanged("LowPing"); }
+        }
+        public int AvgPing
+        {
+            get { return _avgPing; }
+            set { _avgPing = value; OnPropertyChanged("AvgPing"); }
+        }
+        public int CurrentPing
+        {
+            get { return _currentPing; }
+            set { _currentPing = value; OnPropertyChanged("CurrentPing"); }
+        }
+        public bool Pinging
+        {
+            get { return _pinging; }
+            set { _pinging = value; OnPropertyChanged("Pinging"); }
+        }
+        public SolidColorBrush PingResultColor
+        {
+            get { return _pingResultColor; }
+            set { _pingResultColor = value; OnPropertyChanged("PingResultColor"); }
         }
 
-        #region Methods
-        
-        private void LookupHostName(string address)
+        public BasicPingEntry(string address)
         {
             try
             {
-                string resolvedAddress = string.Empty;
-                string resolvedHostname = string.Empty;
+                Address = address;
+                PingAddress(Address);
+                LookupAddress(Address);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void PingAddress(string address)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void LogException(Exception ex, [CallerLineNumber] int lineNum = 0, [CallerMemberName] string caller = "", [CallerFilePath] string path = "")
+        {
+            try
+            {
+                Toolbox.LogException(ex, lineNum, caller, path);
+            }
+            catch (Exception)
+            {
+                Random rand = new Random();
+                Toolbox.LogException(ex, lineNum, caller, path, rand.Next(816456489).ToString());
+            }
+        }
+
+        public void TogglePing(bool? setPinging = null)
+        {
+            if (setPinging == null)
+            {
+                if (Pinging)
+                {
+                    Pinging = false;
+                    ToggleButton = @"▶";
+                }
+                else
+                {
+                    Pinging = true;
+                    ToggleButton = @"❚❚";
+                }
+            }
+            else
+            {
+                Pinging = (bool)setPinging;
+                if (Pinging)
+                    ToggleButton = @"❚❚";
+                else
+                    ToggleButton = @"▶";
+            }
+        }
+
+        private void LookupAddress(string address)
+        {
+            try
+            {
                 BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
                 worker.DoWork += (sender, e) =>
                 {
@@ -464,9 +515,8 @@ namespace Panacea.Classes
                         {
                             if (!string.IsNullOrWhiteSpace(dnsEntry.HostName))
                             {
-                                resolvedAddress = dnsEntry.AddressList[0].ToString();
-                                resolvedHostname = dnsEntry.HostName;
-                                worker.ReportProgress(1);
+                                Address = dnsEntry.AddressList[0].ToString();
+                                HostName = dnsEntry.HostName;
                             }
                         }
                     }
@@ -476,109 +526,16 @@ namespace Panacea.Classes
                     }
                     catch (Exception ex)
                     {
-                        Toolbox.LogException(ex);
-                    }
-                };
-                worker.ProgressChanged += (sender2, e2) =>
-                {
-                    if (e2.ProgressPercentage == 1)
-                    {
-                        HostName = resolvedHostname;
+                        LogException(ex);
                     }
                 };
                 worker.RunWorkerAsync();
             }
             catch (Exception ex)
             {
-                Toolbox.LogException(ex);
+                LogException(ex);
             }
         }
-
-        private void PingAddress(string address)
-        {
-            try
-            {
-                pinging = true;
-                BackgroundWorker worker = new BackgroundWorker() { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
-                worker.DoWork += (sender2, e2) =>
-                {
-                    Ping ping = new Ping();
-                    while (true)
-                    {
-                        while (pinging)
-                        {
-                            try
-                            {
-                                var pingReply = ping.Send(address);
-                                PingSuccess(pingReply);
-                            }
-                            catch (PingException)
-                            {
-                                worker.ReportProgress(1);
-                            }
-                            catch (Exception ex)
-                            {
-                                Toolbox.LogException(ex);
-                            }
-                            Thread.Sleep(TimeSpan.FromSeconds(1));
-                        }
-                        Thread.Sleep(TimeSpan.FromSeconds(1));
-                    }
-                };
-                worker.ProgressChanged += (sender3, e3) =>
-                {
-                    if (e3.ProgressPercentage == 1)
-                    {
-                        PingFail();
-                    }
-                };
-                worker.RunWorkerAsync();
-            }
-            catch (Exception ex)
-            {
-                Toolbox.LogException(ex);
-            }
-        }
-
-        private void PingFail()
-        {
-            try
-            {
-                PingStatusColor = NetworkVariables.defaultFailChartFill;
-            }
-            catch (Exception ex)
-            {
-                Toolbox.LogException(ex);
-            }
-        }
-
-        private void PingSuccess(PingReply pingReply)
-        {
-            try
-            {
-                PingStatusColor = NetworkVariables.defaultSuccessChartFill;
-                RTT = pingReply.RoundtripTime.ToString();
-            }
-            catch (Exception ex)
-            {
-                Toolbox.LogException(ex);
-            }
-        }
-
-        public void TogglePing(bool? setPinging = null)
-        {
-            if (setPinging == null)
-            {
-                if (pinging)
-                    pinging = false;
-                else
-                    pinging = true;
-            }
-            else
-                pinging = (bool)setPinging;
-        }
-
-        #endregion
 
         #region INotifyPropertyChanged implementation
 
