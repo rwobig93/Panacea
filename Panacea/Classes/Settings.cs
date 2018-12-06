@@ -42,6 +42,7 @@ namespace Panacea.Classes
         private bool _basicPing { get; set; } = false;
         private bool _betaUpdate { get; set; } = false;
         private bool _showChangelog { get; set; } = true;
+        private bool _pingTypeChosen { get; set; } = false;
         private string _productionURI { get; set; } = null;
         private string _upProductionURI { get; set; } = null;
         private string _latestChangelog { get; set; } = "I'm a default Changelog! You shouldn't ever see me! :D";
@@ -203,6 +204,11 @@ namespace Panacea.Classes
                 _showChangelog = value;
                 OnPropertyChanged("ShowChangelog");
             }
+        }
+        public bool PingTypeChosen
+        {
+            get { return _pingTypeChosen; }
+            set { _pingTypeChosen = value; OnPropertyChanged("PingTypeChosen"); }
         }
         public string ProductionURI
         {

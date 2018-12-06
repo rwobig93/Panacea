@@ -368,11 +368,11 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <ListBox x:Name="lbBasicPingSessions" Margin="77,29,10,53">
+            <ListBox x:Name="lbBasicPingSessions" Margin="77,29,10,53" Visibility="Hidden">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid Height="30" Width="{Binding ElementName=lbBasicPingSessions, Path=ActualWidth, Converter={StaticResource Minus15Converter}}">
-                            <Border BorderThickness="2,2,2,2" CornerRadius="13,13,13,13" BorderBrush="{Binding PingResultColor}" />
+                            <Border BorderThickness="2,2,2,2" Margin="0,1,0,1" CornerRadius="13,13,13,13" BorderBrush="{Binding PingResultColor}" />
                             <Label Content="H:" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="19" Foreground="#FF8D8D8D" FontSize="15" Margin="7,0,0,0" />
                             <Label Content="{Binding HighPing}" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="38" Foreground="#FF8D8D8D" FontSize="15" Margin="21,0,0,0" />
                             <Label Content="L:" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="19" Foreground="#FF8D8D8D" FontSize="15" Margin="56,0,0,0" />
@@ -382,8 +382,8 @@
                             <Label Content="C:" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="19" Foreground="#FF8D8D8D" FontSize="15" Margin="153,0,0,0" />
                             <Label Content="{Binding CurrentPing}" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="38" Foreground="#FF8D8D8D" FontSize="15" Margin="167,0,0,0" />
                             <Label Content="{Binding DisplayName}" VerticalContentAlignment="Center" Foreground="#FF8D8D8D" Margin="217,0,50,0"/>
-                            <Button Style="{StaticResource MahApps.Metro.Styles.MetroCircleButtonStyle}" Padding="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Foreground="#FF8D8D8D" BorderBrush="{Binding PingResultColor}" Margin="0,3,4,3" Content="X" Background="#02000000" FontWeight="Bold" HorizontalAlignment="Right" Width="23" />
-                            <Button Style="{StaticResource MahApps.Metro.Styles.MetroCircleButtonStyle}" Padding="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Foreground="#FF8D8D8D" BorderBrush="{Binding PingResultColor}" Margin="0,3,27,3" Content="❚❚" Background="#02000000" HorizontalAlignment="Right" Width="23" />
+                            <Button Style="{StaticResource MahApps.Metro.Styles.MetroCircleButtonStyle}" Click="BtnBasicPingEntryClose_Click" Padding="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Foreground="#FF8D8D8D" BorderBrush="{Binding PingResultColor}" Margin="0,4,4,4" Content="X" Background="#02000000" FontWeight="Bold" HorizontalAlignment="Right" Width="23" />
+                            <Button Style="{StaticResource MahApps.Metro.Styles.MetroCircleButtonStyle}" Click="BtnBasicPingEntryToggle_Click" Padding="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Foreground="#FF8D8D8D" BorderBrush="{Binding PingResultColor}" Margin="0,4,27,4" Content="{Binding ToggleButton}" Background="#02000000" HorizontalAlignment="Right" Width="23" />
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
@@ -409,13 +409,13 @@
             <TextBlock x:Name="lblSetNetPingCountWarning" HorizontalAlignment="Left" Margin="82,21,0,0" TextWrapping="Wrap" Text="*Warning: Higher count = More CPU Usage" VerticalAlignment="Top" Foreground="#FF4D4747" Width="234"/>
             <TextBlock x:Name="lblSetNetPingDTFNote" HorizontalAlignment="Left" Margin="84,55,0,0" TextWrapping="Wrap" Text="*Note: Hours with small charts are unreadable" VerticalAlignment="Top" Foreground="#FF4D4747" Width="252"/>
             <TextBlock x:Name="lblNetBasicPing" HorizontalAlignment="Left" Margin="361,4,0,0" TextWrapping="Wrap" Text="Basic Ping:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-            <CheckBox x:Name="chkNetBasicPing" Click="chkNetBasicPing_Click" Content="" HorizontalAlignment="Left" Margin="420,6,0,0" VerticalAlignment="Top" Width="18" Background="{StaticResource BaseBackgroundBrush}" BorderBrush="{StaticResource BaseBorderBrush}" Foreground="#FF8D8D8D" Height="17"/>
+            <CheckBox x:Name="chkNetBasicPing" IsChecked="True" Click="chkNetBasicPing_Click" Content="" HorizontalAlignment="Left" Margin="420,6,0,0" VerticalAlignment="Top" Width="18" Background="#FF727272" BorderBrush="{StaticResource BaseBorderBrush}" Foreground="#FF8D8D8D" Height="17"/>
             <ComboBox x:Name="cmbxSetNetTextboxAction" SelectionChanged="cmbxSetNetTextboxAction_SelectionChanged"  HorizontalAlignment="Left" Style="{StaticResource {x:Type ComboBox}}" Margin="318,38,0,0" VerticalAlignment="Top" Width="120" Height="9" Foreground="#FF8D8D8D"/>
             <Rectangle x:Name="rectSettingsGeneral" HorizontalAlignment="Left" Height="54" Margin="79,85,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="365"/>
             <TextBlock x:Name="txtSettingsGenLabel" HorizontalAlignment="Left" Margin="83,85,0,0" TextWrapping="Wrap" Text="General" VerticalAlignment="Top" Foreground="#FF1DD8D0" Width="41"/>
             <Rectangle x:Name="rectSettingsGenTitle" HorizontalAlignment="Left" Height="16" Margin="79,85,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="50"/>
             <TextBlock x:Name="lblSettingsBeta" HorizontalAlignment="Left" Margin="132,90,0,0" TextWrapping="Wrap" Text="Upgrade to Beta/Test Clients:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="155" Height="16"/>
-            <CheckBox x:Name="chkSettingsBeta" Click="chkSettingsBeta_Click" Content="" HorizontalAlignment="Left" Margin="287,92,0,0" VerticalAlignment="Top" Width="18" Background="{StaticResource BaseBackgroundBrush}" BorderBrush="{StaticResource BaseBorderBrush}" Foreground="#FF8D8D8D" Height="17"/>
+            <CheckBox x:Name="chkSettingsBeta" Click="chkSettingsBeta_Click" Content="" HorizontalAlignment="Left" Margin="287,92,0,0" VerticalAlignment="Top" Width="18" Background="#FF727272" BorderBrush="{StaticResource BaseBorderBrush}" Foreground="#FF8D8D8D" Height="17"/>
             <Button x:Name="btnDefaultConfig" Click="btnDefaultConfig_Click" Content="Reset Config to Default" HorizontalAlignment="Left" Margin="307,88,0,0" VerticalAlignment="Top" Width="133" Height="22"/>
             <Button x:Name="btnViewChangeLog" Click="btnViewChangeLog_Click" Content="View Changelog" HorizontalAlignment="Left" Margin="84,111,0,0" VerticalAlignment="Top" Width="102"/>
             <Button x:Name="btnSendDiag" Click="btnSendDiag_Click" Content="Send Diagnostic Logs" HorizontalAlignment="Left" Margin="307,111,0,0" VerticalAlignment="Top" Width="133"/>

@@ -43,6 +43,14 @@ namespace Panacea.Classes
         DNSLookup
     }
 
+    public enum PingStat
+    {
+        Active,
+        Paused,
+        Canceled,
+        Unknown
+    }
+
     #endregion
 
     #region Ping
@@ -398,16 +406,18 @@ namespace Panacea.Classes
 
         private SolidColorBrush _colorPingSuccess = new SolidColorBrush(Color.FromArgb(100, 0, 195, 0));
         private SolidColorBrush _colorPingFailure = new SolidColorBrush(Color.FromArgb(100, 195, 0, 0));
+        private SolidColorBrush _colorPingPaused = new SolidColorBrush(Color.FromArgb(100, 195, 195, 0));
         private List<PingDetail> _pingHistory = new List<PingDetail>();
         private string _displayName { get { return $"{_address} | {_hostName}"; } set { _displayName = value; } }
         private string _address { get; set; }
         private string _hostName { get; set; }
         private string _toggleButton { get; set; } = @"❚❚";
+        private bool _disposed = false;
         private int _highPing { get; set; }
         private int _lowPing { get; set; }
         private int _avgPing { get; set; }
         private int _currentPing { get; set; }
-        private bool _pinging { get; set; }
+        private PingStat _pinging { get; set; } = PingStat.Active;
         private SolidColorBrush _pingResultColor { get; set; } = new SolidColorBrush(Color.FromArgb(100, 0, 195, 0));
         public string DisplayName { get { return _displayName; } }
         public string Address
@@ -445,7 +455,7 @@ namespace Panacea.Classes
             get { return _currentPing; }
             set { _currentPing = value; OnPropertyChanged("CurrentPing"); }
         }
-        public bool Pinging
+        public PingStat Pinging
         {
             get { return _pinging; }
             set { _pinging = value; OnPropertyChanged("Pinging"); }
@@ -483,25 +493,32 @@ namespace Panacea.Classes
         {
             try
             {
-                Pinging = true;
+                Pinging = PingStat.Active;
                 Address = address;
                 HostName = "Hostname not found";
                 BackgroundWorker worker = new BackgroundWorker() { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
                 worker.DoWork += (sender2, e2) =>
                 {
                     Ping ping = new Ping();
-                    while (true)
+                    while (!_disposed)
                     {
-                        while (Pinging)
+                        while (Pinging == PingStat.Active)
                         {
                             try
                             {
                                 var pingReply = ping.Send(address);
                                 AddPingSuccess(pingReply);
                             }
-                            catch (PingException)
+                            catch (PingException pe)
                             {
-                                worker.ReportProgress(1);
+                                Pinging = PingStat.Canceled;
+                                HostName = pe.InnerException.Message;
+                                if (Pinging != PingStat.Paused)
+                                    PingResultColor = _colorPingFailure;
+                                HighPing = -1;
+                                LowPing = -1;
+                                AvgPing = -1;
+                                CurrentPing = -1;
                             }
                             catch (Exception ex)
                             {
@@ -527,6 +544,21 @@ namespace Panacea.Classes
             }
         }
 
+        public void Destroy()
+        {
+            try
+            {
+                Pinging = PingStat.Canceled;
+                _disposed = true;
+                PingHistory.Clear();
+                PingHistory = null;
+            }
+            catch (Exception ex)
+            {
+                Toolbox.uAddDebugLog($"Error occured while destroying basicpingentry: {ex.Message}", MainWindow.DebugType.FAILURE);
+            }
+        }
+
         private void AddPingFailure()
         {
             try
@@ -545,7 +577,8 @@ namespace Panacea.Classes
                 LowPing = Convert.ToInt32(PingHistory.OrderBy(x => x.TripTime).First().TripTime);
                 AvgPing = CalculateRTTAvg(PingHistory);
                 CurrentPing = Convert.ToInt32(pingDetail.TripTime);
-                PingResultColor = _colorPingFailure;
+                if (Pinging != PingStat.Paused)
+                    PingResultColor = _colorPingFailure;
             }
             catch (Exception ex)
             {
@@ -557,24 +590,83 @@ namespace Panacea.Classes
         {
             try
             {
+                var valid = VerifyPingStatus(pingReply);
+                IPAddress ip;
+                IPAddress.TryParse(Address, out ip);
                 var pingDetail = new PingDetail()
                 {
-                    Address = pingReply.Address,
+                    Address = pingReply.Address != null ? pingReply.Address : ip,
                     IPStatus = pingReply.Status,
                     TimeStamp = DateTime.Now.ToLocalTime(),
-                    TripTime = pingReply.RoundtripTime
+                    TripTime = valid ? pingReply.RoundtripTime : -1
                 };
+                if ((HostName.StartsWith("(Timing Out) ") || HostName.StartsWith("(Packet Error) ") || HostName.StartsWith("(TTL Expired) ") || HostName.StartsWith("(Unreachable) ") || HostName.StartsWith("(Unknown Error) ")) && valid)
+                    HostName = HostName.Replace("(Timing Out) ", "").Replace("(Packet Error) ", "").Replace("(TTL Expired) ", "").Replace("(Unreachable) ", "").Replace("(Unknown Error) ", "");
                 PingHistory.Add(pingDetail);
-                HighPing = Convert.ToInt32(PingHistory.OrderBy(x => x.TripTime).Last().TripTime);
-                LowPing = Convert.ToInt32(PingHistory.OrderBy(x => x.TripTime).First().TripTime);
-                AvgPing = CalculateRTTAvg(PingHistory);
-                CurrentPing = Convert.ToInt32(pingDetail.TripTime);
-                PingResultColor = _colorPingSuccess;
+                HighPing = PingHistory.FindAll(x => x.TripTime != -1).Count > 0 ? Convert.ToInt32(PingHistory.FindAll(x => x.TripTime != -1).OrderBy(x => x.TripTime).Last().TripTime) : -1;
+                LowPing = PingHistory.FindAll(x => x.TripTime != -1).Count > 0 ? Convert.ToInt32(PingHistory.FindAll(x => x.TripTime != -1).OrderBy(x => x.TripTime).First().TripTime) : -1;
+                AvgPing = PingHistory.FindAll(x => x.TripTime != -1).Count > 0 ? CalculateRTTAvg(PingHistory) : -1;
+                CurrentPing = PingHistory.FindAll(x => x.TripTime != -1).Count > 0 ? Convert.ToInt32(pingDetail.TripTime) : -1;
+                if (Pinging != PingStat.Paused)
+                    PingResultColor = valid ? _colorPingSuccess : _colorPingFailure;
             }
             catch (Exception ex)
             {
                 Toolbox.uAddDebugLog($"Unable to get ping success: [{ex.GetType().ToString()}]{ex.Message}", MainWindow.DebugType.FAILURE);
             }
+        }
+
+        private bool VerifyPingStatus(PingReply reply)
+        {
+            bool valid = false;
+            var status = reply.Status;
+            if (status == IPStatus.Success)
+                valid = true;
+            else if (status == IPStatus.TimedOut)
+            {
+                if (!HostName.StartsWith("(Timing Out) "))
+                    HostName = $"(Timing Out) {HostName}";
+            }
+            else if ((status == IPStatus.BadDestination ||
+                 status == IPStatus.BadHeader ||
+                 status == IPStatus.BadOption ||
+                 status == IPStatus.BadRoute ||
+                 status == IPStatus.DestinationScopeMismatch ||
+                 status == IPStatus.HardwareError ||
+                 status == IPStatus.IcmpError ||
+                 status == IPStatus.NoResources ||
+                 status == IPStatus.PacketTooBig ||
+                 status == IPStatus.ParameterProblem ||
+                 status == IPStatus.SourceQuench ||
+                 status == IPStatus.UnrecognizedNextHeader)
+                 )
+            {
+                if (!HostName.StartsWith("(Packet Error) "))
+                    HostName = $"(Packet Error) {HostName}";
+            }
+            else if (status == IPStatus.TimeExceeded ||
+                status == IPStatus.TtlExpired ||
+                status == IPStatus.TtlReassemblyTimeExceeded
+                )
+            {
+                if (!HostName.StartsWith("(TTL Expired) "))
+                    HostName = $"(TTL Expired) {HostName}";
+            }
+            else if (status == IPStatus.DestinationHostUnreachable ||
+                status == IPStatus.DestinationNetworkUnreachable ||
+                status == IPStatus.DestinationPortUnreachable ||
+                status == IPStatus.DestinationProtocolUnreachable ||
+                status == IPStatus.DestinationUnreachable)
+            {
+                if (!HostName.StartsWith("(Unreachable) "))
+                    HostName = $"(Unreachable) {HostName}";
+            }
+            else
+            {
+                if (!HostName.StartsWith("(Unknown Error) "))
+                    HostName = $"(Unknown Error) {HostName}";
+            }
+            return valid;
         }
 
         private int CalculateRTTAvg(List<PingDetail> pingHistory)
@@ -583,8 +675,11 @@ namespace Panacea.Classes
             int count = 0;
             foreach (var ping in pingHistory)
             {
-                count++;
-                sum = sum + Convert.ToInt32(ping.TripTime);
+                if (ping.TripTime != -1)
+                {
+                    count++;
+                    sum = sum + Convert.ToInt32(ping.TripTime);
+                }
             }
             return sum / count;
         }
@@ -602,28 +697,50 @@ namespace Panacea.Classes
             }
         }
 
-        public void TogglePing(bool? setPinging = null)
+        public void TogglePing(PingStat stat = PingStat.Unknown)
         {
-            if (setPinging == null)
+            try
             {
-                if (Pinging)
+                if (stat == PingStat.Unknown)
                 {
-                    Pinging = false;
-                    ToggleButton = @"▶";
+                    if (Pinging == PingStat.Active)
+                    {
+                        Pinging = PingStat.Paused;
+                        ToggleButton = @"▶";
+                        PingResultColor = _colorPingPaused;
+                    }
+                    else if (Pinging == PingStat.Paused)
+                    {
+                        Pinging = PingStat.Active;
+                        ToggleButton = @"❚❚";
+                        PingResultColor = _colorPingPaused;
+                    }
+                    else
+                    {
+                        Toolbox.uAddDebugLog($"Pinging for {Address} | {HostName} is {Pinging.ToString()} | Skipping toggle request");
+                    }
                 }
                 else
                 {
-                    Pinging = true;
-                    ToggleButton = @"❚❚";
+                    Pinging = stat;
+                    if (Pinging == PingStat.Active)
+                    {
+                        ToggleButton = @"❚❚";
+                    }
+                    else if (Pinging == PingStat.Paused)
+                    {
+                        ToggleButton = @"▶";
+                        PingResultColor = _colorPingPaused;
+                    }
+                    else
+                    {
+                        Toolbox.uAddDebugLog($"Pinging for {Address} | {HostName} is {Pinging.ToString()} | Skipping toggle request");
+                    }
                 }
             }
-            else
+            catch (Exception ex)
             {
-                Pinging = (bool)setPinging;
-                if (Pinging)
-                    ToggleButton = @"❚❚";
-                else
-                    ToggleButton = @"▶";
+                LogException(ex);
             }
         }
 

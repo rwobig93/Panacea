@@ -29,6 +29,7 @@ using System.Net.Http;
 using System.IO.Compression;
 using System.Net.Mail;
 using MahApps.Metro.Controls;
+using Octokit;
 
 namespace Panacea
 {
@@ -498,8 +499,10 @@ namespace Panacea
                         sendNotif = true;
                     }
                     else
-                        validEntries = $"{validEntries}{entries},";
+                        validEntries = $"{validEntries}{entry},";
                 }
+                if (validEntries.Length > 0)
+                    validEntries = validEntries.Remove(validEntries.Length -1);
                 if (sendNotif && validEntries == string.Empty)
                 {
                     ShowNotification("Address(es) entered incorrect or duplicate, try again");
@@ -571,6 +574,34 @@ namespace Panacea
             }
         }
 
+        private void BtnBasicPingEntryClose_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var lbItem = (BasicPingEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
+                lbBasicPingSessions.Items.Remove(lbItem);
+                lbItem.Destroy();
+                lbItem = null;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void BtnBasicPingEntryToggle_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var lbItem = (BasicPingEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
+                lbItem.TogglePing();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         private void btnNetPingToggleAll_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -579,8 +610,17 @@ namespace Panacea
                     glblPinging = false;
                 else
                     glblPinging = true;
-                foreach (PingEntry entry in lbPingSessions.Items)
-                    entry.TogglePing(glblPinging);
+                PingStat stat = PingStat.Unknown;
+                if (glblPinging)
+                    stat = PingStat.Active;
+                else
+                    stat = PingStat.Paused;
+                if (Toolbox.settings.BasicPing)
+                    foreach (BasicPingEntry entry in lbBasicPingSessions.Items)
+                        entry.TogglePing(stat);
+                else
+                    foreach (PingEntry entry in lbPingSessions.Items)
+                        entry.TogglePing(glblPinging);
             }
             catch (Exception ex)
             {
@@ -1761,6 +1801,7 @@ namespace Panacea
                 uDebugLogAdd("SettingsNET: working on ping settings");
                 txtSetNetPingCount.Text = Toolbox.settings.PingChartLength.ToString();
                 chkNetBasicPing.IsChecked = Toolbox.settings.BasicPing;
+                VerifyPingGrids();
                 uDebugLogAdd("SettingsNET: working on DTFormat settings");
                 var seconds = "Seconds";
                 var minutes = "Minutes";
@@ -1849,7 +1890,9 @@ namespace Panacea
                             }
                             worker.ReportProgress(1);
                             settingsSaveVerificationInProgress = false;
-                            settingsTimer = 2;
+                            SettingsTimerRefresh();
+                            if (settingsUpdate == SettingsUpdate.BasicPing)
+                                worker.ReportProgress(2);
                         }
                         catch (Exception ex)
                         {
@@ -1861,6 +1904,10 @@ namespace Panacea
                         if (pe.ProgressPercentage == 1)
                         {
                             tUpdateSettings(settingsUpdate);
+                        }
+                        if (pe.ProgressPercentage == 2)
+                        {
+                            VerifyPingGrids();
                         }
                     };
                     worker.RunWorkerAsync();
@@ -1874,7 +1921,7 @@ namespace Panacea
 
         private void SettingsTimerRefresh()
         {
-            settingsTimer = 2;
+            settingsTimer = 4;
         }
 
         private void ShowChangelog()
@@ -2682,6 +2729,12 @@ namespace Panacea
                     if (item.Address == address)
                         exists = true;
                 }
+            else
+                foreach (BasicPingEntry entry in lbBasicPingSessions.Items)
+                {
+                    if (entry.Address == address || entry.HostName.ToLower() == address)
+                        exists = true;
+                }
             return exists;
         }
 
@@ -2701,19 +2754,44 @@ namespace Panacea
                 var addressNoSpace = Regex.Replace(address, @"\s+", "");
                 var entries = addressNoSpace.Split(',');
                 if (Toolbox.settings.BasicPing)
-                {
-                    lbBasicPingSessions.Visibility = Visibility.Visible;
-                    lbPingSessions.Visibility = Visibility.Hidden;
+                    foreach (var entry in entries)
+                        lbBasicPingSessions.Items.Add(new BasicPingEntry(entry));
+                else
                     foreach (var entry in entries)
                         lbPingSessions.Items.Add(new PingEntry(entry));
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void VerifyPingGrids()
+        {
+            try
+            {
+                uDebugLogAdd("Starting Ping Grid Verification");
+                if (Toolbox.settings.BasicPing && lbBasicPingSessions.Visibility != Visibility.Visible)
+                {
+                    uDebugLogAdd($"Basic Ping settings option is {Toolbox.settings.BasicPing} and BasicPingSessions viz is {lbBasicPingSessions.Visibility.ToString()}, showing basic ping grid");
+                    lbBasicPingSessions.Visibility = Visibility.Visible;
+                    lbPingSessions.Visibility = Visibility.Hidden;
+                    lbBasicPingSessions.Items.Clear();
+                    foreach (PingEntry entry in lbPingSessions.Items)
+                        lbBasicPingSessions.Items.Add(new BasicPingEntry(entry.Address));
+                    lbPingSessions.Items.Clear();
                 }
                 else
                 {
+                    uDebugLogAdd($"Basic Ping settings option is {Toolbox.settings.BasicPing}, showing visual ping grid");
                     lbBasicPingSessions.Visibility = Visibility.Hidden;
                     lbPingSessions.Visibility = Visibility.Visible;
-                    foreach (var entry in entries)
-                        lbBasicPingSessions.Items.Add(new BasicPingEntry(entry));
+                    lbPingSessions.Items.Clear();
+                    foreach (BasicPingEntry entry in lbBasicPingSessions.Items)
+                        lbPingSessions.Items.Add(new PingEntry(entry.Address));
+                    lbBasicPingSessions.Items.Clear();
                 }
+                uDebugLogAdd("Finished Ping Grid Verification");
             }
             catch (Exception ex)
             {
@@ -2871,6 +2949,9 @@ namespace Panacea
                         if (e.ProgressPercentage == 1)
                         {
                             SaveSettings();
+                        }
+                        if (e.ProgressPercentage == 2)
+                        {
                             tCheckForUpdates();
                         }
                     }
@@ -2883,11 +2964,19 @@ namespace Panacea
                 {
                     try
                     {
+                        var updateCounter = 0;
                         while (true)
                         {
                             Thread.Sleep(TimeSpan.FromMinutes(5));
                             uDebugLogAdd("5min passed, now running timed actions");
                             worker.ReportProgress(1);
+                            if (updateCounter >= 12)
+                            {
+                                uDebugLogAdd("60min passed, now running update timed action");
+                                worker.ReportProgress(2);
+                                updateCounter = -1;
+                            }
+                            updateCounter++;
                         }
                     }
                     catch (Exception ex)
@@ -3250,6 +3339,7 @@ namespace Panacea
                 uDebugLogAdd($"Finished getting github recent version");
             }
             catch (HttpRequestException hre) { uDebugLogAdd($"Unable to reach site, error: {hre.Message}"); Toolbox.changeLogs.Add(new ChangeLogItem() { BetaRelease = Visibility.Visible, BugFixes = Visibility.Visible, NewFeatures = Visibility.Visible, Version = @"¯\_(ツ)_/¯", Body = "Github is unreachable, couldn't get the changelogzzzz :(" }); }
+            catch (RateLimitExceededException rlee) { uDebugLogAdd($"Unable to get update, API rate limit reached: [L]{rlee.Limit} [R]{rlee.Remaining} [ResetTime]{rlee.Reset} [CurrentTime]{DateTime.Now.ToLocalTime().ToString()} [M]{rlee.Message}"); }
             catch (InvalidOperationException ioe)
             {
                 uDebugLogAdd($"Unable to get updates, reason: {ioe.Message}");
