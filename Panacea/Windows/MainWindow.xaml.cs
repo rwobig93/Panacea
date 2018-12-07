@@ -66,7 +66,6 @@ namespace Panacea
         private bool resolvingDNS = false;
         private int resolvedEntries = 0;
         private bool settingsBadAlerted = false;
-        private bool traceLoading = false;
         private bool resizingNetGrid = false;
         private bool capturingHandle = false;
         private bool startingUp = false;
@@ -553,6 +552,7 @@ namespace Panacea
             {
                 var lbItem = (PingEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
                 lbPingSessions.Items.Remove(lbItem);
+                lbItem.Destroy();
                 lbItem = null;
             }
             catch (Exception ex)
@@ -620,7 +620,7 @@ namespace Panacea
                         entry.TogglePing(stat);
                 else
                     foreach (PingEntry entry in lbPingSessions.Items)
-                        entry.TogglePing(glblPinging);
+                        entry.TogglePing(stat);
             }
             catch (Exception ex)
             {

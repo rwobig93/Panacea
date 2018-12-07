@@ -183,7 +183,7 @@ namespace Panacea.Windows
                             MoveProcessOutline(proc.Handle);
                         else
                             ShowProcessOutline(proc.Handle);
-                        DisplayProcessInfo(proc.Process);
+                        DisplayProcessInfo(proc);
                     }
                     catch (Win32Exception we) { uDebugLogAdd($"Unable to draw process outline: {we.Message}"); lbProcList.Items.Remove(lbProcList.SelectedItem); return; }
                     catch (Exception ex)
@@ -449,9 +449,9 @@ namespace Panacea.Windows
                 }
                 uDebugLogAdd($"Adding process to window list, {selProc.Display}");
                 if (optionChecked)
-                    Toolbox.settings.AddWindow(WindowItem.Create(selProc.Process, options, selProc.Title));
+                    Toolbox.settings.AddWindow(WindowItem.Create(selProc.Process, selProc.Handle, options, selProc.Title));
                 else
-                    Toolbox.settings.AddWindow(WindowItem.Create(selProc.Process, null, selProc.Title));
+                    Toolbox.settings.AddWindow(WindowItem.Create(selProc.Process, selProc.Handle, null, selProc.Title));
                 uDebugLogAdd("Added process to window list");
                 SendUserUpdateNotification($"Added entry for this process: {selProc.Display} ");
                 //lbProcList.Items.Remove(selProc);
@@ -481,16 +481,16 @@ namespace Panacea.Windows
             }
         }
 
-        private void DisplayProcessInfo(Process proc)
+        private void DisplayProcessInfo(WindowListItem proc)
         {
             try
             {
-                WindowItem windowItem = WindowItem.Create(proc);
-                TxtProcName.Text = $"Process Name: {windowItem.WindowInfo.Name}";
-                TxtProcTitle.Text = $"Process Title: {windowItem.WindowInfo.Title}";
-                TxtModName.Text = $"Module Name: {windowItem.WindowInfo.ModName}";
-                TxtFilePath.Text = $"File Path: {windowItem.WindowInfo.FileName}";
-                TxtProcLocation.Text = $"Location:{Environment.NewLine}   X: {windowItem.WindowInfo.XValue}{Environment.NewLine}   Y: {windowItem.WindowInfo.YValue}{Environment.NewLine}   Width: {windowItem.WindowInfo.Width}{Environment.NewLine}   Height: {windowItem.WindowInfo.Height}";
+                var dimensions = WindowInfo.GetHandleDimensions(proc.Handle);
+                TxtProcName.Text = $"Process Name: {proc.Process.ProcessName}";
+                TxtProcTitle.Text = $"Process Title: {proc.Title}";
+                TxtModName.Text = $"Module Name: {proc.Process.MainModule.ModuleName}";
+                TxtFilePath.Text = $"File Path: {proc.Process.MainModule.FileName}";
+                TxtProcLocation.Text = $"Location:{Environment.NewLine}   X: {dimensions.Left}{Environment.NewLine}   Y: {dimensions.Top}{Environment.NewLine}   Width: {dimensions.Right - dimensions.Left}{Environment.NewLine}   Height: {dimensions.Bottom - dimensions.Top}";
             }
             catch (Exception ex)
             {

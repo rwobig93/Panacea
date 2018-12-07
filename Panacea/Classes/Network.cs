@@ -21,15 +21,6 @@ namespace Panacea.Classes
 {
     #region Supporting
 
-    public static class NetworkVariables
-    {
-        public static SolidColorBrush defaultSuccessChartStroke = new SolidColorBrush(Color.FromArgb(100, 6, 12, 133));
-        public static SolidColorBrush defaultFailChartStroke = new SolidColorBrush(Color.FromArgb(100, 255, 0, 0));
-        public static SolidColorBrush defaultSuccessChartFill = new SolidColorBrush(Color.FromArgb(100, 4, 164, 48));
-        public static SolidColorBrush defaultFailChartFill = new SolidColorBrush(Color.FromArgb(100, 139, 2, 2));
-        public static Int32 defaultPingChartLength = 10;
-    }
-
     public enum DTFormat
     {
         Sec,
@@ -75,18 +66,25 @@ namespace Panacea.Classes
         #region Variables
 
         private string _address { get; set; }
-        private bool pinging { get; set; }
+        private string _hostName { get; set; }
+        private PingStat pinging { get; set; } = PingStat.Active;
+        private bool _disposed { get; set; } = false;
         private double _axisMax;
         private double _axisMin;
-        private string _chartTitle { get; set; }
-        private SolidColorBrush _chartStroke { get; set; }
-        private SolidColorBrush _chartFill { get; set; }
+        private string _chartTitle { get { return $"{_address} | {_hostName}"; } set { _chartTitle = value; } }
+        private SolidColorBrush _chartStroke { get; set; } = Toolbox.settings.PingSuccessStroke;
+        private SolidColorBrush _chartFill { get; set; } = Toolbox.settings.PingSuccessFill;
         private Int32 _historyLength { get; set; } = Toolbox.settings.PingChartLength + 2;
         private Int32 _gridHeight { get; set; } = 104;
         private Int32 _gridWidth { get; set; }
         private Int32 _chartLength { get; set; } = Toolbox.settings.PingChartLength;
         public ChartValues<PingModel> ChartValues { get; set; }
         public Func<double, string> DateTimeFormatter { get; set; }
+        public PingStat Pinging
+        {
+            get { return pinging; }
+            set { pinging = value; OnPropertyChanged("Pinging"); }
+        }
         public double AxisStep { get; set; }
         public double AxisUnit { get; set; }
         public double AxisMax
@@ -137,6 +135,12 @@ namespace Panacea.Classes
         public string Address
         {
             get { return _address; }
+            set { _address = value; OnPropertyChanged("Address"); OnPropertyChanged("ChartTitle"); }
+        }
+        public string HostName
+        {
+            get { return _hostName; }
+            set { _hostName = value; OnPropertyChanged("HostName"); OnPropertyChanged("ChartTitle"); }
         }
         public Int32 GridHeight
         {
@@ -173,7 +177,7 @@ namespace Panacea.Classes
         {
             try
             {
-                _address = address;
+                Address = address;
 
                 var mapper = Mappers.Xy<PingModel>()
                 .X(model => model.DateTime.Ticks)   //use DateTime.Ticks as X
@@ -244,25 +248,24 @@ namespace Panacea.Classes
         {
             try
             {
-                pinging = true;
-                ChartTitle = $"{address} | HostName Not Found";
+                HostName = $"HostName Not Found";
                 BackgroundWorker worker = new BackgroundWorker() { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
                 worker.DoWork += (sender2, e2) =>
                 {
                     Ping ping = new Ping();
-                    while (true)
+                    while (!_disposed)
                     {
-                        while (pinging)
+                        while (Pinging == PingStat.Active)
                         {
                             try
                             {
                                 var pingReply = ping.Send(address);
-                                AddPingResponse(pingReply);
+                                AddPingSuccess(pingReply);
                             }
-                            catch (PingException)
+                            catch (PingException pe)
                             {
-                                worker.ReportProgress(1);
-                                worker.ReportProgress(0);
+                                HostName = pe.InnerException.Message;
+                                AddFailPingResponse();
                             }
                             catch (Exception ex)
                             {
@@ -288,13 +291,15 @@ namespace Panacea.Classes
             }
         }
 
-        private void AddPingResponse(PingReply pingReply)
+        private void AddPingSuccess(PingReply pingReply)
         {
-            if (ChartStroke != Toolbox.settings.PingSuccessStroke || ChartFill != Toolbox.settings.PingSuccessFill)
+            if ((ChartStroke != Toolbox.settings.PingSuccessStroke || ChartFill != Toolbox.settings.PingSuccessFill) && Pinging == PingStat.Active)
             {
                 ChartStroke = Toolbox.settings.PingSuccessStroke;
                 ChartFill = Toolbox.settings.PingSuccessFill;
             }
+            if ((HostName.StartsWith("(Timing Out) ") || HostName.StartsWith("(Packet Error) ") || HostName.StartsWith("(TTL Expired) ") || HostName.StartsWith("(Unreachable) ") || HostName.StartsWith("(Unknown Error) ")) && valid)
+                HostName = HostName.Replace("(Timing Out) ", "").Replace("(Packet Error) ", "").Replace("(TTL Expired) ", "").Replace("(Unreachable) ", "").Replace("(Unknown Error) ", "");
             var now = DateTime.Now;
             ChartValues.Add(new PingModel
             {
@@ -309,21 +314,28 @@ namespace Panacea.Classes
 
         private void AddFailPingResponse()
         {
-            if (ChartStroke != Toolbox.settings.PingFailFill && ChartFill != Toolbox.settings.PingFailFill)
+            try
             {
-                ChartStroke = Toolbox.settings.PingFailStroke;
-                ChartFill = Toolbox.settings.PingFailFill;
+                if (ChartStroke != Toolbox.settings.PingFailFill || ChartFill != Toolbox.settings.PingFailFill && Pinging != PingStat.Paused)
+                {
+                    ChartStroke = Toolbox.settings.PingFailStroke;
+                    ChartFill = Toolbox.settings.PingFailFill;
+                }
+                var now = DateTime.Now;
+                ChartValues.Add(new PingModel
+                {
+                    DateTime = now,
+                    TripTime = -1
+                });
+
+                SetAxisLimits(now);
+
+                if (ChartValues.Count > 22) ChartValues.RemoveAt(0);
             }
-            var now = DateTime.Now;
-            ChartValues.Add(new PingModel
+            catch (Exception ex)
             {
-                DateTime = now,
-                TripTime = -1
-            });
-
-            SetAxisLimits(now);
-
-            if (ChartValues.Count > 22) ChartValues.RemoveAt(0);
+                LogException(ex);
+            }
         }
 
         private void LookupAddress(string address)
@@ -361,7 +373,8 @@ namespace Panacea.Classes
                 {
                     if (e2.ProgressPercentage == 1)
                     {
-                        ChartTitle = $"{resolvedAddress} | {resolvedHostname}";
+                        //ChartTitle = $"{resolvedAddress} | {resolvedHostname}";
+                        HostName = resolvedHostname;
                     }
                 };
                 worker.RunWorkerAsync();
@@ -372,17 +385,107 @@ namespace Panacea.Classes
             }
         }
 
-        public void TogglePing(bool? setPinging = null)
+        private bool VerifyPingStatus(PingReply reply)
         {
-            if (setPinging == null)
+            bool valid = false;
+            var status = reply.Status;
+            if (status == IPStatus.Success)
+                valid = true;
+            else if (status == IPStatus.TimedOut)
             {
-                if (pinging)
-                    pinging = false;
-                else
-                    pinging = true;
+                if (!HostName.StartsWith("(Timing Out) "))
+                    HostName = $"(Timing Out) {HostName}";
+            }
+            else if ((status == IPStatus.BadDestination ||
+                 status == IPStatus.BadHeader ||
+                 status == IPStatus.BadOption ||
+                 status == IPStatus.BadRoute ||
+                 status == IPStatus.DestinationScopeMismatch ||
+                 status == IPStatus.HardwareError ||
+                 status == IPStatus.IcmpError ||
+                 status == IPStatus.NoResources ||
+                 status == IPStatus.PacketTooBig ||
+                 status == IPStatus.ParameterProblem ||
+                 status == IPStatus.SourceQuench ||
+                 status == IPStatus.UnrecognizedNextHeader)
+                 )
+            {
+                if (!HostName.StartsWith("(Packet Error) "))
+                    HostName = $"(Packet Error) {HostName}";
+            }
+            else if (status == IPStatus.TimeExceeded ||
+                status == IPStatus.TtlExpired ||
+                status == IPStatus.TtlReassemblyTimeExceeded
+                )
+            {
+                if (!HostName.StartsWith("(TTL Expired) "))
+                    HostName = $"(TTL Expired) {HostName}";
+            }
+            else if (status == IPStatus.DestinationHostUnreachable ||
+                status == IPStatus.DestinationNetworkUnreachable ||
+                status == IPStatus.DestinationPortUnreachable ||
+                status == IPStatus.DestinationProtocolUnreachable ||
+                status == IPStatus.DestinationUnreachable)
+            {
+                if (!HostName.StartsWith("(Unreachable) "))
+                    HostName = $"(Unreachable) {HostName}";
             }
             else
-                pinging = (bool)setPinging;
+            {
+                if (!HostName.StartsWith("(Unknown Error) "))
+                    HostName = $"(Unknown Error) {HostName}";
+            }
+            return valid;
+        }
+
+        public void TogglePing(PingStat stat = PingStat.Unknown)
+        {
+            try
+            {
+                if (stat == PingStat.Unknown)
+                {
+                    if (Pinging == PingStat.Active)
+                    {
+                        Pinging = PingStat.Paused;
+                        ChartStroke = Toolbox.settings.PingPauseStroke;
+                        ChartFill = Toolbox.settings.PingPauseFill;
+                    }
+                    else if (Pinging == PingStat.Paused)
+                    {
+                        Pinging = PingStat.Active;
+                    }
+                    else
+                        Toolbox.uAddDebugLog($"Pinging for {Address} | {HostName} is {Pinging.ToString()} | Skipping toggle request");
+                }
+                else
+                {
+                    Pinging = stat;
+                    if (Pinging == PingStat.Paused)
+                    {
+                        ChartStroke = Toolbox.settings.PingPauseStroke;
+                        ChartFill = Toolbox.settings.PingPauseFill;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void Destroy()
+        {
+            try
+            {
+                Pinging = PingStat.Canceled;
+                _disposed = true;
+                ChartValues.Clear();
+                ChartValues = null;
+            }
+            catch (Exception ex)
+            {
+                Toolbox.uAddDebugLog($"Error occured while destroying pingentry: {ex.Message}", MainWindow.DebugType.FAILURE);
+            }
         }
 
         #endregion

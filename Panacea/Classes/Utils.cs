@@ -90,6 +90,63 @@ namespace Panacea.Classes
                 };
             }
         }
+        public static WindowInfo GetWindowInfoFromProc(Process proc, IntPtr handle, ProcessOptions options = null, string winTitle = "")
+        {
+            if (proc != null)
+            {
+                var dimensions = GetHandleDimensions(handle);
+                StringBuilder sb = new StringBuilder(1024);
+                var title = string.IsNullOrWhiteSpace(winTitle) ? proc.MainWindowTitle : winTitle;
+                WinAPIWrapper.GetClassName(proc.MainWindowHandle, sb, sb.Capacity);
+                if (options == null)
+                {
+                    return new WindowInfo()
+                    {
+                        Name = proc.ProcessName,
+                        ModName = proc.MainModule.ModuleName,
+                        WinClass = sb.ToString(),
+                        Title = title,
+                        FileName = proc.MainModule.FileName,
+                        IndexNum = 0,
+                        XValue = dimensions.Left,
+                        YValue = dimensions.Top,
+                        Width = dimensions.Right - dimensions.Left,
+                        Height = dimensions.Bottom - dimensions.Top
+                    };
+                }
+                else
+                {
+                    return new WindowInfo()
+                    {
+                        Name = proc.ProcessName,
+                        ModName = proc.MainModule.ModuleName,
+                        WinClass = sb.ToString(),
+                        Title = options.IgnoreProcessTitle ? "*" : title,
+                        FileName = proc.MainModule.FileName,
+                        IndexNum = 0,
+                        XValue = dimensions.Left,
+                        YValue = dimensions.Top,
+                        Width = dimensions.Right - dimensions.Left,
+                        Height = dimensions.Bottom - dimensions.Top
+                    };
+                }
+            }
+            else
+            {
+                return new WindowInfo()
+                {
+                    Name = "NULL",
+                    ModName = "NULL",
+                    Title = "NULL",
+                    FileName = "NULL",
+                    IndexNum = -1,
+                    XValue = -1,
+                    YValue = -1,
+                    Width = -1,
+                    Height = -1
+                };
+            }
+        }
         public static WinAPIWrapper.RECT GetProcessDimensions(Process proc)
         {
             WinAPIWrapper.RECT dimensions = new WinAPIWrapper.RECT();
@@ -148,6 +205,14 @@ namespace Panacea.Classes
             return new WindowItem()
             {
                 WindowInfo = WindowInfo.GetWindowInfoFromProc(process, options, winTitle),
+                WindowName = process.ProcessName
+            };
+        }
+        public static WindowItem Create(Process process, IntPtr handle, ProcessOptions options = null, string winTitle = "")
+        {
+            return new WindowItem()
+            {
+                WindowInfo = WindowInfo.GetWindowInfoFromProc(process, handle, options, winTitle),
                 WindowName = process.ProcessName
             };
         }

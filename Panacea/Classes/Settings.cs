@@ -29,11 +29,13 @@ namespace Panacea.Classes
         private List<WindowItem> _windowProfile2 { get; set; } = new List<WindowItem>();
         private List<WindowItem> _windowProfile3 { get; set; } = new List<WindowItem>();
         private List<WindowItem> _windowProfile4 { get; set; } = new List<WindowItem>();
-        private SolidColorBrush _pingSuccessFill { get; set; } = NetworkVariables.defaultSuccessChartFill;
-        private SolidColorBrush _pingSuccessStroke { get; set; } = NetworkVariables.defaultSuccessChartStroke;
-        private SolidColorBrush _pingFailFill { get; set; } = NetworkVariables.defaultFailChartFill;
-        private SolidColorBrush _pingFailStroke { get; set; } = NetworkVariables.defaultFailChartStroke;
-        private Int32 _pingChartLength { get; set; } = NetworkVariables.defaultPingChartLength;
+        private SolidColorBrush _pingSuccessFill { get; set; } = new SolidColorBrush(Color.FromArgb(100, 0, 195, 0));
+        private SolidColorBrush _pingSuccessStroke { get; set; } = new SolidColorBrush(Color.FromArgb(100, 0, 255, 0));
+        private SolidColorBrush _pingFailFill { get; set; } = new SolidColorBrush(Color.FromArgb(100, 195, 0, 0));
+        private SolidColorBrush _pingFailStroke { get; set; } = new SolidColorBrush(Color.FromArgb(100, 255, 0, 0));
+        private SolidColorBrush _pingPauseStroke { get; set; } = new SolidColorBrush(Color.FromArgb(100, 255, 255, 0));
+        private SolidColorBrush _pingPauseFill { get; set; } = new SolidColorBrush(Color.FromArgb(100, 195, 195, 0));
+        private Int32 _pingChartLength { get; set; } = 10;
         private Version _currentVersion { get; set; } = new Version("0.0.0.0");
         private Version _productionVersion { get; set; } = null;
         private Version _upCurrentVersion { get; set; } = null;
@@ -142,6 +144,24 @@ namespace Panacea.Classes
             {
                 _pingFailStroke = value;
                 OnPropertyChanged("PingFailStroke");
+            }
+        }
+        public SolidColorBrush PingPauseStroke
+        {
+            get { return _pingPauseStroke; }
+            set
+            {
+                _pingPauseStroke = value;
+                OnPropertyChanged("PingPauseStroke");
+            }
+        }
+        public SolidColorBrush PingPauseFill
+        {
+            get { return _pingPauseFill; }
+            set
+            {
+                _pingPauseFill = value;
+                OnPropertyChanged("PingPauseFill");
             }
         }
         public Int32 PingChartLength
