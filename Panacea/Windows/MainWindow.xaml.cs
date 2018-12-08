@@ -607,9 +607,15 @@ namespace Panacea
             try
             {
                 if (glblPinging == true)
+                {
                     glblPinging = false;
+                    btnNetPingToggleAll.Content = @"▶ All";
+                }
                 else
+                {
                     glblPinging = true;
+                    btnNetPingToggleAll.Content = @"❚❚ All";
+                }
                 PingStat stat = PingStat.Unknown;
                 if (glblPinging)
                     stat = PingStat.Active;

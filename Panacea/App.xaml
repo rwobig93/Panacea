@@ -935,6 +935,52 @@
                 </Style.Triggers>
             </Style>
             <!--#endregion-->
+            <!--#region BaseCheckbox-->
+            <Style x:Name="BaseCheckbox" TargetType="{x:Type CheckBox}">
+                <Setter Property="SnapsToDevicePixels" Value="true"/>
+                <Setter Property="OverridesDefaultStyle" Value="true"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <BulletDecorator Background="Transparent">
+                                <BulletDecorator.Bullet>
+                                    <Border x:Name="Border"  
+                                      Width="13" 
+                                      Height="13" 
+                                      CornerRadius="0" 
+                                      Background="{StaticResource BaseBackgroundBrush}"
+                                      BorderThickness="1"
+                                      BorderBrush="{StaticResource BaseBorderBrush}">
+                                        <Path 
+                                        Width="7" Height="7" 
+                                        x:Name="CheckMark"
+                                        SnapsToDevicePixels="False" 
+                                        Stroke="#FF8D8D8D"
+                                        StrokeThickness="2"
+                                        Data="M 0 0 L 7 7 M 0 7 L 7 0" />
+                                    </Border>
+                                </BulletDecorator.Bullet>
+                                <ContentPresenter Margin="4,0,0,0"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Left"
+                                    RecognizesAccessKey="True"/>
+                            </BulletDecorator>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="false">
+                                    <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="{x:Null}">
+                                    <Setter TargetName="CheckMark" Property="Data" Value="M 0 7 L 7 0" />
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="Border" Property="Background" Value="DarkGray" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <!--#endregion-->
         </ResourceDictionary>
     </Application.Resources>
 </Application>

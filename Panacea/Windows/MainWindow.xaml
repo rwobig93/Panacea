@@ -348,7 +348,7 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <TextBox x:Name="txtNetAddress" Margin="241,2,10,0" KeyDown="txtNetAddress_KeyDown" TextWrapping="Wrap" Text="8.8.8.8" VerticalAlignment="Top"  Height="22">
+            <TextBox x:Name="txtNetAddress" Margin="241,2,10,0" KeyDown="txtNetAddress_KeyDown" Style="{StaticResource TextboxNoReaction}" TextWrapping="Wrap" Text="8.8.8.8" VerticalAlignment="Top"  Height="22" CaretBrush="#FFD6D6D6" SelectionBrush="WhiteSmoke">
                 <i:Interaction.Behaviors>
                     <src:DoubleClickBehavior/>
                 </i:Interaction.Behaviors>
@@ -356,7 +356,7 @@
             <Button x:Name="btnNetPing" Content="Ping" Style="{StaticResource ButtonEdges}" Click="btnNetPing_Click" HorizontalAlignment="Left" Margin="199,2,0,0" VerticalAlignment="Top" Width="37"/>
             <Button x:Name="btnNetLookup" Content="NsLookup" Style="{StaticResource ResourceKey=ButtonEdges}" Click="btnNetLookup_Click" HorizontalAlignment="Left" Margin="127,2,0,0" VerticalAlignment="Top" Width="67"/>
             <TextBlock x:Name="lblNetResolved" Margin="76,0,0,17" TextWrapping="Wrap" Text="NSlookup:" Foreground="#FF8D8D8D" Height="18" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="60"/>
-            <Button x:Name="btnNetPingToggleAll" Content="⏯ All" Click="btnNetPingToggleAll_Click" Style="{StaticResource ResourceKey=ButtonEdges}" HorizontalAlignment="Left" Margin="77,2,0,0" VerticalAlignment="Top" Width="45" />
+            <Button x:Name="btnNetPingToggleAll" Content="❚❚ All" Click="btnNetPingToggleAll_Click" Style="{StaticResource ResourceKey=ButtonEdges}" HorizontalAlignment="Left" Margin="77,2,0,0" VerticalAlignment="Top" Width="45" />
             <ListBox x:Name="lbResolvedAddresses" Margin="136,0,10,3" Height="45" VerticalAlignment="Bottom">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -409,13 +409,13 @@
             <TextBlock x:Name="lblSetNetPingCountWarning" HorizontalAlignment="Left" Margin="82,21,0,0" TextWrapping="Wrap" Text="*Warning: Higher count = More CPU Usage" VerticalAlignment="Top" Foreground="#FF4D4747" Width="234"/>
             <TextBlock x:Name="lblSetNetPingDTFNote" HorizontalAlignment="Left" Margin="84,55,0,0" TextWrapping="Wrap" Text="*Note: Hours with small charts are unreadable" VerticalAlignment="Top" Foreground="#FF4D4747" Width="252"/>
             <TextBlock x:Name="lblNetBasicPing" HorizontalAlignment="Left" Margin="361,4,0,0" TextWrapping="Wrap" Text="Basic Ping:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-            <CheckBox x:Name="chkNetBasicPing" IsChecked="True" Click="chkNetBasicPing_Click" Content="" HorizontalAlignment="Left" Margin="420,6,0,0" VerticalAlignment="Top" Width="18" Background="#FF727272" BorderBrush="{StaticResource BaseBorderBrush}" Foreground="#FF8D8D8D" Height="17"/>
+            <CheckBox x:Name="chkNetBasicPing" Click="chkNetBasicPing_Click" Content="" HorizontalAlignment="Left" Margin="420,6,0,0" VerticalAlignment="Top" Width="18" Height="17" Background="#FF767575" Foreground="{x:Null}" BorderBrush="#FF918C8C" />
             <ComboBox x:Name="cmbxSetNetTextboxAction" SelectionChanged="cmbxSetNetTextboxAction_SelectionChanged"  HorizontalAlignment="Left" Style="{StaticResource {x:Type ComboBox}}" Margin="318,38,0,0" VerticalAlignment="Top" Width="120" Height="9" Foreground="#FF8D8D8D"/>
             <Rectangle x:Name="rectSettingsGeneral" HorizontalAlignment="Left" Height="54" Margin="79,85,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="365"/>
             <TextBlock x:Name="txtSettingsGenLabel" HorizontalAlignment="Left" Margin="83,85,0,0" TextWrapping="Wrap" Text="General" VerticalAlignment="Top" Foreground="#FF1DD8D0" Width="41"/>
             <Rectangle x:Name="rectSettingsGenTitle" HorizontalAlignment="Left" Height="16" Margin="79,85,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="50"/>
             <TextBlock x:Name="lblSettingsBeta" HorizontalAlignment="Left" Margin="132,90,0,0" TextWrapping="Wrap" Text="Upgrade to Beta/Test Clients:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="155" Height="16"/>
-            <CheckBox x:Name="chkSettingsBeta" Click="chkSettingsBeta_Click" Content="" HorizontalAlignment="Left" Margin="287,92,0,0" VerticalAlignment="Top" Width="18" Background="#FF727272" BorderBrush="{StaticResource BaseBorderBrush}" Foreground="#FF8D8D8D" Height="17"/>
+            <CheckBox x:Name="chkSettingsBeta" Click="chkSettingsBeta_Click" Content="" HorizontalAlignment="Left" Margin="287,92,0,0" VerticalAlignment="Top" Width="18" Background="#FF767575" BorderBrush="#FF918C8C" Foreground="{x:Null}" Height="17"/>
             <Button x:Name="btnDefaultConfig" Click="btnDefaultConfig_Click" Content="Reset Config to Default" HorizontalAlignment="Left" Margin="307,88,0,0" VerticalAlignment="Top" Width="133" Height="22"/>
             <Button x:Name="btnViewChangeLog" Click="btnViewChangeLog_Click" Content="View Changelog" HorizontalAlignment="Left" Margin="84,111,0,0" VerticalAlignment="Top" Width="102"/>
             <Button x:Name="btnSendDiag" Click="btnSendDiag_Click" Content="Send Diagnostic Logs" HorizontalAlignment="Left" Margin="307,111,0,0" VerticalAlignment="Top" Width="133"/>

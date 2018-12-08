@@ -72,6 +72,7 @@ namespace Panacea.Classes
         private double _axisMax;
         private double _axisMin;
         private string _chartTitle { get { return $"{_address} | {_hostName}"; } set { _chartTitle = value; } }
+        private List<string> _pingExList = new List<string>();
         private SolidColorBrush _chartStroke { get; set; } = Toolbox.settings.PingSuccessStroke;
         private SolidColorBrush _chartFill { get; set; } = Toolbox.settings.PingSuccessFill;
         private Int32 _historyLength { get; set; } = Toolbox.settings.PingChartLength + 2;
@@ -173,7 +174,7 @@ namespace Panacea.Classes
 
         #endregion
 
-        public PingEntry(string address)
+        public PingEntry(string address, bool active = true)
         {
             try
             {
@@ -214,7 +215,7 @@ namespace Panacea.Classes
 
                 SetAxisLimits(DateTime.Now);
 
-                PingAddress(_address);
+                PingAddress(_address, active);
                 LookupAddress(_address);
             }
             catch (Exception ex)
@@ -244,10 +245,14 @@ namespace Panacea.Classes
             }
         }
 
-        private void PingAddress(string address)
+        private void PingAddress(string address, bool active = true)
         {
             try
             {
+                if (active)
+                    TogglePing(PingStat.Active);
+                else
+                    TogglePing(PingStat.Paused);
                 HostName = $"HostName Not Found";
                 BackgroundWorker worker = new BackgroundWorker() { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
                 worker.DoWork += (sender2, e2) =>
@@ -264,7 +269,12 @@ namespace Panacea.Classes
                             }
                             catch (PingException pe)
                             {
-                                HostName = pe.InnerException.Message;
+                                if (!HostName.Contains(pe.InnerException.Message))
+                                {
+                                    HostName = $"({pe.InnerException.Message}) {HostName}";
+                                    if (_pingExList.Find(x => x == pe.InnerException.Message) == null)
+                                        _pingExList.Add(pe.InnerException.Message);
+                                }
                                 AddFailPingResponse();
                             }
                             catch (Exception ex)
@@ -293,13 +303,22 @@ namespace Panacea.Classes
 
         private void AddPingSuccess(PingReply pingReply)
         {
-            if ((ChartStroke != Toolbox.settings.PingSuccessStroke || ChartFill != Toolbox.settings.PingSuccessFill) && Pinging == PingStat.Active)
+            var valid = VerifyPingStatus(pingReply);
+            if ((ChartStroke != Toolbox.settings.PingSuccessStroke || ChartFill != Toolbox.settings.PingSuccessFill) && Pinging == PingStat.Active && valid)
             {
                 ChartStroke = Toolbox.settings.PingSuccessStroke;
                 ChartFill = Toolbox.settings.PingSuccessFill;
             }
-            if ((HostName.StartsWith("(Timing Out) ") || HostName.StartsWith("(Packet Error) ") || HostName.StartsWith("(TTL Expired) ") || HostName.StartsWith("(Unreachable) ") || HostName.StartsWith("(Unknown Error) ")) && valid)
+            foreach (var ex in _pingExList)
+                if (HostName.Contains(ex))
+                    HostName.Replace($"({ex}) ", "");
+            if ((HostName.Contains("(Timing Out) ") || HostName.Contains("(Packet Error) ") || HostName.Contains("(TTL Expired) ") || HostName.Contains("(Unreachable) ") || HostName.Contains("(Unknown Error) ")) && valid)
                 HostName = HostName.Replace("(Timing Out) ", "").Replace("(Packet Error) ", "").Replace("(TTL Expired) ", "").Replace("(Unreachable) ", "").Replace("(Unknown Error) ", "");
+            else if (!valid)
+            {
+                AddFailPingResponse();
+                return;
+            }
             var now = DateTime.Now;
             ChartValues.Add(new PingModel
             {
@@ -316,7 +335,7 @@ namespace Panacea.Classes
         {
             try
             {
-                if (ChartStroke != Toolbox.settings.PingFailFill || ChartFill != Toolbox.settings.PingFailFill && Pinging != PingStat.Paused)
+                if ((ChartStroke != Toolbox.settings.PingFailStroke || ChartFill != Toolbox.settings.PingFailFill) && Pinging != PingStat.Paused)
                 {
                     ChartStroke = Toolbox.settings.PingFailStroke;
                     ChartFill = Toolbox.settings.PingFailFill;
@@ -374,6 +393,7 @@ namespace Panacea.Classes
                     if (e2.ProgressPercentage == 1)
                     {
                         //ChartTitle = $"{resolvedAddress} | {resolvedHostname}";
+                        Address = resolvedAddress;
                         HostName = resolvedHostname;
                     }
                 };
@@ -522,6 +542,7 @@ namespace Panacea.Classes
         private int _currentPing { get; set; }
         private PingStat _pinging { get; set; } = PingStat.Active;
         private SolidColorBrush _pingResultColor { get; set; } = new SolidColorBrush(Color.FromArgb(100, 0, 195, 0));
+        private List<string> _pingExList = new List<string>();
         public string DisplayName { get { return _displayName; } }
         public string Address
         {
@@ -576,12 +597,12 @@ namespace Panacea.Classes
 
         #endregion
 
-        public BasicPingEntry(string address)
+        public BasicPingEntry(string address, bool active = true)
         {
             try
             {
                 Address = address;
-                PingAddress(Address);
+                PingAddress(Address, true);
                 LookupAddress(Address);
             }
             catch (Exception ex)
@@ -592,11 +613,14 @@ namespace Panacea.Classes
 
         #region Methods
 
-        private void PingAddress(string address)
+        private void PingAddress(string address, bool active = true)
         {
             try
             {
-                Pinging = PingStat.Active;
+                if (active)
+                    TogglePing(PingStat.Active);
+                else
+                    TogglePing(PingStat.Paused);
                 Address = address;
                 HostName = "Hostname not found";
                 BackgroundWorker worker = new BackgroundWorker() { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
@@ -614,8 +638,12 @@ namespace Panacea.Classes
                             }
                             catch (PingException pe)
                             {
-                                Pinging = PingStat.Canceled;
-                                HostName = pe.InnerException.Message;
+                                if (!HostName.Contains(pe.InnerException.Message))
+                                {
+                                    HostName = $"({pe.InnerException.Message}) {HostName}";
+                                    if (_pingExList.Find(x => x == pe.InnerException.Message) == null)
+                                        _pingExList.Add(pe.InnerException.Message);
+                                }
                                 if (Pinging != PingStat.Paused)
                                     PingResultColor = _colorPingFailure;
                                 HighPing = -1;
@@ -703,8 +731,11 @@ namespace Panacea.Classes
                     TimeStamp = DateTime.Now.ToLocalTime(),
                     TripTime = valid ? pingReply.RoundtripTime : -1
                 };
-                if ((HostName.StartsWith("(Timing Out) ") || HostName.StartsWith("(Packet Error) ") || HostName.StartsWith("(TTL Expired) ") || HostName.StartsWith("(Unreachable) ") || HostName.StartsWith("(Unknown Error) ")) && valid)
+                if ((HostName.Contains("(Timing Out) ") || HostName.Contains("(Packet Error) ") || HostName.Contains("(TTL Expired) ") || HostName.Contains("(Unreachable) ") || HostName.Contains("(Unknown Error) ")) && valid)
                     HostName = HostName.Replace("(Timing Out) ", "").Replace("(Packet Error) ", "").Replace("(TTL Expired) ", "").Replace("(Unreachable) ", "").Replace("(Unknown Error) ", "");
+                foreach (var ex in _pingExList)
+                    if (HostName.Contains(ex))
+                        HostName.Replace($"({ex}) ", "");
                 PingHistory.Add(pingDetail);
                 HighPing = PingHistory.FindAll(x => x.TripTime != -1).Count > 0 ? Convert.ToInt32(PingHistory.FindAll(x => x.TripTime != -1).OrderBy(x => x.TripTime).Last().TripTime) : -1;
                 LowPing = PingHistory.FindAll(x => x.TripTime != -1).Count > 0 ? Convert.ToInt32(PingHistory.FindAll(x => x.TripTime != -1).OrderBy(x => x.TripTime).First().TripTime) : -1;
