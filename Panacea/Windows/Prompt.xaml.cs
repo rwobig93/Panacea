@@ -30,23 +30,52 @@ namespace Panacea.Windows
                     this.btnYes.Visibility = Visibility.Visible;
                     this.btnNo.Visibility = Visibility.Visible;
                     this.btnOK.Visibility = Visibility.Hidden;
+                    this.btnCustom1.Visibility = Visibility.Hidden;
+                    this.btnCustom2.Visibility = Visibility.Hidden;
+                    this.imgBasicPing.Visibility = Visibility.Hidden;
+                    this.imgVisualPing.Visibility = Visibility.Hidden;
                     break;
                 case PromptType.OK:
                     this.btnOK.Visibility = Visibility.Visible;
                     this.btnYes.Visibility = Visibility.Hidden;
                     this.btnNo.Visibility = Visibility.Hidden;
+                    this.btnCustom1.Visibility = Visibility.Hidden;
+                    this.btnCustom2.Visibility = Visibility.Hidden;
+                    this.imgBasicPing.Visibility = Visibility.Hidden;
+                    this.imgVisualPing.Visibility = Visibility.Hidden;
                     break;
                 case PromptType.Custom1:
                     this.btnYes.Visibility = Visibility.Hidden;
                     this.btnNo.Visibility = Visibility.Hidden;
                     this.btnOK.Visibility = Visibility.Hidden;
+                    this.btnCustom1.Visibility = Visibility.Hidden;
+                    this.btnCustom2.Visibility = Visibility.Hidden;
+                    this.imgBasicPing.Visibility = Visibility.Hidden;
+                    this.imgVisualPing.Visibility = Visibility.Hidden;
                     break;
                 case PromptType.Custom2:
                     this.btnYes.Visibility = Visibility.Hidden;
                     this.btnNo.Visibility = Visibility.Hidden;
                     this.btnOK.Visibility = Visibility.Hidden;
+                    this.btnCustom1.Visibility = Visibility.Hidden;
+                    this.btnCustom2.Visibility = Visibility.Hidden;
+                    this.imgBasicPing.Visibility = Visibility.Hidden;
+                    this.imgVisualPing.Visibility = Visibility.Hidden;
                     break;
                 case PromptType.Custom3:
+                    this.btnYes.Visibility = Visibility.Hidden;
+                    this.btnNo.Visibility = Visibility.Hidden;
+                    this.btnOK.Visibility = Visibility.Hidden;
+                    this.btnCustom1.Visibility = Visibility.Hidden;
+                    this.btnCustom2.Visibility = Visibility.Hidden;
+                    this.imgBasicPing.Visibility = Visibility.Hidden;
+                    this.imgVisualPing.Visibility = Visibility.Hidden;
+                    break;
+                case PromptType.PingType:
+                    this.btnCustom1.Visibility = Visibility.Visible;
+                    this.btnCustom2.Visibility = Visibility.Visible;
+                    this.imgBasicPing.Visibility = Visibility.Visible;
+                    this.imgVisualPing.Visibility = Visibility.Visible;
                     this.btnYes.Visibility = Visibility.Hidden;
                     this.btnNo.Visibility = Visibility.Hidden;
                     this.btnOK.Visibility = Visibility.Hidden;
@@ -60,7 +89,8 @@ namespace Panacea.Windows
             OK,
             Custom1,
             Custom2,
-            Custom3
+            Custom3,
+            PingType
         }
 
         public enum PromptResponse
@@ -115,6 +145,32 @@ namespace Panacea.Windows
             }
         }
 
+        private void btnCustom1_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                this.Response = PromptResponse.Custom1;
+                this.DialogResult = true;
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+        }
+
+        private void btnCustom2_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                this.Response = PromptResponse.Custom2;
+                this.DialogResult = true;
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+        }
+
         public static PromptResponse YesNo(string message, TextAlignment alignment = TextAlignment.Center)
         {
             var response = PromptResponse.Cancel;
@@ -143,6 +199,35 @@ namespace Panacea.Windows
                 prompt.txtMessage.Text = message;
                 prompt.txtMessage.TextAlignment = alignment;
                 SizeWindowBasedOnMessage(prompt);
+                prompt.ShowDialog();
+                response = prompt.Response;
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+            return response;
+        }
+
+        public static PromptResponse PingType()
+        {
+            var response = PromptResponse.Cancel;
+            try
+            {
+                Prompt prompt = new Prompt(PromptType.PingType);
+                string pingQuestion = string.Format(
+                    "                                                                             I see this is the first time picking your ping preference.{0}" +
+                    "                                                                                  Do you prefer a visual ping or a basic ping style?{0}" +
+                    "                                                 Visual:                                                                                                                  Basic: {0}" +
+                    "                                         More CPU Usage                                                                                                    More Detail{0}" +
+                    "                                         Visual Style Chart                                                                                             Less space per ping{0}" +
+                    "                                      Takes up more space                                                                                           Minimal CPU usage", Environment.NewLine);
+                prompt.txtMessage.Text = pingQuestion;
+                prompt.txtMessage.TextAlignment = TextAlignment.Left;
+                prompt.btnCustom1.Content = "Visual Ping";
+                prompt.btnCustom2.Content = "Basic Ping";
+                prompt.Height = 724;
+                prompt.Width = 1327;
                 prompt.ShowDialog();
                 response = prompt.Response;
             }

@@ -485,6 +485,8 @@ namespace Panacea
         {
             try
             {
+                if (!Toolbox.settings.PingTypeChosen)
+                    PromptForPingPreference();
                 var address = txtNetAddress.Text;
                 var sendNotif = false;
                 var addressNoSpace = Regex.Replace(address, @"\s+", "");
@@ -748,6 +750,7 @@ namespace Panacea
                     uDebugLogAdd("Resetting config to default");
                     Toolbox.settings = new Settings();
                     SaveSettings();
+                    SetDefaultSettings();
                 }
                 else
                 {
@@ -1897,8 +1900,6 @@ namespace Panacea
                             worker.ReportProgress(1);
                             settingsSaveVerificationInProgress = false;
                             SettingsTimerRefresh();
-                            if (settingsUpdate == SettingsUpdate.BasicPing)
-                                worker.ReportProgress(2);
                         }
                         catch (Exception ex)
                         {
@@ -1910,9 +1911,6 @@ namespace Panacea
                         if (pe.ProgressPercentage == 1)
                         {
                             tUpdateSettings(settingsUpdate);
-                        }
-                        if (pe.ProgressPercentage == 2)
-                        {
                             VerifyPingGrids();
                         }
                     };
@@ -1927,7 +1925,7 @@ namespace Panacea
 
         private void SettingsTimerRefresh()
         {
-            settingsTimer = 4;
+            settingsTimer = 1;
         }
 
         private void ShowChangelog()
@@ -2896,6 +2894,28 @@ namespace Panacea
 
                 // if we reach here, it's a status we don't recognize and we should exit.
                 break;
+            }
+        }
+
+        private void PromptForPingPreference()
+        {
+            try
+            {
+                uDebugLogAdd($"Prompting for ping preference, pingpref is: {Toolbox.settings.PingTypeChosen}");
+                var response = Prompt.PingType();
+                if (response == Prompt.PromptResponse.Custom1)
+                    Toolbox.settings.BasicPing = false;
+                else
+                    Toolbox.settings.BasicPing = true;
+                chkNetBasicPing.IsChecked = Toolbox.settings.BasicPing;
+                Toolbox.settings.PingTypeChosen = true;
+                uDebugLogAdd($"Basic Ping is now: {Toolbox.settings.BasicPing} | PingTypeChosen: {Toolbox.settings.PingTypeChosen}");
+                SaveSettings();
+                VerifyPingGrids();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
             }
         }
 

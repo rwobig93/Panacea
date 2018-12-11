@@ -26,7 +26,12 @@
         </Rectangle>
         <Button x:Name="btnYes" Click="btnYes_Click" Content="Yes" HorizontalAlignment="Center" Margin="223,0,303,8" VerticalAlignment="Bottom" Width="74" Height="40" FontSize="22" Visibility="Hidden"/>
         <Button x:Name="btnNo" Click="btnNo_Click" Content="No" HorizontalAlignment="Center" Margin="302,0,224,8" VerticalAlignment="Bottom" Width="74" Height="40" FontSize="22" Visibility="Hidden"/>
-        <TextBlock x:Name="txtMessage" Margin="10,10,10,61" TextWrapping="Wrap" TextAlignment="Center" Foreground="#FF8D8D8D" FontSize="20"/>
+        <TextBlock x:Name="txtMessage" Margin="10,10,10,61" TextWrapping="Wrap" Foreground="#FF8D8D8D" FontSize="20"/>
         <Button x:Name="btnOK" Click="btnOK_Click" Content="OK" HorizontalAlignment="Center" Margin="0,0,0,8" VerticalAlignment="Bottom" Width="74" Height="40" FontSize="22" Visibility="Hidden"/>
+        <Image x:Name="imgVisualPing" HorizontalAlignment="Left" Height="474" Margin="10,189,0,0" VerticalAlignment="Top" Width="650" Source="/Panacea;component/Dependencies/VisualPing.png" Stretch="None" Visibility="Hidden"/>
+        <Image x:Name="imgBasicPing" HorizontalAlignment="Left" Height="474" Margin="666,189,0,0" VerticalAlignment="Top" Width="661" Source="/Panacea;component/Dependencies/BasicPing.png" Stretch="None" Visibility="Hidden"/>
+        <Button x:Name="btnCustom1" Click="btnCustom1_Click" Content="Visual Ping" HorizontalAlignment="Center" Margin="532,0,667,8" VerticalAlignment="Bottom" Width="128" Height="40" FontSize="22" Visibility="Hidden"/>
+        <Button x:Name="btnCustom2" Click="btnCustom2_Click" Content="Basic Ping" HorizontalAlignment="Center" Margin="666,0,541,8" VerticalAlignment="Bottom" Width="120" Height="40" FontSize="22" Visibility="Hidden"/>
+        <Label Content="Label" HorizontalAlignment="Left" Margin="-49,256,0,0" VerticalAlignment="Top"/>
     </Grid>
 </Window>
