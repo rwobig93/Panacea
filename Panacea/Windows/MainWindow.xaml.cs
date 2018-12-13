@@ -1273,6 +1273,7 @@ namespace Panacea
                     if (Toolbox.settings.BetaUpdate)
                         args = "/update /beta";
                     Toolbox.settings.ShowChangelog = true;
+                    Toolbox.settings.UpdateAvailable = false;
                     SaveSettings();
                     Process proc = new Process() { StartInfo = new ProcessStartInfo() { FileName = upstaller, Arguments = args } };
                     proc.Start();
@@ -3201,6 +3202,13 @@ namespace Panacea
                     gitClient = new Octokit.GitHubClient(new Octokit.ProductHeaderValue("Panacea"));
                     uDebugLogAdd("gitClient was null, initialized gitClient");
                 }
+                if (Toolbox.settings.CurrentVersion == null)
+                {
+                    Toolbox.settings.CurrentVersion = new Version("0.0.0.0");
+                    uDebugLogAdd($"Current version was null, set to: {Toolbox.settings.CurrentVersion}");
+                }
+                var currVer = GetVersionNumber();
+                var prevVer = new Version(Toolbox.settings.CurrentVersion.ToString());
                 BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
                 worker.DoWork += (ws, we) =>
                 {
@@ -3224,12 +3232,13 @@ namespace Panacea
                             uDebugLogAdd($"Upstaller not found at: {upstaller}");
 
                         // Panacea update
-                        var currVer = GetVersionNumber();
-                        if (Toolbox.settings.CurrentVersion != new Version("0.0.0.0") && Toolbox.settings.CurrentVersion != currVer)
+                        if ((Toolbox.settings.CurrentVersion != new Version("0.0.0.0")) && Toolbox.settings.CurrentVersion != currVer)
                         {
                             uDebugLogAdd($"Current Version [{currVer}] isn't 0.0.0.0 and is newer than the existing version [{Toolbox.settings.CurrentVersion}] | I believe an update may have occured, or I'm insane...");
-                            ShowNotification($"Updated from v{Toolbox.settings.CurrentVersion} to v{currVer}");
+                            worker.ReportProgress(3);
                         }
+                        else
+                            uDebugLogAdd($"Current Version [{currVer}] is 0.0.0.0 or the same as it was before: {Toolbox.settings.CurrentVersion} | Skipped notification");
                         Toolbox.settings.CurrentVersion = currVer;
                         uDebugLogAdd($"Current Version: {Toolbox.settings.CurrentVersion}");
                         Task t = Task.Run(async () => { await GetUpdate(AppUpdate.Panacea); });
@@ -3250,14 +3259,18 @@ namespace Panacea
                     {
                         if (pe.ProgressPercentage == 1)
                         {
-                            if ((Toolbox.settings.CurrentVersion.CompareTo(Toolbox.settings.ProductionVersion) < 0) && Toolbox.settings.UpdateAvailable != true)
+                            if (Toolbox.settings.CurrentVersion.CompareTo(Toolbox.settings.ProductionVersion) < 0)
                             {
                                 uDebugLogAdd($"New version found: [c]{Toolbox.settings.CurrentVersion} [p]{Toolbox.settings.ProductionVersion}");
-                                ShowNotification("A new version is available, update when ready");
+                                if (Toolbox.settings.UpdateAvailable != true)
+                                    ShowNotification("A new version is available, update when ready");
                                 Toolbox.settings.UpdateAvailable = true;
                                 btnMenuUpdate.IsEnabled = true;
-                                btnMenuUpdate.Visibility = Visibility.Visible;
-                                uDebugLogAdd("Enabled update button and made it visible, no more Houdini");
+                                if (btnMenuUpdate.Visibility != Visibility.Visible)
+                                {
+                                    btnMenuUpdate.Visibility = Visibility.Visible;
+                                    uDebugLogAdd("Enabled update button and made it visible, no more Houdini");
+                                }
                             }
                             else
                             {
@@ -3276,7 +3289,7 @@ namespace Panacea
                             }
                             SaveSettings();
                         }
-                        if (pe.ProgressPercentage == 2)
+                        else if (pe.ProgressPercentage == 2)
                         {
                             if (Toolbox.settings.UpCurrentVersion.CompareTo(Toolbox.settings.UpProductionVersion) < 0)
                             {
@@ -3288,6 +3301,10 @@ namespace Panacea
                                 uDebugLogAdd($"Upstaller version is the same or newer than release: [c]{Toolbox.settings.UpCurrentVersion} [p]{Toolbox.settings.UpProductionVersion}");
                                 upstallerUpdateInProg = false;
                             }
+                        }
+                        else if (pe.ProgressPercentage == 3)
+                        {
+                            ShowNotification($"Updated from v{prevVer} to v{currVer}");
                         }
                     }
                     catch (Exception ex)

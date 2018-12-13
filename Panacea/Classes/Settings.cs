@@ -36,7 +36,7 @@ namespace Panacea.Classes
         private SolidColorBrush _pingPauseStroke { get; set; } = new SolidColorBrush(Color.FromArgb(100, 255, 255, 0));
         private SolidColorBrush _pingPauseFill { get; set; } = new SolidColorBrush(Color.FromArgb(100, 195, 195, 0));
         private Int32 _pingChartLength { get; set; } = 10;
-        private Version _currentVersion { get; set; } = new Version("0.0.0.0");
+        private Version _currentVersion { get; set; }
         private Version _productionVersion { get; set; } = null;
         private Version _upCurrentVersion { get; set; } = null;
         private Version _upProductionVersion { get; set; } = null;
