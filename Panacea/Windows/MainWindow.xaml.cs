@@ -215,7 +215,7 @@ namespace Panacea
         {
             try
             {
-                ToggleMenuGrid(grdSettings);
+                ToggleMenuScrollviewer(scrollSettings);
             }
             catch (Exception ex)
             {
@@ -247,7 +247,25 @@ namespace Panacea
 
         private void BtnTest_Click(object sender, RoutedEventArgs e)
         {
-            TestWifi();
+            //TestWifi();
+            RefreshDisplaySizes();
+        }
+
+        private void RefreshDisplaySizes()
+        {
+            try
+            {
+                string displayInfo = string.Empty;
+                foreach (var screen in System.Windows.Forms.Screen.AllScreens)
+                {
+                    displayInfo = $"{displayInfo}Name: {screen.DeviceName}{Environment.NewLine}Bounds: {screen.Bounds.ToString()}{Environment.NewLine}Type: {screen.GetType().ToString()}{Environment.NewLine}Area: {screen.WorkingArea.ToString()}{Environment.NewLine}PrimaryScreen: {screen.Primary.ToString()}{Environment.NewLine}-----------------------{Environment.NewLine}";
+                }
+                Prompt.OK(displayInfo);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void lblTitle_MouseDown(object sender, MouseButtonEventArgs e)
@@ -274,11 +292,6 @@ namespace Panacea
             {
                 LogException(ex);
             }
-        }
-
-        private void btnViewChangeLog_Click(object sender, RoutedEventArgs e)
-        {
-            ShowChangelog();
         }
 
         #endregion
@@ -503,7 +516,7 @@ namespace Panacea
                         validEntries = $"{validEntries}{entry},";
                 }
                 if (validEntries.Length > 0)
-                    validEntries = validEntries.Remove(validEntries.Length -1);
+                    validEntries = validEntries.Remove(validEntries.Length - 1);
                 if (sendNotif && validEntries == string.Empty)
                 {
                     ShowNotification("Address(es) entered incorrect or duplicate, try again");
@@ -636,12 +649,65 @@ namespace Panacea
             }
         }
 
+        private void btnNetPingCloseAll_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (Toolbox.settings.BasicPing)
+                {
+                    if (lbBasicPingSessions.Items.Count <= 0)
+                    {
+                        ShowNotification("There currently aren't any pings in progress");
+                        return;
+                    }
+                }
+                else
+                {
+                    if (lbPingSessions.Items.Count <= 0)
+                    {
+                        ShowNotification("There currently aren't any pings in progress");
+                        return;
+                    }
+                }
+                var response = Prompt.YesNo("Are you sure you want to destroy all current pings?");
+                if (response == Prompt.PromptResponse.No)
+                {
+                    uDebugLogAdd($"User answered {response.ToString()} to destroying all pings, canceling");
+                    return;
+                }
+                else
+                    uDebugLogAdd($"User answered {response.ToString()} to destroying all pings, starting masacre");
+                if (Toolbox.settings.BasicPing)
+                {
+                    foreach (BasicPingEntry entry in lbBasicPingSessions.Items.Cast<BasicPingEntry>().ToList())
+                    {
+                        lbBasicPingSessions.Items.Remove(entry);
+                        entry.Destroy();
+                    }
+                }
+                else
+                {
+                    foreach (PingEntry entry in lbPingSessions.Items.Cast<PingEntry>().ToList())
+                    {
+                        lbPingSessions.Items.Remove(entry);
+                        entry.Destroy();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         private void txtNetAddress_KeyDown(object sender, KeyEventArgs e)
         {
             try
             {
                 if (e.Key == Key.Enter)
                 {
+                    if (VerifyIfMacAddress(btnNetLookup.Content.ToString()))
+                        return;
                     switch (Toolbox.settings.ToolboxEnterAction)
                     {
                         case EnterAction.DNSLookup:
@@ -709,6 +775,18 @@ namespace Panacea
             }
         }
 
+        private void btnNetNSLookupClear_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                lbResolvedAddresses.Items.Clear();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         #endregion
 
         #region grdSettings
@@ -748,13 +826,15 @@ namespace Panacea
                 if (response == Prompt.PromptResponse.Yes)
                 {
                     uDebugLogAdd("Resetting config to default");
+                    AddToWindowsStartup(false);
                     Toolbox.settings = new Settings();
                     SaveSettings();
                     SetDefaultSettings();
                 }
                 else
                 {
-                    uDebugLogAdd("We ended up not resetting all of our config.... maybe next time");
+                    uDebugLogAdd("We ended up not resetting all of our config.... maybe next time", DebugType.FAILURE);
+                    ShowNotification("An error occured when trying to default the config and didn't finish");
                     SaveSettings();
                 }
             }
@@ -767,6 +847,26 @@ namespace Panacea
         private void btnSendDiag_Click(object sender, RoutedEventArgs e)
         {
             SendDiagnostics();
+        }
+
+        private void btnViewChangeLog_Click(object sender, RoutedEventArgs e)
+        {
+            ShowChangelog();
+        }
+
+        private void txtWindowProfileName_KeyDown(object sender, KeyEventArgs e)
+        {
+            StartSettingsUpdate(SettingsUpdate.ProfileName);
+        }
+
+        private void txtStartProfileName_KeyDown(object sender, KeyEventArgs e)
+        {
+            StartSettingsUpdate(SettingsUpdate.ProfileName);
+        }
+
+        private void chkSettingsStartup_Click(object sender, RoutedEventArgs e)
+        {
+            StartSettingsUpdate(SettingsUpdate.WinStartup);
         }
 
         #endregion
@@ -1042,11 +1142,86 @@ namespace Panacea
                 }
                 else
                 {
-                    //Toolbox.AnimateGrid(grid, Defaults.MainGridOut);
                     Toolbox.AnimateGrid(grid, GetWindowHiddenArea());
                     grid.Visibility = Visibility.Hidden;
                 }
                 HideUnusedMenuGrids(grid);
+                HideUnusedScrollviewers();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ToggleMenuScrollviewer(ScrollViewer scrollViewer)
+        {
+            try
+            {
+                uDebugLogAdd($"Call ToggleMenuGrid({scrollViewer.Name})");
+                var displayArea = GetWindowDisplayArea();
+                if (scrollViewer.Margin != displayArea)
+                {
+                    scrollViewer.Visibility = Visibility.Visible;
+                    Toolbox.AnimateScrollviewer(scrollViewer, displayArea);
+                }
+                else
+                {
+                    Toolbox.AnimateScrollviewer(scrollViewer, GetWindowHiddenArea());
+                    scrollViewer.Visibility = Visibility.Hidden;
+                }
+                HideUnusedMenuGrids();
+                HideUnusedScrollviewers(scrollViewer);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void HideUnusedScrollviewers(ScrollViewer scrollViewer = null)
+        {
+            try
+            {
+                if (scrollViewer == null)
+                    uDebugLogAdd("Call HideUnusedScrollviewers(null)");
+                else
+                    uDebugLogAdd($"Call HideUnusedScrollviewers({scrollViewer.Name})");
+                if (scrollViewer != scrollSettings)
+                {
+                    scrollSettings.Visibility = Visibility.Hidden;
+                    Toolbox.AnimateScrollviewer(scrollSettings, GetWindowHiddenArea());
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void HideUnusedMenuGrids(Grid grid = null)
+        {
+            try
+            {
+                if (grid == null)
+                    uDebugLogAdd($"Call HideUnusedMenuGrids(null)");
+                else
+                    uDebugLogAdd($"Call HideUnusedMenuGrids({grid.Name})");
+                if (grid != grdAudio)
+                {
+                    grdAudio.Visibility = Visibility.Hidden;
+                    Toolbox.AnimateGrid(grdAudio, GetWindowHiddenArea());
+                }
+                if (grid != grdWindows)
+                {
+                    grdWindows.Visibility = Visibility.Hidden;
+                    Toolbox.AnimateGrid(grdWindows, GetWindowHiddenArea());
+                }
+                if (grid != grdNetwork)
+                {
+                    grdNetwork.Visibility = Visibility.Hidden;
+                    Toolbox.AnimateGrid(grdNetwork, GetWindowHiddenArea());
+                }
             }
             catch (Exception ex)
             {
@@ -1063,6 +1238,7 @@ namespace Panacea
                 displayArea = grdMain.Margin;
                 uDebugLogAdd($"displayArea <Before>: [T]{displayArea.Top} [L]{displayArea.Left} [B]{displayArea.Bottom} [R]{displayArea.Right}");
                 displayArea.Top = displayArea.Top + rectTitle.ActualHeight;
+                displayArea.Left = displayArea.Left + pnlMenu.ActualWidth;
                 displayArea.Bottom = displayArea.Bottom + txtStatus.ActualHeight;
                 uDebugLogAdd($"displayArea <After>: [T]{displayArea.Top} [L]{displayArea.Left} [B]{displayArea.Bottom} [R]{displayArea.Right}");
                 return displayArea;
@@ -1082,10 +1258,10 @@ namespace Panacea
                 uDebugLogAdd("Getting window hidden area");
                 hiddenArea = grdMain.Margin;
                 uDebugLogAdd($"hiddenArea <Before>: [T]{hiddenArea.Top} [L]{hiddenArea.Left} [B]{hiddenArea.Bottom} [R]{hiddenArea.Right}");
-                hiddenArea.Left = -20;
-                hiddenArea.Top = -20;
-                hiddenArea.Bottom = -20;
-                hiddenArea.Right = -20;
+                hiddenArea.Left = 120;
+                hiddenArea.Top = 60;
+                hiddenArea.Bottom = 60;
+                hiddenArea.Right = 60;
                 uDebugLogAdd($"hiddenArea <After>: [T]{hiddenArea.Top} [L]{hiddenArea.Left} [B]{hiddenArea.Bottom} [R]{hiddenArea.Right}");
                 return hiddenArea;
             }
@@ -1094,41 +1270,6 @@ namespace Panacea
                 LogException(ex);
             }
             return hiddenArea;
-        }
-
-        private void HideUnusedMenuGrids(Grid grid = null)
-        {
-            try
-            {
-                if (grid == null)
-                    uDebugLogAdd($"Call HideUnusedMenuGrids(null)");
-                else
-                    uDebugLogAdd($"Call HideUnusedMenuGrids({grid.Name})");
-                if (grid != grdAudio)
-                {
-                    grdAudio.Visibility = Visibility.Hidden;
-                    Toolbox.AnimateGrid(grdAudio, Defaults.MainGridOut);
-                }
-                if (grid != grdWindows)
-                {
-                    grdWindows.Visibility = Visibility.Hidden;
-                    Toolbox.AnimateGrid(grdWindows, Defaults.MainGridOut);
-                }
-                if (grid != grdNetwork)
-                {
-                    grdNetwork.Visibility = Visibility.Hidden;
-                    Toolbox.AnimateGrid(grdNetwork, Defaults.MainGridOut);
-                }
-                if (grid != grdSettings)
-                {
-                    grdSettings.Visibility = Visibility.Hidden;
-                    Toolbox.AnimateGrid(grdSettings, Defaults.MainGridOut);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
         }
 
         private void InitializeMenuGrids()
@@ -1699,6 +1840,38 @@ namespace Panacea
             }
         }
 
+        private void AddToWindowsStartup(bool startup = true)
+        {
+            try
+            {
+                if (startup)
+                {
+                    uDebugLogAdd($"Add to windows startup is {startup}, adding registry key");
+                    Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                    key.SetValue("Panacea", $@"{currentDir}\Panacea.exe");
+                    Toolbox.settings.WindowsStartup = true;
+                    uDebugLogAdd("Successfully added to windows startup");
+                    ShowNotification("Panacea set to launch on Windows startup");
+                }
+                else
+                {
+                    uDebugLogAdd($"Add to windows startup is {startup}, removing registry key");
+                    Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                    key.DeleteValue("Panacea", false);
+                    Toolbox.settings.WindowsStartup = false;
+                    uDebugLogAdd("Successfully removed from windows startup");
+                    ShowNotification("Panacea set to NOT launch on Windows startup");
+                }
+            }
+            catch (ArgumentNullException ane) { uDebugLogAdd($"Argument was null when writing regkey for startup: [{ane.ParamName}] {ane.Message}", DebugType.FAILURE); ShowNotification("Unable to add open on windows startup, an error occured"); }
+            catch (ObjectDisposedException ode) { uDebugLogAdd($"Object was disposed when writing regkey for startup: [{ode.ObjectName}] {ode.Message}"); ShowNotification("Unable to add open on windows startup, an error occured"); }
+            catch (System.Security.SecurityException se) { uDebugLogAdd($"Security Exception occured when writing regkey for startup: [{se.PermissionType}][{se.PermissionState}][{se.Method}] {se.Message}"); ShowNotification("Unable to add open on windows startup, an error occured"); }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         #endregion
 
         #region Audio
@@ -1849,9 +2022,18 @@ namespace Panacea
                 }
                 uDebugLogAdd("SettingsWIN: working on window process settings");
                 ChangeWindowProfiles(Toolbox.settings.CurrentWindowProfile);
+                txtWindowProfileName1.Text = Toolbox.settings.WindowProfileName1;
+                txtWindowProfileName2.Text = Toolbox.settings.WindowProfileName2;
+                txtWindowProfileName3.Text = Toolbox.settings.WindowProfileName3;
+                txtWindowProfileName4.Text = Toolbox.settings.WindowProfileName4;
+                btnWinProfile1.Content = Toolbox.settings.WindowProfileName1;
+                btnWinProfile2.Content = Toolbox.settings.WindowProfileName2;
+                btnWinProfile3.Content = Toolbox.settings.WindowProfileName3;
+                btnWinProfile4.Content = Toolbox.settings.WindowProfileName4;
                 RefreshSavedWindows();
                 uDebugLogAdd("SettingsGEN: working on general settings");
                 chkSettingsBeta.IsChecked = Toolbox.settings.BetaUpdate;
+                chkSettingsStartup.IsChecked = Toolbox.settings.WindowsStartup;
                 uDebugLogAdd("Default settings set");
             }
             catch (Exception ex)
@@ -1926,7 +2108,7 @@ namespace Panacea
 
         private void SettingsTimerRefresh()
         {
-            settingsTimer = 1;
+            settingsTimer = 2;
         }
 
         private void ShowChangelog()
@@ -2603,16 +2785,27 @@ namespace Panacea
             {
                 WindowItem windowItem = (WindowItem)lbSavedWindows.SelectedItem;
                 Process foundProc = null;
-                foreach (var proc in Process.GetProcesses())
-                {
-                    if (
-                        proc.ProcessName == windowItem.WindowInfo.Name &&
-                        proc.MainModule.ModuleName == windowItem.WindowInfo.ModName &&
-                        proc.MainWindowTitle == windowItem.WindowInfo.Title &&
-                        proc.MainModule.FileName == windowItem.WindowInfo.FileName
-                       )
-                        foundProc = proc;
-                }
+                if (windowItem.WindowInfo.Title == "*")
+                    foreach (var proc in Process.GetProcesses())
+                    {
+                        if (
+                            proc.ProcessName == windowItem.WindowInfo.Name &&
+                            proc.MainModule.ModuleName == windowItem.WindowInfo.ModName &&
+                            proc.MainModule.FileName == windowItem.WindowInfo.FileName
+                           )
+                            foundProc = proc;
+                    }
+                else
+                    foreach (var proc in Process.GetProcesses())
+                    {
+                        if (
+                            proc.ProcessName == windowItem.WindowInfo.Name &&
+                            proc.MainModule.ModuleName == windowItem.WindowInfo.ModName &&
+                            proc.MainWindowTitle == windowItem.WindowInfo.Title &&
+                            proc.MainModule.FileName == windowItem.WindowInfo.FileName
+                           )
+                            foundProc = proc;
+                    }
                 if (foundProc == null)
                     uDebugLogAdd("Running process matching windowItem wasn't found");
                 else
@@ -2920,6 +3113,23 @@ namespace Panacea
             }
         }
 
+        private bool VerifyIfMacAddress(string content)
+        {
+            bool isMac = false;
+            Regex reg = new Regex("^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}|(?:[0-9a-fA-F]{2}-){5}[0-9a-fA-F]{2}|(?:[0-9a-fA-F]{2}){5}[0-9a-fA-F]{2}$");
+            if (reg.IsMatch(content))
+            {
+                isMac = true;
+                OpenMacAddressWindow(content.Replace(" ", "").Replace(":", "").Replace("-", "").Replace(".", ""));
+            }
+            return isMac;
+        }
+
+        private void OpenMacAddressWindow(string v)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #endregion
@@ -3035,13 +3245,15 @@ namespace Panacea
                             worker.ReportProgress(1);
                         else
                         {
-                            if (settingsBadAlerted)
+                            if (!settingsBadAlerted)
                             {
                                 worker.ReportProgress(99);
                                 settingsBadAlerted = true;
                                 Thread.Sleep(TimeSpan.FromSeconds(5));
                                 settingsBadAlerted = false;
                             }
+                            else
+                                return;
                         }
                     }
                     // Update All Settings
@@ -3059,40 +3271,62 @@ namespace Panacea
                     switch (pe.ProgressPercentage)
                     {
                         case 1:
-                            uDebugLogAdd("Starting settings update");
-                            uDebugLogAdd("SETUPDATE: ping chart");
+                          uDebugLogAdd("Starting settings update");
                             // Set pingchart settings
+                            uDebugLogAdd("SETUPDATE: ping chart");
                             Toolbox.settings.PingChartLength = int.Parse(txtSetNetPingCount.Text);
                             foreach (PingEntry entry in lbPingSessions.Items)
                             {
                                 entry.ChartLength = Toolbox.settings.PingChartLength;
                             }
-                            uDebugLogAdd("SETUPDATE: DTFormat");
                             // Set Date/Time Format settings
+                            uDebugLogAdd("SETUPDATE: DTFormat");
                             if (cmbxSetNetDTFormat.Text == "Seconds")
                                 Toolbox.settings.DateTimeFormat = DTFormat.Sec;
                             else if (cmbxSetNetDTFormat.Text == "Minutes")
                                 Toolbox.settings.DateTimeFormat = DTFormat.Min;
                             else if (cmbxSetNetDTFormat.Text == "Hours")
                                 Toolbox.settings.DateTimeFormat = DTFormat.Hours;
-                            uDebugLogAdd("SETUPDATE: Enter action");
                             // Set network textbox enter action
+                            uDebugLogAdd("SETUPDATE: Enter action");
                             if (cmbxSetNetTextboxAction.Text == "DNSLookup")
                                 Toolbox.settings.ToolboxEnterAction = EnterAction.DNSLookup;
                             else if (cmbxSetNetTextboxAction.Text == "Ping")
                                 Toolbox.settings.ToolboxEnterAction = EnterAction.Ping;
-                            uDebugLogAdd("SETUPDATE: Basic ping");
                             // Set basic ping
+                            uDebugLogAdd("SETUPDATE: Basic ping");
                             if (chkNetBasicPing.IsChecked == true)
                                 Toolbox.settings.BasicPing = true;
                             else
                                 Toolbox.settings.BasicPing = false;
-                            uDebugLogAdd("SETUPDATE: Beta check");
                             // Set beta check
+                            uDebugLogAdd("SETUPDATE: Beta check");
                             if (chkSettingsBeta.IsChecked == true)
                                 Toolbox.settings.BetaUpdate = true;
                             else
                                 Toolbox.settings.BetaUpdate = false;
+                            // Set Window/Start profile names
+                            uDebugLogAdd("SETUPDATE: Window/Start profile names");
+                            Toolbox.settings.WindowProfileName1 = txtWindowProfileName1.Text;
+                            btnWinProfile1.Content = Toolbox.settings.WindowProfileName1;
+                            Toolbox.settings.WindowProfileName2 = txtWindowProfileName2.Text;
+                            btnWinProfile2.Content = Toolbox.settings.WindowProfileName2;
+                            Toolbox.settings.WindowProfileName3 = txtWindowProfileName3.Text;
+                            btnWinProfile3.Content = Toolbox.settings.WindowProfileName3;
+                            Toolbox.settings.WindowProfileName4 = txtWindowProfileName4.Text;
+                            btnWinProfile4.Content = Toolbox.settings.WindowProfileName4;
+                            // Set startup on windows startup
+                            uDebugLogAdd("SETUPDATE: Startup on windows startup");
+                            if ((chkSettingsStartup.IsChecked == true) && !Toolbox.settings.WindowsStartup)
+                            {
+                                AddToWindowsStartup(true);
+                                Toolbox.settings.WindowsStartup = true;
+                            }
+                            else if ((chkSettingsStartup.IsChecked == false) && Toolbox.settings.WindowsStartup)
+                            {
+                                AddToWindowsStartup(false);
+                                Toolbox.settings.WindowsStartup = false;
+                            }
                             break;
                         case 99:
                             ShowNotification("Incorrect format entered");

@@ -81,6 +81,7 @@ namespace Panacea.Windows
                     this.btnOK.Visibility = Visibility.Hidden;
                     break;
             }
+            Toolbox.uAddDebugLog($"Prompt initiated with type: {type.ToString()}");
         }
 
         public enum PromptType
@@ -111,6 +112,7 @@ namespace Panacea.Windows
             try
             {
                 this.Response = PromptResponse.Yes;
+                Toolbox.uAddDebugLog($"User chose option: {this.Response.ToString()}");
                 this.DialogResult = true;
             }
             catch (Exception ex)
@@ -124,6 +126,7 @@ namespace Panacea.Windows
             try
             {
                 this.Response = PromptResponse.No;
+                Toolbox.uAddDebugLog($"User chose option: {this.Response.ToString()}");
                 this.DialogResult = true;
             }
             catch (Exception ex)
@@ -137,6 +140,7 @@ namespace Panacea.Windows
             try
             {
                 this.Response = PromptResponse.OK;
+                Toolbox.uAddDebugLog($"User chose option: {this.Response.ToString()}");
                 this.DialogResult = true;
             }
             catch (Exception ex)
@@ -150,6 +154,7 @@ namespace Panacea.Windows
             try
             {
                 this.Response = PromptResponse.Custom1;
+                Toolbox.uAddDebugLog($"User chose option: {this.Response.ToString()}");
                 this.DialogResult = true;
             }
             catch (Exception ex)
@@ -163,6 +168,7 @@ namespace Panacea.Windows
             try
             {
                 this.Response = PromptResponse.Custom2;
+                Toolbox.uAddDebugLog($"User chose option: {this.Response.ToString()}");
                 this.DialogResult = true;
             }
             catch (Exception ex)
@@ -177,6 +183,7 @@ namespace Panacea.Windows
             try
             {
                 Prompt prompt = new Prompt(PromptType.YesNo);
+                Toolbox.uAddDebugLog($"Prompt created with message: {message}");
                 prompt.txtMessage.Text = message;
                 prompt.txtMessage.TextAlignment = alignment;
                 SizeWindowBasedOnMessage(prompt);
@@ -196,6 +203,7 @@ namespace Panacea.Windows
             try
             {
                 Prompt prompt = new Prompt(PromptType.OK);
+                Toolbox.uAddDebugLog($"Prompt created with message: {message}");
                 prompt.txtMessage.Text = message;
                 prompt.txtMessage.TextAlignment = alignment;
                 SizeWindowBasedOnMessage(prompt);

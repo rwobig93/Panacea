@@ -25,6 +25,10 @@ namespace Panacea.Classes
 
         private WindowDimensions _windowLocation { get; set; } = new WindowDimensions { Left = 0, Top = 0, Height = 300, Width = 625 };
         private List<WindowItem> _windowList { get; set; } = new List<WindowItem>();
+        private string _windowProfileName1 { get; set; } = "Profile 1";
+        private string _windowProfileName2 { get; set; } = "Profile 2";
+        private string _windowProfileName3 { get; set; } = "Profile 3";
+        private string _windowProfileName4 { get; set; } = "Profile 4";
         private List<WindowItem> _windowProfile1 { get; set; } = new List<WindowItem>();
         private List<WindowItem> _windowProfile2 { get; set; } = new List<WindowItem>();
         private List<WindowItem> _windowProfile3 { get; set; } = new List<WindowItem>();
@@ -45,6 +49,7 @@ namespace Panacea.Classes
         private bool _betaUpdate { get; set; } = false;
         private bool _showChangelog { get; set; } = true;
         private bool _pingTypeChosen { get; set; } = false;
+        private bool _windowsStartup { get; set; } = false;
         private string _productionURI { get; set; } = null;
         private string _upProductionURI { get; set; } = null;
         private string _latestChangelog { get; set; } = "I'm a default Changelog! You shouldn't ever see me! :D";
@@ -72,6 +77,42 @@ namespace Panacea.Classes
             {
                 _windowList = value;
                 OnPropertyChanged("ActiveWindowList");
+            }
+        }
+        public string WindowProfileName1
+        {
+            get { return _windowProfileName1; }
+            set
+            {
+                _windowProfileName1 = value;
+                OnPropertyChanged("WindowProfileName1");
+            }
+        }
+        public string WindowProfileName2
+        {
+            get { return _windowProfileName2; }
+            set
+            {
+                _windowProfileName2 = value;
+                OnPropertyChanged("WindowProfileName2");
+            }
+        }
+        public string WindowProfileName3
+        {
+            get { return _windowProfileName3; }
+            set
+            {
+                _windowProfileName3 = value;
+                OnPropertyChanged("WindowProfileName3");
+            }
+        }
+        public string WindowProfileName4
+        {
+            get { return _windowProfileName4; }
+            set
+            {
+                _windowProfileName4 = value;
+                OnPropertyChanged("WindowProfileName4");
             }
         }
         public List<WindowItem> WindowProfile1
@@ -230,6 +271,15 @@ namespace Panacea.Classes
             get { return _pingTypeChosen; }
             set { _pingTypeChosen = value; OnPropertyChanged("PingTypeChosen"); }
         }
+        public bool WindowsStartup
+        {
+            get { return _windowsStartup; }
+            set
+            {
+                _windowsStartup = value;
+                OnPropertyChanged("WindowsStartup");
+            }
+        }
         public string ProductionURI
         {
             get { return _productionURI; }
@@ -347,6 +397,8 @@ namespace Panacea.Classes
         PingDTFormat,
         TextBoxAction,
         BasicPing,
-        BetaCheck
+        BetaCheck,
+        ProfileName,
+        WinStartup
     }
 }
