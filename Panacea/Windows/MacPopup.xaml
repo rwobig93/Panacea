@@ -3,24 +3,20 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:local="clr-namespace:Panacea.Windows"
         mc:Ignorable="d" Topmost="True" ResizeMode="NoResize"
-        Title="MacPopup" Height="192" Width="489.666" WindowStyle="None" AllowsTransparency="True" Background="{StaticResource BaseBackgroundBrush}" Foreground="{x:Null}">
+        Title="MacPopup" Height="214.5" Width="395.166" WindowStyle="None" MouseDown="Window_MouseDown" AllowsTransparency="True" Background="{StaticResource BaseBackgroundBrush}" Foreground="{x:Null}">
     <Grid x:Name="grdMain" Background="#02000000">
-        <TextBox x:Name="txtMacAddress" Style="{StaticResource TextboxNoReaction}" TextChanged="txtMacAddress_TextChanged" KeyDown="txtMacAddress_KeyDown" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="29" Margin="116,44,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="286" FontSize="16"/>
+        <TextBox x:Name="txtMacAddress" MaxLength="17" Style="{StaticResource TextboxNoReaction}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="29" Margin="116,44,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="192" FontSize="16"/>
         <TextBlock x:Name="lblMacAddressTitle" Padding="0" HorizontalAlignment="Left" Margin="10,46,0,0" TextWrapping="Wrap" Text="Mac Address:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="106" Height="20" TextAlignment="Center" FontSize="16"/>
-        <Button x:Name="btnConvertMac" Click="btnConvertMac_Click" Content="Convert" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Padding="0" Margin="407,44,0,0" VerticalAlignment="Top" Width="70" Height="29" FontSize="16"/>
-        <TextBlock x:Name="lblMacAddressDashesHeader" Padding="0" HorizontalAlignment="Left" Margin="10,101,0,0" TextWrapping="Wrap" Text="Dashes:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="78" Height="20" TextAlignment="Center" FontSize="16"/>
-        <TextBlock x:Name="lblMacAddressColonHeader" Padding="0" HorizontalAlignment="Left" Margin="10,126,0,0" TextWrapping="Wrap" Text="Colon:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="78" Height="20" TextAlignment="Center" FontSize="16"/>
-        <TextBlock x:Name="lblMacAddressNetHeader" Padding="0" HorizontalAlignment="Left" Margin="10,151,0,0" TextWrapping="Wrap" Text="Net:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="78" Height="20" TextAlignment="Center" FontSize="16"/>
-        <TextBlock x:Name="lblMacAddressDashUpValue" MouseDown="lblMacAddressDashUpValue_MouseDown" Padding="0" HorizontalAlignment="Left" Margin="88,101,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="192" Height="20" TextAlignment="Center" FontSize="16"/>
-        <TextBlock x:Name="lblMacAddressColUpValue" MouseDown="lblMacAddressColUpValue_MouseDown" Padding="0" HorizontalAlignment="Left" Margin="88,126,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="192" Height="20" TextAlignment="Center" FontSize="16"/>
-        <TextBlock x:Name="lblMacAddressNetUpValue" MouseDown="lblMacAddressNetUpValue_MouseDown" Padding="0" HorizontalAlignment="Left" Margin="88,151,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="192" Height="20" TextAlignment="Center" FontSize="16"/>
-        <TextBlock x:Name="lblMacAddressDashDnValue" MouseDown="lblMacAddressDashDnValue_MouseDown" Padding="0" HorizontalAlignment="Left" Margin="285,101,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="192" Height="20" TextAlignment="Center" FontSize="16"/>
-        <TextBlock x:Name="lblMacAddressColDnValue" MouseDown="lblMacAddressColDnValue_MouseDown" Padding="0" HorizontalAlignment="Left" Margin="285,126,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="192" Height="20" TextAlignment="Center" FontSize="16"/>
-        <TextBlock x:Name="lblMacAddressNetDnValue" MouseDown="lblMacAddressNetDnValue_MouseDown" Padding="0" HorizontalAlignment="Left" Margin="285,151,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="192" Height="20" TextAlignment="Center" FontSize="16"/>
-        <TextBlock x:Name="lblMacAddressUpperHeader" Padding="0" HorizontalAlignment="Left" Margin="88,78,0,0" TextWrapping="Wrap" Text="Uppercase:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="192" Height="23" TextAlignment="Center" TextDecorations="Underline" FontSize="16"/>
-        <TextBlock x:Name="lblMacAddressLowerHeader" Padding="0" HorizontalAlignment="Left" Margin="285,78,0,0" TextWrapping="Wrap" Text="Lowercase:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="192" Height="23" TextAlignment="Center" TextDecorations="Underline" FontSize="16"/>
+        <Button x:Name="btnConvertMac" Style="{StaticResource ButtonCurves}" Click="btnConvertMac_Click" Content="Convert" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Top" Padding="0" Margin="313,44,0,0" VerticalAlignment="Top" Width="70" Height="29" FontSize="16"/>
+        <TextBlock x:Name="lblMacAddressDashesHeader" Padding="0" HorizontalAlignment="Left" Margin="33,107,0,0" TextWrapping="Wrap" Text="Dashes:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="78" Height="20" TextAlignment="Center" FontSize="16"/>
+        <TextBlock x:Name="lblMacAddressColonHeader" Padding="0" HorizontalAlignment="Left" Margin="33,132,0,0" TextWrapping="Wrap" Text="Colon:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="78" Height="20" TextAlignment="Center" FontSize="16"/>
+        <TextBlock x:Name="lblMacAddressNetHeader" Padding="0" HorizontalAlignment="Left" Margin="33,157,0,0" TextWrapping="Wrap" Text="Net:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="78" Height="20" TextAlignment="Center" FontSize="16"/>
+        <TextBlock x:Name="lblMacAddressDashValue" MouseDown="lblMacAddressDashValue_MouseDown" Padding="0" HorizontalAlignment="Left" Margin="116,107,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="192" Height="20" TextAlignment="Center" FontSize="16"/>
+        <TextBlock x:Name="lblMacAddressColValue" MouseDown="lblMacAddressColValue_MouseDown" Padding="0" HorizontalAlignment="Left" Margin="116,132,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="192" Height="20" TextAlignment="Center" FontSize="16"/>
+        <TextBlock x:Name="lblMacAddressNetValue" MouseDown="lblMacAddressNetValue_MouseDown" Padding="0" HorizontalAlignment="Left" Margin="116,157,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="192" Height="20" TextAlignment="Center" FontSize="16"/>
         <Rectangle x:Name="rectTitle" Height="31" VerticalAlignment="Top" Panel.ZIndex="99">
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -32,6 +28,21 @@
         <TextBlock x:Name="lblTitle" HorizontalAlignment="Center" TextWrapping="Wrap" Text="MAC Address Converter" VerticalAlignment="Top" Height="30" Width="225" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Panel.ZIndex="100" />
         <Button x:Name="btnExit" Click="btnExit_Click" Style="{StaticResource ExitButtonHoverColor}" Content="X" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="32" FontSize="18" BorderBrush="{x:Null}"/>
         <Button x:Name="btnMinimize" Click="btnMinimize_Click" Style="{StaticResource ExitButtonHoverColor}" Content="_" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="32" FontSize="18" BorderBrush="{x:Null}" Margin="0,0,32,0"/>
-
+        <Controls:ToggleSwitch x:Name="togMACCase" IsChecked="False" Click="togMACCase_Click" OnLabel="UpperCase" OffLabel="LowerCase" Margin="146,78,0,0" Height="24" VerticalAlignment="Top" HorizontalAlignment="Left" Width="136" Foreground="#FF8D8D8D" OffSwitchBrush="#FF595959" OnSwitchBrush="#FF3C3C3C" SwitchForeground="#FF3C3C3C" ThumbIndicatorBrush="#FF8D8D8D" >
+            <Controls:ToggleSwitch.BorderBrush>
+                <LinearGradientBrush EndPoint="0.5,0" StartPoint="0.5,1">
+                    <GradientStop Color="#FF303030"/>
+                    <GradientStop Color="#FF4B4A4A" Offset="0.497"/>
+                    <GradientStop Color="#FF303030" Offset="1"/>
+                </LinearGradientBrush>
+            </Controls:ToggleSwitch.BorderBrush>
+            <Controls:ToggleSwitch.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                    <GradientStop Color="Black" Offset="1"/>
+                </LinearGradientBrush>
+            </Controls:ToggleSwitch.Background>
+        </Controls:ToggleSwitch>
+        <TextBlock x:Name="lblNotification" Padding="0" Margin="10,0,10,4" TextWrapping="NoWrap" VerticalAlignment="Bottom" Foreground="#FF00E2CD" Height="20" TextAlignment="Left" FontSize="16"/>
     </Grid>
 </Window>

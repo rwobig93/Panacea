@@ -474,6 +474,12 @@ namespace Panacea
             try
             {
                 var address = txtNetAddress.Text;
+                if (VerifyIfMacAddress(address))
+                {
+                    uDebugLogAdd($"NetAddress value was found to be a Mac Address, opening Macpopup: {address}");
+                    OpenMacAddressWindow(address);
+                    return;
+                }
                 if (!VerifyInput(address))
                 {
                     uDebugLogAdd($"Input entered was invalid, sending notification and canceling dns lookup | Input: {address}");
@@ -501,6 +507,12 @@ namespace Panacea
                 if (!Toolbox.settings.PingTypeChosen)
                     PromptForPingPreference();
                 var address = txtNetAddress.Text;
+                if (VerifyIfMacAddress(address))
+                {
+                    uDebugLogAdd($"NetAddress value was found to be a Mac Address, opening Macpopup: {address}");
+                    OpenMacAddressWindow(address);
+                    return;
+                }
                 var sendNotif = false;
                 var addressNoSpace = Regex.Replace(address, @"\s+", "");
                 var entries = addressNoSpace.Split(',');
@@ -706,8 +718,13 @@ namespace Panacea
             {
                 if (e.Key == Key.Enter)
                 {
-                    if (VerifyIfMacAddress(btnNetLookup.Content.ToString()))
+                    var value = txtNetAddress.Text;
+                    if (VerifyIfMacAddress(value))
+                    {
+                        uDebugLogAdd($"NetAddress value was found to be a Mac Address, opening Macpopup: {value}");
+                        OpenMacAddressWindow(value);
                         return;
+                    }
                     switch (Toolbox.settings.ToolboxEnterAction)
                     {
                         case EnterAction.DNSLookup:
@@ -785,6 +802,11 @@ namespace Panacea
             {
                 LogException(ex);
             }
+        }
+
+        private void btnNetMAC_Click(object sender, RoutedEventArgs e)
+        {
+            OpenMacAddressWindow();
         }
 
         #endregion
@@ -894,6 +916,7 @@ namespace Panacea
             SetupAudioDeviceList();
             tStartTimedActions();
             InitializeMenuGrids();
+            //VerifyIfWindowIsOffscreen();
             tCheckForUpdates();
             FinishStartup();
         }
@@ -1836,7 +1859,8 @@ namespace Panacea
             }
             catch (Exception ex)
             {
-                LogException(ex);
+                uDebugLogAdd($"Error occured when setting clipboard: {clip} | {ex.Message}", DebugType.FAILURE);
+                uStatusUpdate($"Error occured when setting clipboard: {clip}");
             }
         }
 
@@ -1870,6 +1894,11 @@ namespace Panacea
             {
                 LogException(ex);
             }
+        }
+
+        private void VerifyIfWindowIsOffscreen()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
@@ -3116,18 +3145,39 @@ namespace Panacea
         private bool VerifyIfMacAddress(string content)
         {
             bool isMac = false;
-            Regex reg = new Regex("^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}|(?:[0-9a-fA-F]{2}-){5}[0-9a-fA-F]{2}|(?:[0-9a-fA-F]{2}){5}[0-9a-fA-F]{2}$");
-            if (reg.IsMatch(content))
+            if (content.Length == 12 || content.Length == 14 || content.Length == 17)
             {
-                isMac = true;
-                OpenMacAddressWindow(content.Replace(" ", "").Replace(":", "").Replace("-", "").Replace(".", ""));
+                if (content.Contains('.') && content.Length == 14)
+                {
+                    if (content.ToArray().ToList().FindAll(x => x == '.').Count == 2)
+                    {
+                        isMac = true;
+                    }
+                }
+                else if ((content.Contains('-') || content.Contains(':')) && content.Length == 17)
+                {
+                    isMac = true;
+                }
+                else if ((!content.Contains('.')) && (!content.Contains('-')) && (!content.Contains(':')))
+                {
+                    isMac = true;
+                }
             }
             return isMac;
         }
 
-        private void OpenMacAddressWindow(string v)
+        private void OpenMacAddressWindow(string v = null)
         {
-            throw new NotImplementedException();
+            try
+            {
+                MacPopup macPopup = new MacPopup(v);
+                macPopup.Show();
+                uDebugLogAdd("Opened MacPopup window");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion

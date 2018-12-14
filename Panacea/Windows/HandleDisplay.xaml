@@ -41,9 +41,9 @@
         <TextBlock x:Name="TxtModName" Margin="10,42,10,0" TextWrapping="Wrap" Text="Module Name: {0}" VerticalAlignment="Top" Foreground="#FF666666"/>
         <TextBlock x:Name="TxtFilePath" Margin="10,58,10,0" TextWrapping="Wrap" Text="File Path: {0}" VerticalAlignment="Top" Foreground="#FF666666" Height="45"/>
         <TextBlock x:Name="TxtProcLocation" Margin="10,103,10,0" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="#FF666666" Height="80"><Run Text="Location:"/><LineBreak/><Run Text="   X: {0}"/><LineBreak/><Run Text="   Y: {0}"/><LineBreak/><Run Text="   Width: {0}"/><LineBreak/><Run Text="   Height: {0}"/></TextBlock>
-        <Button x:Name="btnRefreshProcList" Click="btnRefreshProcList_Click" Content="Refresh List" HorizontalAlignment="Right" Margin="0,188,102,0" VerticalAlignment="Top" Width="87"/>
-        <Button x:Name="btnAddProcess" Click="btnAddProcess_Click" Content="Add Selected" HorizontalAlignment="Left" Margin="10,188,0,0" VerticalAlignment="Top" Width="87"/>
-        <Button x:Name="btnClose" Click="btnClose_Click" Content="Close / Finish" HorizontalAlignment="Right" Margin="0,188,10,0" VerticalAlignment="Top" Width="87"/>
+        <Button x:Name="btnRefreshProcList" Style="{StaticResource ButtonCurves}" Click="btnRefreshProcList_Click" Content="Refresh List" HorizontalAlignment="Right" Margin="0,188,102,0" VerticalAlignment="Top" Width="87"/>
+        <Button x:Name="btnAddProcess" Style="{StaticResource ButtonCurves}" Click="btnAddProcess_Click" Content="Add Selected" HorizontalAlignment="Left" Margin="10,188,0,0" VerticalAlignment="Top" Width="87"/>
+        <Button x:Name="btnClose" Style="{StaticResource ButtonCurves}" Click="btnClose_Click" Content="Close / Finish" HorizontalAlignment="Right" Margin="0,188,10,0" VerticalAlignment="Top" Width="87"/>
         <ListBox x:Name="lbProcList" SelectionChanged="lbProcList_SelectionChanged" Margin="10,215,10,32">
             <ListBox.ItemTemplate>
                 <DataTemplate>
