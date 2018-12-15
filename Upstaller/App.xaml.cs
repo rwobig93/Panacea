@@ -19,23 +19,16 @@ namespace Upstaller
             bool argBeta = false;
             for (int i = 0; i != e.Args.Length; ++i)
             {
+                Toolbox.uDebugLogAdd($"Startup Arg: {e.Args[i]}");
                 if (e.Args[i].ToLower() == "/update")
                 {
                     argUpdate = true;
-                    argBeta = false;
                 }
-                else if (e.Args[i].ToLower() == "/update /beta")
+                if (e.Args[i].ToLower() == "/beta")
                 {
-                    argUpdate = true;
                     argBeta = true;
                 }
-                else
-                {
-                    argUpdate = false;
-                    argBeta = false;
-                }
             }
-
             MainWindow window = new Upstaller.MainWindow();
             window.argUpdate = argUpdate;
             window.argBeta = argBeta;

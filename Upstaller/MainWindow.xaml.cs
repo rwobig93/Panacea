@@ -101,6 +101,7 @@ namespace Upstaller
             try
             {
                 StartPanacea();
+                CloseDisBisch();
             }
             catch (Exception ex)
             {
@@ -213,13 +214,13 @@ namespace Upstaller
         {
             try
             {
-                if (argUpdate && txtLabelInstalled.Text == "Installed")
+                if (argUpdate && installStatus == InstallStatus.Installed)
                 {
                     uDebugLogAdd($"Update arg is set to: {argUpdate}, updating Panacea");
                     UpdatePanacea();
                 }
                 else
-                    uDebugLogAdd($"Arg is: {argUpdate} & Install status is: {txtLabelInstalled.Text} | Skipping auto-update");
+                    uDebugLogAdd($"Arg is: {argUpdate} & Install status is: {installStatus.ToString()} | Skipping auto-update");
             }
             catch (Exception ex)
             {
@@ -256,14 +257,16 @@ namespace Upstaller
             }
         }
 
-        private void VerifyInstallation()
+        private bool VerifyInstallation()
         {
+            bool installed = false;
             try
             {
                 var panacea = $@"{currentDir}\Panacea.exe";
                 if (File.Exists(panacea))
                 {
                     ToggleInstallationLabel(InstallStatus.Installed);
+                    installed = true;
                 }
                 else
                     ToggleInstallationLabel(InstallStatus.NotInstalled);
@@ -272,6 +275,7 @@ namespace Upstaller
             {
                 LogException(ex);
             }
+            return installed;
         }
 
         private void ToggleInstallationLabel(InstallStatus install)
@@ -876,6 +880,9 @@ namespace Upstaller
             try
             {
                 updateInProgress = true;
+                var panaceaDownloadFinish = false;
+                var verifiedInstalled = false;
+                var verifyCounter = 0;
                 BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
                 worker.DoWork += (ws, we) =>
                 {
@@ -888,6 +895,19 @@ namespace Upstaller
                         }
                         uDebugLogAdd("Verify no longer in progress, finished sleeping");
                         worker.ReportProgress(1);
+                        while (!panaceaDownloadFinish)
+                        {
+                            Thread.Sleep(100);
+                        }
+                        while ((!verifiedInstalled) && verifyCounter < 10)
+                        {
+                            worker.ReportProgress(2);
+                            Thread.Sleep(500);
+                            verifyCounter++;
+                        }
+                        if (!verifiedInstalled)
+                            uDebugLogAdd($"Panacea wasn't found installed after update | counter: {verifyCounter} | inst: {verifiedInstalled}");
+                        worker.ReportProgress(3);
                     }
                     catch (Exception ex)
                     {
@@ -904,7 +924,15 @@ namespace Upstaller
                         PrepStagingArea();
                         DownloadWhatWeCameHereFor();
                         PutPanaceaInItsPlace();
-                        VerifyInstallation();
+                        panaceaDownloadFinish = true;
+                    }
+                    else if (pe.ProgressPercentage == 2)
+                    {
+                        if (VerifyInstallation())
+                            verifiedInstalled = true;
+                    }
+                    else if (pe.ProgressPercentage == 3)
+                    {
                         FinishUpdate();
                     }
                 };
@@ -920,12 +948,12 @@ namespace Upstaller
         {
             try
             {
-                if (!argUpdate)
-                {
-                    uDebugLogAdd($"Argupdate is: {argUpdate} | Skipping update finish method");
-                    return;
-                }
-                uDebugLogAdd("Starting update arg finish");
+                //if (!argUpdate)
+                //{
+                //    uDebugLogAdd($"Argupdate is: {argUpdate} | Skipping update finish method");
+                //    return;
+                //}
+                //uDebugLogAdd("Starting update arg finish");
                 BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
                 worker.DoWork += (ws, we) =>
                 {
