@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -36,19 +37,45 @@ namespace Panacea.Windows
             Wired,
             Wireless,
             NoConnection,
-            Unknown
+            Unknown,
+            EthWifi
+        }
+
+        public enum LinkSpeedNotation
+        {
+            Tbps,
+            Gbps,
+            Mbps,
+            Kbps,
+            Bps
         }
 
         #region Globals
 
         private WlanClient wClient;
+        private List<string> _connectedEthIfs = new List<string>();
         private List<string> _connectedSSIDs = new List<string>();
         private bool _connectedToWifi { get { return _connectedSSIDs.Count > 0 ? true : false; } }
+        private bool _connectedToEth { get { return _connectedEthIfs.Count > 0 ? true : false; } }
+        private WlanClient.WlanInterface _currentWifiIf;
+        private NetworkInterface _currentEthIf;
         private CurrentDisplay currentDisplay;
 
         #endregion
 
         #region Event Handlers
+
+        private void btnExit_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
 
         #endregion
 
@@ -138,13 +165,14 @@ namespace Panacea.Windows
                 {
                     var primeScreen = currentDisplay.Screens.Find(x => x.Primary == true);
                     System.Drawing.Rectangle desiredLocation = new System.Drawing.Rectangle();
-                    desiredLocation.X = primeScreen.WorkingArea.X + Convert.ToInt32(primeScreen.WorkingArea.Width * 0.10);
-                    desiredLocation.Width = primeScreen.WorkingArea.Width - Convert.ToInt32(primeScreen.WorkingArea.Width * 0.10);
+                    //desiredLocation.X = primeScreen.WorkingArea.X + Convert.ToInt32(primeScreen.WorkingArea.Width * 0.10);
+                    desiredLocation.X = Convert.ToInt32((primeScreen.WorkingArea.Width / 2) - (grdMain.ActualWidth / 2));
+                    //desiredLocation.Width = primeScreen.WorkingArea.Width - Convert.ToInt32(primeScreen.WorkingArea.Width * 0.20);
                     desiredLocation.Y = primeScreen.WorkingArea.Height - Convert.ToInt32(rectBackground.ActualHeight);
-                    if ((this.Left != desiredLocation.X) && (this.Width != desiredLocation.Width) && (this.Top != desiredLocation.Y))
+                    if ((this.Left != desiredLocation.X) && (this.Top != desiredLocation.Y))
                     {
                         this.Left = desiredLocation.X;
-                        this.Width = desiredLocation.Width;
+                        //this.Width = desiredLocation.Width;
                         this.Top = desiredLocation.Y;
                         uDebugLogAdd("Moved utility bar to new location");
                     }
@@ -184,6 +212,7 @@ namespace Panacea.Windows
                     {
                         try
                         {
+                            UpdateConnectedEthernet();
                             UpdateConnectedSSIDs();
                             UpdateNetworkLink();
                         }
@@ -194,6 +223,36 @@ namespace Panacea.Windows
                     }
                 };
                 worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void UpdateConnectedEthernet()
+        {
+            try
+            {
+                NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
+                var tempInterface = _currentEthIf;
+                _connectedEthIfs.Clear();
+                foreach (var adapter in interfaces)
+                {
+                    if (adapter.OperationalStatus == OperationalStatus.Up && adapter.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                    {
+                        _connectedEthIfs.Add(adapter.Name);
+                        _currentEthIf = adapter;
+                    }
+                }
+                if (_currentEthIf != tempInterface)
+                {
+                    foreach (var inter in _connectedEthIfs)
+                    {
+                        uDebugLogAdd($"Eth interface up: {inter}");
+                    }
+                    uDebugLogAdd($"Total up Eth ifs: {_connectedEthIfs.Count}");
+                }
             }
             catch (Exception ex)
             {
@@ -215,6 +274,7 @@ namespace Panacea.Windows
                 {
                     Wlan.Dot11Ssid ssid = wlanIf.CurrentConnection.wlanAssociationAttributes.dot11Ssid;
                     _connectedSSIDs.Add(new String(Encoding.ASCII.GetChars(ssid.SSID, 0, (int)ssid.SSIDLength)));
+                    _currentWifiIf = wlanIf;
                 }
                 uDebugLogAdd($"Current Connected SSID's: {_connectedSSIDs.Count}");
                 foreach (var ssid in _connectedSSIDs)
@@ -233,7 +293,21 @@ namespace Panacea.Windows
         {
             try
             {
-                if (_connectedToWifi)
+                if (_connectedToEth && _connectedToWifi)
+                {
+                    ToggleConnectionType(NetConnectionType.EthWifi);
+                    var wifiLinkSpeed = GetWifiLinkSpeed();
+                    if (wifiLinkSpeed != null)
+                    {
+                        UpdateLinkSpeed(wifiLinkSpeed, _currentEthIf.Speed);
+                    }
+                    else
+                    {
+                        UpdateLinkSpeed(_currentEthIf.Speed);
+                    }
+                    UpdateWifiStats();
+                }
+                else if (_connectedToWifi)
                 {
                     ToggleConnectionType(NetConnectionType.Wireless);
                     var wifiLinkSpeed = GetWifiLinkSpeed();
@@ -245,36 +319,118 @@ namespace Panacea.Windows
                     {
                         UpdateLinkSpeed(null);
                     }
+                    UpdateWifiStats();
                 }
-                else
+                else if (_connectedToEth)
                 {
                     ToggleConnectionType(NetConnectionType.Wired);
-                    UpdateLinkSpeed(1000);
+                    UpdateLinkSpeed(_currentEthIf.Speed);
+                    UpdateWlanRSSI(-1337);
                 }
-                
+                else
+                    ToggleConnectionType(NetConnectionType.NoConnection);
             }
             catch (Exception ex)
             {
+                ToggleConnectionType(NetConnectionType.Unknown);
                 uDebugLogAdd($"Network link failure: {ex.Message}", DebugType.FAILURE);
             }
         }
 
-        private void UpdateLinkSpeed(double? linkSpeed)
+        private void UpdateWifiStats()
         {
             try
             {
-                if (linkSpeed != null && linkSpeed < 10000)
-                    lblLinkSpeed.Content = $"{linkSpeed} Mbps";
-                else if (linkSpeed != null && linkSpeed > 10000)
+                UpdateWlanRSSI();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        /// <summary>
+        /// Updates the Link Speed label w/ the provided linkspeed value (double)
+        /// </summary>
+        /// <param name="linkSpeed">Default value, if Both Eth and Wifi are connected this parameter will be used for the Wifi linkspeed</param>
+        /// <param name="linkSpeed2">Used if both Eth and Wifi are connected, this parameter will then be used for the Eth linkspeed</param>
+        private void UpdateLinkSpeed(double? linkSpeed, double? linkSpeed2 = null)
+        {
+            try
+            {
+                LinkSpeedNotation speedNotation = GetSpeedNotation(linkSpeed);
+                string speedString = GetSpeedString(linkSpeed, speedNotation);
+                if (linkSpeed2 != null)
                 {
-                    lblLinkSpeed.Content = "Broken Mbps";
+                    speedString = $"[Wifi] {speedString}";
+                    //if (linkSpeed > linkSpeed2)
+                    //{
+                    //    speedString = $"[Wifi] {speedString}";
+                    //}
+                    //else
+                    //{
+                    //    speedNotation = GetSpeedNotation(linkSpeed2);
+                    //    speedString = $"[Eth] {GetSpeedString(linkSpeed2, speedNotation)}";
+                    //}
                 }
-                else
-                    lblLinkSpeed.Content = "????? Mbps";
+                lblLinkSpeed.Content = speedString;
             }
             catch (Exception ex)
             {
                 uDebugLogAdd($"Failure updating link speed: {ex.Message}", DebugType.FAILURE);
+            }
+        }
+
+        private string GetSpeedString(double? linkSpeed, LinkSpeedNotation speedNotation)
+        {
+            string speed = string.Empty;
+            switch (speedNotation)
+            {
+                case LinkSpeedNotation.Tbps:
+                    speed = $"{linkSpeed / 1000000000000} {speedNotation.ToString()}";
+                    break;
+                case LinkSpeedNotation.Gbps:
+                    speed = $"{linkSpeed / 1000000000} {speedNotation.ToString()}";
+                    break;
+                case LinkSpeedNotation.Mbps:
+                    speed = $"{linkSpeed / 1000000} {speedNotation.ToString()}";
+                    break;
+                case LinkSpeedNotation.Kbps:
+                    speed = $"{linkSpeed / 1000} {speedNotation.ToString()}";
+                    break;
+                case LinkSpeedNotation.Bps:
+                    speed = $"{linkSpeed} {speedNotation.ToString()}";
+                    break;
+            }
+            return speed;
+        }
+
+        private LinkSpeedNotation GetSpeedNotation(double? linkSpeed)
+        {
+            var speedNotation = LinkSpeedNotation.Bps;
+            if (linkSpeed > 999999999999)
+                speedNotation = LinkSpeedNotation.Tbps;
+            else if (linkSpeed > 999999999)
+                speedNotation = LinkSpeedNotation.Gbps;
+            else if (linkSpeed > 999999)
+                speedNotation = LinkSpeedNotation.Mbps;
+            else if (linkSpeed > 999)
+                speedNotation = LinkSpeedNotation.Kbps;
+            return speedNotation;
+        }
+
+        private void UpdateWlanRSSI(int rssi = 0)
+        {
+            try
+            {
+                if (rssi == -1337)
+                    lblWlanRSSI.Content = "";
+                else
+                    lblWlanRSSI.Content = $"-{_currentWifiIf.RSSI} dBm";
+            }
+            catch (Exception)
+            {
+                lblWlanRSSI.Content = "???? dBm";
             }
         }
 
@@ -295,6 +451,9 @@ namespace Panacea.Windows
                         break;
                     case NetConnectionType.Unknown:
                         lblLinkType.Content = connType.ToString();
+                        break;
+                    case NetConnectionType.EthWifi:
+                        lblLinkType.Content = "Eth & Wifi";
                         break;
                 }
             }
@@ -341,8 +500,8 @@ namespace Panacea.Windows
                 }
                 else
                 {
-                    dblSpeed = speed / 1000000.0;
-                    uDebugLogAdd($"Current Wi-Fi Speed: {dblSpeed} Mbps on {adapter}");
+                    dblSpeed = speed;
+                    uDebugLogAdd($"Current Wi-Fi Speed: {dblSpeed} on {adapter}");
                 }
             }
             catch (Exception ex)
@@ -375,17 +534,5 @@ namespace Panacea.Windows
         }
 
         #endregion
-
-        private void btnExit_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                this.Close();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
     }
 }

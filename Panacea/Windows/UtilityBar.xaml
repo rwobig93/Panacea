@@ -5,8 +5,44 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Panacea.Windows"
         mc:Ignorable="d" Height="28.564" MinHeight="0" Width="1104" MinWidth="0" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070"
-        Title="UtilityBar" Background="{x:Null}">
-    <Grid>
+        Title="UtilityBar" Background="{x:Null}" ResizeMode="NoResize" Topmost="True">
+    <Grid x:Name="grdMain">
+        <Polygon x:Name="plyLeftTrim" Points="29.6,1.1,1.25,28.15,29.5,28.5" Margin="0,0,1074,0" >
+            <Polygon.Stroke>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
+                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
+                    <GradientStop Color="#FF232323" Offset="0.267"/>
+                    <GradientStop Color="#FF191919" Offset="0.84"/>
+                </LinearGradientBrush>
+            </Polygon.Stroke>
+            <Polygon.Fill>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
+                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
+                    <GradientStop Color="#FF232323" Offset="0.267"/>
+                    <GradientStop Color="#FF191919" Offset="0.84"/>
+                </LinearGradientBrush>
+            </Polygon.Fill>
+        </Polygon>
+        <Polygon x:Name="plyRightTrim" Points=".5,1.2,.5,28.1,28.75,28.1" Margin="1074,0,0,0" >
+            <Polygon.Stroke>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
+                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
+                    <GradientStop Color="#FF232323" Offset="0.267"/>
+                    <GradientStop Color="#FF191919" Offset="0.84"/>
+                </LinearGradientBrush>
+            </Polygon.Stroke>
+            <Polygon.Fill>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
+                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
+                    <GradientStop Color="#FF232323" Offset="0.267"/>
+                    <GradientStop Color="#FF191919" Offset="0.84"/>
+                </LinearGradientBrush>
+            </Polygon.Fill>
+        </Polygon>
         <Rectangle x:Name="rectBackground" Margin="30,0" >
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -17,8 +53,24 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <Label x:Name="lblLinkType" Content="" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,1,157,-1" Foreground="#FF8D8D8D" FontSize="16" RenderTransformOrigin="0.5,0.5" Width="63"/>
-        <Label x:Name="lblLinkSpeed" Content="" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,1,59,-1" Foreground="#FF8D8D8D" FontSize="16" Width="82"/>
-        <Button x:Name="btnExit" Click="btnExit_Click" Style="{StaticResource ExitButtonHoverColor}" Content="X" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Left" Width="32" FontSize="18" BorderBrush="{x:Null}" Margin="30,0,0,-1"/>
+        <Label x:Name="lblLinkType" Content="" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,247,4" Foreground="#FF8D8D8D" FontSize="16" RenderTransformOrigin="0.5,0.5" Width="74"/>
+        <Label x:Name="lblLinkSpeed" Content="" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,111,4" Foreground="#FF8D8D8D" FontSize="16" Width="131"/>
+        <Button x:Name="btnExit" Click="btnExit_Click" Style="{StaticResource ButtonCurves}" Content="X" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="29" FontSize="16" Margin="30,1,0,0">
+            <Button.BorderBrush>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
+                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
+                    <GradientStop Color="#FF232323" Offset="0.267"/>
+                    <GradientStop Color="#FF191919" Offset="0.84"/>
+                </LinearGradientBrush>
+            </Button.BorderBrush>
+            <Button.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF3C3C3C" Offset="0"/>
+                    <GradientStop Color="#FF212121" Offset="1"/>
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
+        <Label x:Name="lblWlanRSSI" Content="" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,30,4" Foreground="#FF8D8D8D" FontSize="16" Width="76"/>
     </Grid>
 </Window>
