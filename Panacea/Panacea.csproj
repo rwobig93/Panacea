@@ -149,6 +149,9 @@
     <Compile Include="Windows\Prompt.xaml.cs">
       <DependentUpon>Prompt.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Windows\UtilityBar.xaml.cs">
+      <DependentUpon>UtilityBar.xaml</DependentUpon>
+    </Compile>
     <Page Include="Resources\Icons.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -198,6 +201,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\Prompt.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\UtilityBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -56,6 +56,7 @@ namespace Panacea
         private HandleDisplay windowHandleDisplay = null;
         private Point mouseStartPoint = new Point(0, 0);
         private Octokit.GitHubClient gitClient = null;
+        private CurrentDisplay currentDisplay = null;
         private bool audioRefreshing = false;
         private bool debugMode = false;
         private bool notificationPlaying = false;
@@ -248,24 +249,8 @@ namespace Panacea
         private void BtnTest_Click(object sender, RoutedEventArgs e)
         {
             //TestWifi();
-            RefreshDisplaySizes();
-        }
-
-        private void RefreshDisplaySizes()
-        {
-            try
-            {
-                string displayInfo = string.Empty;
-                foreach (var screen in System.Windows.Forms.Screen.AllScreens)
-                {
-                    displayInfo = $"{displayInfo}Name: {screen.DeviceName}{Environment.NewLine}Bounds: {screen.Bounds.ToString()}{Environment.NewLine}Type: {screen.GetType().ToString()}{Environment.NewLine}Area: {screen.WorkingArea.ToString()}{Environment.NewLine}PrimaryScreen: {screen.Primary.ToString()}{Environment.NewLine}-----------------------{Environment.NewLine}";
-                }
-                Prompt.OK(displayInfo);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
+            //RefreshDisplaySizes();
+            OpenUtilityBar();
         }
 
         private void lblTitle_MouseDown(object sender, MouseButtonEventArgs e)
@@ -915,11 +900,13 @@ namespace Panacea
             SetWindowLocation();
             SetupAudioDeviceList();
             tStartTimedActions();
+            tDisplayWatcher();
             InitializeMenuGrids();
-            //VerifyIfWindowIsOffscreen();
             tCheckForUpdates();
             FinishStartup();
         }
+
+        #region Operational
 
         private void ToggleStatusSize()
         {
@@ -1058,18 +1045,6 @@ namespace Panacea
             }
         }
 
-        private void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO, [CallerMemberName] string caller = "")
-        {
-            try
-            {
-                Toolbox.uAddDebugLog(_log, _type, caller);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
         private void DumpDebugLog()
         {
             int retries = 3;
@@ -1134,6 +1109,18 @@ namespace Panacea
             }
         }
 
+        private void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO, [CallerMemberName] string caller = "")
+        {
+            try
+            {
+                Toolbox.uAddDebugLog(_log, _type, caller);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         private void LogException(Exception ex, [CallerLineNumber] int lineNum = 0, [CallerMemberName] string caller = "", [CallerFilePath] string path = "")
         {
             try
@@ -1150,6 +1137,308 @@ namespace Panacea
                 uStatusUpdate("An Exception was logged");
             }
         }
+
+        public object GetPropertyValue(string propertyName)
+        {
+            //returns value of property Name
+            return this.GetType().GetProperty(propertyName).GetValue(this, null);
+        }
+
+        private void CleanupOldFiles()
+        {
+            try
+            {
+                uDebugLogAdd("Starting old file cleanup");
+                uDebugLogAdd($"Cleaning up logDir: {logDir}");
+                var logDirRemoves = 0;
+                foreach (var file in Directory.EnumerateFiles(logDir))
+                {
+                    FileInfo fileInfo = new FileInfo(file);
+                    string fileNaem = fileInfo.Name;
+                    if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
+                    {
+                        try
+                        {
+                            fileInfo.Delete();
+                            uStatusUpdate($"Deleted old log file: {fileNaem}");
+                            logDirRemoves++;
+                        }
+                        catch (IOException io)
+                        {
+                            uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            LogException(ex);
+                        }
+                    }
+                }
+                uDebugLogAdd($"Removed {logDirRemoves} old log(s)");
+                uDebugLogAdd($"Cleaning up exDir: {exDir}");
+                var exDirRemoves = 0;
+                foreach (var file in Directory.EnumerateFiles(exDir))
+                {
+                    FileInfo fileInfo = new FileInfo(file);
+                    string fileNaem = fileInfo.Name;
+                    if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
+                    {
+                        try
+                        {
+                            fileInfo.Delete();
+                            uStatusUpdate($"Deleted old exception file: {fileNaem}");
+                            exDirRemoves++;
+                        }
+                        catch (IOException io)
+                        {
+                            uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            LogException(ex);
+                        }
+                    }
+                }
+                uDebugLogAdd($"Removed {exDirRemoves} old exception log(s)");
+                var diagRemoves = 0;
+                if (Directory.Exists($@"{currentDir}\Diag"))
+                {
+                    uDebugLogAdd($"Cleaning up diagDir: {$@"{currentDir}\Diag"}");
+                    foreach (var file in Directory.EnumerateFiles($@"{currentDir}\Diag"))
+                    {
+                        FileInfo fileInfo = new FileInfo(file);
+                        string fileNaem = fileInfo.Name;
+                        if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
+                        {
+                            try
+                            {
+                                fileInfo.Delete();
+                                uStatusUpdate($"Deleted old diag zip file: {fileNaem}");
+                                diagRemoves++;
+                            }
+                            catch (IOException io)
+                            {
+                                uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
+                            }
+                            catch (Exception ex)
+                            {
+                                LogException(ex);
+                            }
+                        }
+                    }
+                    uDebugLogAdd($"Removed {diagRemoves} diag zip(s)");
+                }
+                uDebugLogAdd($"Finished old file cleanup, removed {diagRemoves + exDirRemoves + logDirRemoves} file(s)");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void SubscribeToEvents()
+        {
+            Events.UpdateDebugStatus += Events_UpdateDebugStatus;
+            WinAPIWrapper.MouseHook.OnMouseUp += MouseHook_OnMouseUp;
+        }
+
+        private void TestWifi()
+        {
+            try
+            {
+                var wifiLinkSpeed = GetWifiLinkSpeed();
+                if (wifiLinkSpeed != null)
+                    ShowNotification($"Wifi Link Speed: {wifiLinkSpeed} Mbps");
+                else
+                    ShowNotification("Not currently connected to wifi...");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private double? GetWifiLinkSpeed()
+        {
+            ulong speed = 0;
+            double? dblSpeed = null;
+            string adapter = "";
+
+            try
+            {
+                string[] nameSearches = { "Wireless", "WiFi", "802.11", "Wi-Fi" };
+
+                // The enum value of `AF_INET` will select only IPv4 adapters.
+                // You can change this to `AF_INET6` for IPv6 likewise
+                // And `AF_UNSPEC` for either one
+                foreach (IPIntertop.IP_ADAPTER_ADDRESSES net in IPIntertop.GetIPAdapters(IPIntertop.FAMILY.AF_INET))
+                {
+                    bool containsName = false;
+                    foreach (string name in nameSearches)
+                    {
+                        if (net.FriendlyName.Contains(name))
+                        {
+                            containsName = true;
+                        }
+                    }
+                    if (!containsName) continue;
+
+                    speed = net.TrasmitLinkSpeed;
+                    adapter = net.FriendlyName;
+                    break;
+                }
+
+                if (speed == 0)
+                {
+                    uDebugLogAdd($"Not currently connected to wifi via adapter {adapter}");
+                    dblSpeed = null;
+                }
+                else
+                {
+                    dblSpeed = speed / 1000000.0;
+                    uDebugLogAdd($"Current Wi-Fi Speed: {dblSpeed} Mbps on {adapter}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+
+            return dblSpeed;
+        }
+
+        private void FinishStartup()
+        {
+            try
+            {
+                startingUp = false;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void CopyToClipboard(string clip, string optionalMessage = null)
+        {
+            try
+            {
+                Clipboard.SetText(clip);
+                if (optionalMessage == null)
+                    uStatusUpdate($"Set Clipboard: {clip}");
+                else
+                    uStatusUpdate(optionalMessage);
+            }
+            catch (Exception ex)
+            {
+                uDebugLogAdd($"Error occured when setting clipboard: {clip} | {ex.Message}", DebugType.FAILURE);
+                uStatusUpdate($"Error occured when setting clipboard: {clip}");
+            }
+        }
+
+        private void AddToWindowsStartup(bool startup = true)
+        {
+            try
+            {
+                if (startup)
+                {
+                    uDebugLogAdd($"Add to windows startup is {startup}, adding registry key");
+                    Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                    key.SetValue("Panacea", $@"{currentDir}\Panacea.exe");
+                    Toolbox.settings.WindowsStartup = true;
+                    uDebugLogAdd("Successfully added to windows startup");
+                    ShowNotification("Panacea set to launch on Windows startup");
+                }
+                else
+                {
+                    uDebugLogAdd($"Add to windows startup is {startup}, removing registry key");
+                    Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                    key.DeleteValue("Panacea", false);
+                    Toolbox.settings.WindowsStartup = false;
+                    uDebugLogAdd("Successfully removed from windows startup");
+                    ShowNotification("Panacea set to NOT launch on Windows startup");
+                }
+            }
+            catch (ArgumentNullException ane) { uDebugLogAdd($"Argument was null when writing regkey for startup: [{ane.ParamName}] {ane.Message}", DebugType.FAILURE); ShowNotification("Unable to add open on windows startup, an error occured"); }
+            catch (ObjectDisposedException ode) { uDebugLogAdd($"Object was disposed when writing regkey for startup: [{ode.ObjectName}] {ode.Message}"); ShowNotification("Unable to add open on windows startup, an error occured"); }
+            catch (System.Security.SecurityException se) { uDebugLogAdd($"Security Exception occured when writing regkey for startup: [{se.PermissionType}][{se.PermissionState}][{se.Method}] {se.Message}"); ShowNotification("Unable to add open on windows startup, an error occured"); }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void VerifyIfWindowIsOffscreen()
+        {
+            try
+            {
+                if (this.Left < currentDisplay.LeftMostWorkArea)
+                {
+                    uDebugLogAdd($"Panacea window was is the screen to the left: [l]{this.Left} [wal]{currentDisplay.LeftMostWorkArea}");
+                    this.Left = currentDisplay.LeftMostWorkArea;
+                    uDebugLogAdd($"Moved Panacea window back on screen: [l]{this.Left} [wal]{currentDisplay.LeftMostWorkArea}");
+                }
+                else if (this.Left + rectTitle.ActualWidth > currentDisplay.RightMostWorkArea)
+                {
+                    uDebugLogAdd($"Panacea window is off the screen to the right: [l]{this.Left + rectTitle.ActualWidth} [war]{currentDisplay.RightMostWorkArea}");
+                    this.Left = currentDisplay.RightMostWorkArea - rectTitle.ActualWidth;
+                    uDebugLogAdd($"Moved Panacea window back on screen: [l]{this.Left + rectTitle.ActualWidth} [war]{currentDisplay.RightMostWorkArea}");
+                }
+                if (this.Top < currentDisplay.TopMostWorkArea)
+                {
+                    uDebugLogAdd($"Panacea window is off the screen up top: [t]{this.Top} [wat]{currentDisplay.TopMostWorkArea}");
+                    this.Top = currentDisplay.TopMostWorkArea;
+                    uDebugLogAdd($"Moved Panacea window back on screen: [t]{this.Top} [wat]{currentDisplay.TopMostWorkArea}");
+                }
+                else if (this.Top + rectTitle.ActualHeight > currentDisplay.BottomMostWorkArea)
+                {
+                    uDebugLogAdd($"Panacea window is off the screen down low: [t]{this.Top + rectTitle.ActualHeight} [wab]{currentDisplay.BottomMostWorkArea}");
+                    this.Top = currentDisplay.BottomMostWorkArea - rectTitle.ActualHeight;
+                    uDebugLogAdd($"Moved Panacea window back on screen: [t]{this.Top + rectTitle.ActualHeight} [wab]{currentDisplay.BottomMostWorkArea}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void RefreshDisplaySizes()
+        {
+            try
+            {
+                if (currentDisplay == null)
+                {
+                    currentDisplay = new CurrentDisplay();
+                    uDebugLogAdd("Current display was null, created new current display");
+                }
+                currentDisplay.Screens.Clear();
+                foreach (var screen in System.Windows.Forms.Screen.AllScreens)
+                {
+                    currentDisplay.Screens.Add(screen);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void OpenUtilityBar()
+        {
+            try
+            {
+                UtilityBar utilityBar = new UtilityBar();
+                utilityBar.Show();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        #endregion
+
+        #region Display
 
         private void ToggleMenuGrid(Grid grid)
         {
@@ -1313,109 +1602,9 @@ namespace Panacea
             //Retained for future use
             throw new NotImplementedException();
         }
+        #endregion
 
-        public object GetPropertyValue(string propertyName)
-        {
-            //returns value of property Name
-            return this.GetType().GetProperty(propertyName).GetValue(this, null);
-        }
-
-        private void CleanupOldFiles()
-        {
-            try
-            {
-                uDebugLogAdd("Starting old file cleanup");
-                uDebugLogAdd($"Cleaning up logDir: {logDir}");
-                var logDirRemoves = 0;
-                foreach (var file in Directory.EnumerateFiles(logDir))
-                {
-                    FileInfo fileInfo = new FileInfo(file);
-                    string fileNaem = fileInfo.Name;
-                    if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
-                    {
-                        try
-                        {
-                            fileInfo.Delete();
-                            uStatusUpdate($"Deleted old log file: {fileNaem}");
-                            logDirRemoves++;
-                        }
-                        catch (IOException io)
-                        {
-                            uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
-                        }
-                        catch (Exception ex)
-                        {
-                            LogException(ex);
-                        }
-                    }
-                }
-                uDebugLogAdd($"Removed {logDirRemoves} old log(s)");
-                uDebugLogAdd($"Cleaning up exDir: {exDir}");
-                var exDirRemoves = 0;
-                foreach (var file in Directory.EnumerateFiles(exDir))
-                {
-                    FileInfo fileInfo = new FileInfo(file);
-                    string fileNaem = fileInfo.Name;
-                    if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
-                    {
-                        try
-                        {
-                            fileInfo.Delete();
-                            uStatusUpdate($"Deleted old exception file: {fileNaem}");
-                            exDirRemoves++;
-                        }
-                        catch (IOException io)
-                        {
-                            uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
-                        }
-                        catch (Exception ex)
-                        {
-                            LogException(ex);
-                        }
-                    }
-                }
-                uDebugLogAdd($"Removed {exDirRemoves} old exception log(s)");
-                var diagRemoves = 0;
-                if (Directory.Exists($@"{currentDir}\Diag"))
-                {
-                    uDebugLogAdd($"Cleaning up diagDir: {$@"{currentDir}\Diag"}");
-                    foreach (var file in Directory.EnumerateFiles($@"{currentDir}\Diag"))
-                    {
-                        FileInfo fileInfo = new FileInfo(file);
-                        string fileNaem = fileInfo.Name;
-                        if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
-                        {
-                            try
-                            {
-                                fileInfo.Delete();
-                                uStatusUpdate($"Deleted old diag zip file: {fileNaem}");
-                                diagRemoves++;
-                            }
-                            catch (IOException io)
-                            {
-                                uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
-                            }
-                            catch (Exception ex)
-                            {
-                                LogException(ex);
-                            }
-                        }
-                    }
-                    uDebugLogAdd($"Removed {diagRemoves} diag zip(s)");
-                }
-                uDebugLogAdd($"Finished old file cleanup, removed {diagRemoves + exDirRemoves + logDirRemoves} file(s)");
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void SubscribeToEvents()
-        {
-            Events.UpdateDebugStatus += Events_UpdateDebugStatus;
-            WinAPIWrapper.MouseHook.OnMouseUp += MouseHook_OnMouseUp;
-        }
+        #region Install/Update
 
         private Version GetVersionNumber()
         {
@@ -1769,137 +1958,8 @@ namespace Panacea
                 LogException(ex);
             }
         }
-
-        private void TestWifi()
-        {
-            try
-            {
-                var wifiLinkSpeed = GetWifiLinkSpeed();
-                if (wifiLinkSpeed != null)
-                    ShowNotification($"Wifi Link Speed: {wifiLinkSpeed} Mbps");
-                else
-                    ShowNotification("Not currently connected to wifi...");
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private double? GetWifiLinkSpeed()
-        {
-            ulong speed = 0;
-            double? dblSpeed = null;
-            string adapter = "";
-
-            try
-            {
-                string[] nameSearches = { "Wireless", "WiFi", "802.11", "Wi-Fi" };
-
-                // The enum value of `AF_INET` will select only IPv4 adapters.
-                // You can change this to `AF_INET6` for IPv6 likewise
-                // And `AF_UNSPEC` for either one
-                foreach (IPIntertop.IP_ADAPTER_ADDRESSES net in IPIntertop.GetIPAdapters(IPIntertop.FAMILY.AF_INET))
-                {
-                    bool containsName = false;
-                    foreach (string name in nameSearches)
-                    {
-                        if (net.FriendlyName.Contains(name))
-                        {
-                            containsName = true;
-                        }
-                    }
-                    if (!containsName) continue;
-
-                    speed = net.TrasmitLinkSpeed;
-                    adapter = net.FriendlyName;
-                    break;
-                }
-
-                if (speed == 0)
-                {
-                    uDebugLogAdd($"Not currently connected to wifi via adapter {adapter}");
-                    dblSpeed = null;
-                }
-                else
-                {
-                    dblSpeed = speed / 1000000.0;
-                    uDebugLogAdd($"Current Wi-Fi Speed: {dblSpeed} Mbps on {adapter}");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-
-            return dblSpeed;
-        }
-
-        private void FinishStartup()
-        {
-            try
-            {
-                startingUp = false;
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void CopyToClipboard(string clip, string optionalMessage = null)
-        {
-            try
-            {
-                Clipboard.SetText(clip);
-                if (optionalMessage == null)
-                    uStatusUpdate($"Set Clipboard: {clip}");
-                else
-                    uStatusUpdate(optionalMessage);
-            }
-            catch (Exception ex)
-            {
-                uDebugLogAdd($"Error occured when setting clipboard: {clip} | {ex.Message}", DebugType.FAILURE);
-                uStatusUpdate($"Error occured when setting clipboard: {clip}");
-            }
-        }
-
-        private void AddToWindowsStartup(bool startup = true)
-        {
-            try
-            {
-                if (startup)
-                {
-                    uDebugLogAdd($"Add to windows startup is {startup}, adding registry key");
-                    Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-                    key.SetValue("Panacea", $@"{currentDir}\Panacea.exe");
-                    Toolbox.settings.WindowsStartup = true;
-                    uDebugLogAdd("Successfully added to windows startup");
-                    ShowNotification("Panacea set to launch on Windows startup");
-                }
-                else
-                {
-                    uDebugLogAdd($"Add to windows startup is {startup}, removing registry key");
-                    Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-                    key.DeleteValue("Panacea", false);
-                    Toolbox.settings.WindowsStartup = false;
-                    uDebugLogAdd("Successfully removed from windows startup");
-                    ShowNotification("Panacea set to NOT launch on Windows startup");
-                }
-            }
-            catch (ArgumentNullException ane) { uDebugLogAdd($"Argument was null when writing regkey for startup: [{ane.ParamName}] {ane.Message}", DebugType.FAILURE); ShowNotification("Unable to add open on windows startup, an error occured"); }
-            catch (ObjectDisposedException ode) { uDebugLogAdd($"Object was disposed when writing regkey for startup: [{ode.ObjectName}] {ode.Message}"); ShowNotification("Unable to add open on windows startup, an error occured"); }
-            catch (System.Security.SecurityException se) { uDebugLogAdd($"Security Exception occured when writing regkey for startup: [{se.PermissionType}][{se.PermissionState}][{se.Method}] {se.Message}"); ShowNotification("Unable to add open on windows startup, an error occured"); }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void VerifyIfWindowIsOffscreen()
-        {
-            throw new NotImplementedException();
-        }
+        
+        #endregion
 
         #endregion
 
@@ -3672,6 +3732,50 @@ namespace Panacea
                 uDebugLogAdd($"Unable to get updates, reason: {ioe.Message}");
                 uStatusUpdate("Unable to check for updates, couldn't find any versions in the repository");
                 return;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void tDisplayWatcher()
+        {
+            try
+            {
+                uDebugLogAdd("Starting DisplayWatcher");
+                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+                worker.DoWork += (ws, we) =>
+                {
+                    try
+                    {
+                        while (true)
+                        {
+                            worker.ReportProgress(1);
+                            Thread.Sleep(2000);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        uDebugLogAdd($"Displaywatcher failure: {ex.Message}", DebugType.FAILURE);
+                    }
+                };
+                worker.ProgressChanged += (ps, pe) =>
+                {
+                    if (pe.ProgressPercentage == 1)
+                    {
+                        try
+                        {
+                            RefreshDisplaySizes();
+                            VerifyIfWindowIsOffscreen();
+                        }
+                        catch (Exception ex)
+                        {
+                            uDebugLogAdd($"Displaywatcher failure: {ex.Message}", DebugType.FAILURE);
+                        }
+                    }
+                };
+                worker.RunWorkerAsync();
             }
             catch (Exception ex)
             {

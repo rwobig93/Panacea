@@ -19,6 +19,7 @@
 *.props
 *.targets
 *.suo
+*.dtbcache
 /packages
 /Upstaller/bin/x64
 /Upstaller/obj/x64

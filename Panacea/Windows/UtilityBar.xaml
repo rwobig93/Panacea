@@ -1,0 +1,24 @@
+﻿<Window x:Class="Panacea.Windows.UtilityBar"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Panacea.Windows"
+        mc:Ignorable="d" Height="28.564" MinHeight="0" Width="1104" MinWidth="0" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070"
+        Title="UtilityBar" Background="{x:Null}">
+    <Grid>
+        <Rectangle x:Name="rectBackground" Margin="30,0" >
+            <Rectangle.Fill>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
+                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
+                    <GradientStop Color="#FF232323" Offset="0.267"/>
+                    <GradientStop Color="#FF191919" Offset="0.84"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Label x:Name="lblLinkType" Content="" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,1,157,-1" Foreground="#FF8D8D8D" FontSize="16" RenderTransformOrigin="0.5,0.5" Width="63"/>
+        <Label x:Name="lblLinkSpeed" Content="" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,1,59,-1" Foreground="#FF8D8D8D" FontSize="16" Width="82"/>
+        <Button x:Name="btnExit" Click="btnExit_Click" Style="{StaticResource ExitButtonHoverColor}" Content="X" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Left" Width="32" FontSize="18" BorderBrush="{x:Null}" Margin="30,0,0,-1"/>
+    </Grid>
+</Window>
