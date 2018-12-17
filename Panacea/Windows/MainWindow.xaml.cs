@@ -57,6 +57,7 @@ namespace Panacea
         private Point mouseStartPoint = new Point(0, 0);
         private Octokit.GitHubClient gitClient = null;
         private CurrentDisplay currentDisplay = null;
+        private UtilityBar utilityBar = null;
         private bool audioRefreshing = false;
         private bool debugMode = false;
         private bool notificationPlaying = false;
@@ -277,6 +278,11 @@ namespace Panacea
             {
                 LogException(ex);
             }
+        }
+
+        private void BtnUtilBar_Click(object sender, RoutedEventArgs e)
+        {
+            OpenUtilityBar();
         }
 
         #endregion
@@ -876,6 +882,11 @@ namespace Panacea
             StartSettingsUpdate(SettingsUpdate.WinStartup);
         }
 
+        private void chkSetGenUtilBar_Click(object sender, RoutedEventArgs e)
+        {
+            StartSettingsUpdate(SettingsUpdate.UtilBar);
+        }
+
         #endregion
 
         #endregion
@@ -1427,8 +1438,14 @@ namespace Panacea
         {
             try
             {
-                UtilityBar utilityBar = new UtilityBar();
-                utilityBar.Show();
+                if (utilityBar == null)
+                {
+                    utilityBar = new UtilityBar();
+                    utilityBar.Show();
+                    utilityBar.Closed += (s, e) => { utilityBar = null; };
+                }
+                else
+                    ShowNotification("A Utility Bar is Already Open");
             }
             catch (Exception ex)
             {
@@ -2123,6 +2140,9 @@ namespace Panacea
                 uDebugLogAdd("SettingsGEN: working on general settings");
                 chkSettingsBeta.IsChecked = Toolbox.settings.BetaUpdate;
                 chkSettingsStartup.IsChecked = Toolbox.settings.WindowsStartup;
+                chkSetGenUtilBar.IsChecked = Toolbox.settings.ShowUtilBarOnStartup;
+                if (Toolbox.settings.ShowUtilBarOnStartup)
+                    OpenUtilityBar();
                 uDebugLogAdd("Default settings set");
             }
             catch (Exception ex)
@@ -3437,6 +3457,12 @@ namespace Panacea
                                 AddToWindowsStartup(false);
                                 Toolbox.settings.WindowsStartup = false;
                             }
+                            // Set util bar
+                            uDebugLogAdd("SETUPDATE: Util bar");
+                            if (chkSetGenUtilBar.IsChecked == true)
+                                Toolbox.settings.ShowUtilBarOnStartup = true;
+                            else
+                                Toolbox.settings.ShowUtilBarOnStartup = false;
                             break;
                         case 99:
                             ShowNotification("Incorrect format entered");
