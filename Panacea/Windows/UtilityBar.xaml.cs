@@ -3,10 +3,12 @@ using Panacea.Classes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -15,6 +17,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using static Panacea.MainWindow;
@@ -28,9 +31,13 @@ namespace Panacea.Windows
     {
         public UtilityBar()
         {
+            this.Top = 2560;
+            this.Left = 1920;
             InitializeComponent();
             Startup();
         }
+
+        #region Enums
 
         public enum NetConnectionType
         {
@@ -50,16 +57,59 @@ namespace Panacea.Windows
             Bps
         }
 
+        public enum WifiFrequency
+        {
+            RF5G,
+            RF24G,
+            None
+        }
+
+        public enum WifiPHYProto
+        {
+            ac,
+            n,
+            g,
+            b,
+            a,
+            None
+        }
+
+        public enum ConnectivityStatus
+        {
+            Internet,
+            Local,
+            None,
+            DNSError
+        }
+
+        private enum PopupMenu
+        {
+            Network,
+            Settings
+        }
+
+        #endregion
+
         #region Globals
 
         private WlanClient wClient;
-        private List<string> _connectedEthIfs = new List<string>();
+        private List<NetworkInterface> netIfs;
+        private List<NetworkInterface> _connectedEthIfs { get { return netIfs.FindAll(x => x.NetworkInterfaceType == NetworkInterfaceType.Ethernet && x.OperationalStatus == OperationalStatus.Up); } }
         private List<string> _connectedSSIDs = new List<string>();
         private bool _connectedToWifi { get { return _connectedSSIDs.Count > 0 ? true : false; } }
         private bool _connectedToEth { get { return _connectedEthIfs.Count > 0 ? true : false; } }
+        private bool _bssidChanged = true;
         private WlanClient.WlanInterface _currentWifiIf;
         private NetworkInterface _currentEthIf;
         private CurrentDisplay currentDisplay;
+        private NetConnectionType currentConnType = NetConnectionType.Unknown;
+        private WifiFrequency currentFrequency = WifiFrequency.None;
+        private WifiPHYProto currentPHYProto = WifiPHYProto.None;
+        private ConnectivityStatus currentConnectivityStatus = ConnectivityStatus.None;
+        private double? currentLinkSpeed;
+        private DoubleAnimation outAnimation = new DoubleAnimation() { To = 0.0, Duration = TimeSpan.FromSeconds(.7) };
+        private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.7) };
+        private NetworkPopup popupNetwork;
 
         #endregion
 
@@ -75,6 +125,11 @@ namespace Panacea.Windows
             {
                 LogException(ex);
             }
+        }
+
+        private void BtnMenuNetwork_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleMenuPopup(PopupMenu.Network);
         }
 
         #endregion
@@ -168,7 +223,7 @@ namespace Panacea.Windows
                     //desiredLocation.X = primeScreen.WorkingArea.X + Convert.ToInt32(primeScreen.WorkingArea.Width * 0.10);
                     desiredLocation.X = Convert.ToInt32((primeScreen.WorkingArea.Width / 2) - (grdMain.ActualWidth / 2));
                     //desiredLocation.Width = primeScreen.WorkingArea.Width - Convert.ToInt32(primeScreen.WorkingArea.Width * 0.20);
-                    desiredLocation.Y = primeScreen.WorkingArea.Height - Convert.ToInt32(rectBackground.ActualHeight);
+                    desiredLocation.Y = primeScreen.WorkingArea.Height - Convert.ToInt32(rectBackground.ActualHeight) + 1;
                     if ((this.Left != desiredLocation.X) && (this.Top != desiredLocation.Y))
                     {
                         this.Left = desiredLocation.X;
@@ -197,6 +252,9 @@ namespace Panacea.Windows
                     {
                         try
                         {
+                            UpdateConnectedEthernet();
+                            UpdateConnectedSSIDs();
+                            UpdateNetworkConnectivity();
                             worker.ReportProgress(1);
                             Thread.Sleep(2000);
                         }
@@ -212,9 +270,8 @@ namespace Panacea.Windows
                     {
                         try
                         {
-                            UpdateConnectedEthernet();
-                            UpdateConnectedSSIDs();
-                            UpdateNetworkLink();
+                            UpdateNetworkLinkUI();
+                            UpdateNetworkConnectivityUI();
                         }
                         catch (Exception ex)
                         {
@@ -230,29 +287,194 @@ namespace Panacea.Windows
             }
         }
 
+        private void UpdateNetworkConnectivityUI()
+        {
+            try
+            {
+                lblConnectivityStatus.Content = currentConnectivityStatus.ToString();
+                switch (currentConnectivityStatus)
+                {
+                    case ConnectivityStatus.Internet:
+                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 39, 216, 0));
+                        break;
+                    case ConnectivityStatus.Local:
+                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 207, 228, 0));
+                        break;
+                    case ConnectivityStatus.None:
+                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 255, 0, 0));
+                        break;
+                    case ConnectivityStatus.DNSError:
+                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 223, 0, 224));
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                uDebugLogAdd($"ConnectivityUI update failure: {ex.Message}", DebugType.FAILURE);
+            }
+        }
+
+        private void UpdateNetworkConnectivity()
+        {
+            try
+            {
+                Ping p = new Ping();
+                int successCounter = 0;
+                int failureCounter = 0;
+
+                /// Internet connectivity verification
+                // Google dns A
+                try
+                {
+                    var googleA = p.Send("8.8.8.8");
+                    if (googleA.Status == IPStatus.Success)
+                    {
+                        successCounter++;
+                        currentConnectivityStatus = ConnectivityStatus.Internet;
+                    }
+                    else
+                        failureCounter++;
+                }
+                catch (Exception)
+                {
+                    failureCounter++;
+                }
+                // Google dns B
+                if (successCounter <= 0)
+                {
+                    try
+                    {
+                        var googleB = p.Send("8.8.4.4");
+                        if (googleB.Status == IPStatus.Success)
+                        {
+                            successCounter++;
+                            currentConnectivityStatus = ConnectivityStatus.Internet;
+                        }
+                        else
+                            failureCounter++;
+                    }
+                    catch (Exception)
+                    {
+                        failureCounter++;
+                    }
+                }
+                // Cloudflare dns 1
+                if (successCounter <= 0)
+                {
+                    try
+                    {
+                        var cloudFlare = p.Send("1.1.1.1");
+                        if (cloudFlare.RoundtripTime > 5)
+                        {
+                            if (cloudFlare.Status == IPStatus.Success)
+                            {
+                                successCounter++;
+                                currentConnectivityStatus = ConnectivityStatus.Internet;
+                            }
+                            else
+                                failureCounter++;
+                        }
+                    }
+                    catch (Exception) { }
+                }
+                // Open DNS/Cisco Umbrella 1
+                if (successCounter <= 0)
+                {
+                    try
+                    {
+                        var oDNS = p.Send("208.67.222.222");
+                        if (oDNS.Status == IPStatus.Success)
+                        {
+                            successCounter++;
+                            currentConnectivityStatus = ConnectivityStatus.Internet;
+                        }
+                        else
+                            failureCounter++;
+                    }
+                    catch (Exception) { }
+                }
+                // Telstra 1
+                if (successCounter <= 0)
+                {
+                    try
+                    {
+                        var telstra = p.Send("139.130.4.5");
+                        if (telstra.Status == IPStatus.Success)
+                        {
+                            successCounter++;
+                            currentConnectivityStatus = ConnectivityStatus.Internet;
+                        }
+                        else
+                            failureCounter++;
+                    }
+                    catch (Exception) { }
+                }
+
+                /// Local connectivity verification
+                if (successCounter <= 0)
+                {
+                    var defGateway = string.Empty;
+                    if (_connectedToWifi)
+                    {
+                        try { defGateway = _currentWifiIf.NetworkInterface.GetIPProperties().GatewayAddresses[0].Address.ToString(); }
+                        catch (Exception) { }
+                    }
+                    else if (_connectedToEth)
+                    {
+                        try { defGateway = _currentEthIf.GetIPProperties().GatewayAddresses[0].Address.ToString(); }
+                        catch (Exception) { }
+                    }
+
+                    if (String.IsNullOrWhiteSpace(defGateway))
+                    {
+                        failureCounter++;
+                        currentConnectivityStatus = ConnectivityStatus.None;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            var localGatewayRep = p.Send(defGateway);
+                            if (localGatewayRep.Status == IPStatus.Success)
+                            {
+                                successCounter++;
+                                currentConnectivityStatus = ConnectivityStatus.Local;
+                            }
+                            else
+                            {
+                                failureCounter++;
+                                currentConnectivityStatus = ConnectivityStatus.None;
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            failureCounter++;
+                            currentConnectivityStatus = ConnectivityStatus.None;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         private void UpdateConnectedEthernet()
         {
             try
             {
-                NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
-                var tempInterface = _currentEthIf;
-                _connectedEthIfs.Clear();
-                foreach (var adapter in interfaces)
+                if (netIfs == null)
                 {
-                    if (adapter.OperationalStatus == OperationalStatus.Up && adapter.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                    netIfs = new List<NetworkInterface>();
+                    NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
+                    foreach (var adapter in interfaces)
                     {
-                        _connectedEthIfs.Add(adapter.Name);
-                        _currentEthIf = adapter;
+                        netIfs.Add(adapter);
                     }
                 }
-                if (_currentEthIf != tempInterface)
-                {
-                    foreach (var inter in _connectedEthIfs)
-                    {
-                        uDebugLogAdd($"Eth interface up: {inter}");
-                    }
-                    uDebugLogAdd($"Total up Eth ifs: {_connectedEthIfs.Count}");
-                }
+                if (_connectedEthIfs.Count > 0)
+                    _currentEthIf = _connectedEthIfs[0];
             }
             catch (Exception ex)
             {
@@ -274,12 +496,18 @@ namespace Panacea.Windows
                 {
                     Wlan.Dot11Ssid ssid = wlanIf.CurrentConnection.wlanAssociationAttributes.dot11Ssid;
                     _connectedSSIDs.Add(new String(Encoding.ASCII.GetChars(ssid.SSID, 0, (int)ssid.SSIDLength)));
+                    if (_currentWifiIf != null)
+                        if (_currentWifiIf.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString() != wlanIf.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString())
+                            _bssidChanged = true;
                     _currentWifiIf = wlanIf;
                 }
-                uDebugLogAdd($"Current Connected SSID's: {_connectedSSIDs.Count}");
-                foreach (var ssid in _connectedSSIDs)
+                if (_bssidChanged)
                 {
-                    uDebugLogAdd($"Connected SSID: {ssid}");
+                    uDebugLogAdd($"Current Connected SSID's: {_connectedSSIDs.Count}");
+                    foreach (var ssid in _connectedSSIDs)
+                    {
+                        uDebugLogAdd($"Connected SSID: {ssid}");
+                    }
                 }
             }
             catch (Win32Exception) { }
@@ -289,14 +517,16 @@ namespace Panacea.Windows
             }
         }
 
-        private void UpdateNetworkLink()
+        private void UpdateNetworkLinkUI()
         {
             try
             {
                 if (_connectedToEth && _connectedToWifi)
                 {
-                    ToggleConnectionType(NetConnectionType.EthWifi);
+                    if (currentConnType != NetConnectionType.EthWifi)
+                        ToggleConnectionType(NetConnectionType.EthWifi);
                     var wifiLinkSpeed = GetWifiLinkSpeed();
+                    currentLinkSpeed = wifiLinkSpeed;
                     if (wifiLinkSpeed != null)
                     {
                         UpdateLinkSpeed(wifiLinkSpeed, _currentEthIf.Speed);
@@ -309,7 +539,8 @@ namespace Panacea.Windows
                 }
                 else if (_connectedToWifi)
                 {
-                    ToggleConnectionType(NetConnectionType.Wireless);
+                    if (currentConnType != NetConnectionType.Wireless)
+                        ToggleConnectionType(NetConnectionType.Wireless);
                     var wifiLinkSpeed = GetWifiLinkSpeed();
                     if (wifiLinkSpeed != null)
                     {
@@ -323,12 +554,18 @@ namespace Panacea.Windows
                 }
                 else if (_connectedToEth)
                 {
-                    ToggleConnectionType(NetConnectionType.Wired);
+                    if (currentConnType != NetConnectionType.Wired)
+                        ToggleConnectionType(NetConnectionType.Wired);
                     UpdateLinkSpeed(_currentEthIf.Speed);
-                    UpdateWlanRSSI(-1337);
+                    UpdateWifiStats();
                 }
+                else if (currentConnType == NetConnectionType.EthWifi || currentConnType == NetConnectionType.Wired || currentConnType == NetConnectionType.Wireless) { }
                 else
+                {
                     ToggleConnectionType(NetConnectionType.NoConnection);
+                    UpdateLinkSpeed(0);
+                    UpdateWifiStats();
+                }
             }
             catch (Exception ex)
             {
@@ -342,11 +579,118 @@ namespace Panacea.Windows
             try
             {
                 UpdateWlanRSSI();
+                UpdateWlanPHYType();
             }
             catch (Exception ex)
             {
                 LogException(ex);
             }
+        }
+
+        private void UpdateWlanPHYType()
+        {
+            try
+            {
+                if ((currentConnType == NetConnectionType.Wireless || currentConnType == NetConnectionType.EthWifi) && _bssidChanged)
+                {
+                    _bssidChanged = false;
+
+                    Process p = new Process();
+                    p.StartInfo.FileName = "cmd.exe";
+                    p.StartInfo.Arguments = $"/c netsh wlan show networks interface=\"{_currentWifiIf.InterfaceName}\" mode=Bssid";
+                    p.StartInfo.UseShellExecute = false;
+                    p.StartInfo.RedirectStandardOutput = true;
+                    p.StartInfo.CreateNoWindow = true;
+                    p.Start();
+                    string output = p.StandardOutput.ReadToEnd();
+                    p.WaitForExit();
+                    Regex rbssid = new Regex($@"({MacPopup.ConvertMacAddrCol(_currentWifiIf.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString()).ToLower()})([\s\S]*?)Basic rates");
+                    Regex rphyProto = new Regex(@"Radio.*");
+                    var bssidOut = rbssid.Match(output);
+                    var phyProtoOut = Regex.Replace(rphyProto.Match(bssidOut.Value).Value.Replace("Radio type", "").Replace(":", ""), @"\s+", "");
+
+                    currentFrequency = GetCurrentWifiFrequency();
+                    currentPHYProto = GetCurrentWifiPHYProtocol(phyProtoOut);
+
+                    UpdateWifiConnType();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void UpdateWifiConnType()
+        {
+            try
+            {
+                if (currentConnType == NetConnectionType.Wireless || currentConnType == NetConnectionType.EthWifi)
+                {
+                    var phystring = string.Empty;
+                    switch (currentFrequency)
+                    {
+                        case WifiFrequency.RF5G:
+                            phystring = "5";
+                            break;
+                        case WifiFrequency.RF24G:
+                            phystring = "2.4";
+                            break;
+                        case WifiFrequency.None:
+                            phystring = "???";
+                            break;
+                    }
+                    phystring = $"{phystring}{currentPHYProto.ToString()}";
+                    if (lblLinkType.Content.ToString().Contains('(') && (!lblLinkType.Content.ToString().Contains(phystring)))
+                    {
+                        lblLinkType.Content = Regex.Replace(lblLinkType.Content.ToString(), @".(\(.*\))", "");
+                        lblLinkType.Content = $"{lblLinkType.Content.ToString()} ({phystring})";
+                    }
+                    else if (!lblLinkType.Content.ToString().Contains('('))
+                        lblLinkType.Content = $"{lblLinkType.Content.ToString()} ({phystring})";
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private WifiPHYProto GetCurrentWifiPHYProtocol(string phy)
+        {
+            WifiPHYProto proto = WifiPHYProto.None;
+            switch (phy)
+            {
+                case "802.11n":
+                    proto = WifiPHYProto.n;
+                    break;
+                case "802.11ac":
+                    proto = WifiPHYProto.ac;
+                    break;
+                case "802.11a":
+                    proto = WifiPHYProto.a;
+                    break;
+                case "802.11b":
+                    proto = WifiPHYProto.b;
+                    break;
+                case "802.11g":
+                    proto = WifiPHYProto.g;
+                    break;
+                default:
+                    proto = WifiPHYProto.None;
+                    break;
+            }
+            return proto;
+        }
+
+        private WifiFrequency GetCurrentWifiFrequency()
+        {
+            WifiFrequency freq = WifiFrequency.None;
+            if (_currentWifiIf.Channel > 14)
+                freq = WifiFrequency.RF5G;
+            else
+                freq = WifiFrequency.RF24G;
+            return freq;
         }
 
         /// <summary>
@@ -419,11 +763,12 @@ namespace Panacea.Windows
             return speedNotation;
         }
 
-        private void UpdateWlanRSSI(int rssi = 0)
+        private void UpdateWlanRSSI()
         {
             try
             {
-                if (rssi == -1337)
+
+                if (!(currentConnType == NetConnectionType.EthWifi || currentConnType == NetConnectionType.Wireless))
                     lblWlanRSSI.Content = "";
                 else
                     lblWlanRSSI.Content = $"-{_currentWifiIf.RSSI} dBm";
@@ -438,6 +783,7 @@ namespace Panacea.Windows
         {
             try
             {
+                currentConnType = connType;
                 switch (connType)
                 {
                     case NetConnectionType.Wired:
@@ -495,13 +841,11 @@ namespace Panacea.Windows
 
                 if (speed == 0)
                 {
-                    uDebugLogAdd($"Not currently connected to wifi via adapter {adapter}");
                     dblSpeed = null;
                 }
                 else
                 {
                     dblSpeed = speed;
-                    uDebugLogAdd($"Current Wi-Fi Speed: {dblSpeed} on {adapter}");
                 }
             }
             catch (Exception ex)
@@ -530,6 +874,53 @@ namespace Panacea.Windows
             catch (Exception ex)
             {
                 LogException(ex);
+            }
+        }
+
+        private void CopyToClipboard(string clip, string optionalMessage = null)
+        {
+            try
+            {
+                Clipboard.SetText(clip);
+            }
+            catch (Exception ex)
+            {
+                uDebugLogAdd($"Error occured when setting clipboard: {clip} | {ex.Message}", DebugType.FAILURE);
+            }
+        }
+
+        private void ToggleMenuPopup(PopupMenu menu)
+        {
+            try
+            {
+                switch (menu)
+                {
+                    case PopupMenu.Network:
+                        // Network Menu
+                        if (popupNetwork == null)
+                        {
+                            popupNetwork = new NetworkPopup((this.Top - 300), (this.Left + this.btnMenuNetwork.Margin.Left));
+                            popupNetwork.Show();
+                            uDebugLogAdd("Network Popup was null, Created new Network popup");
+                        }
+                        else if (popupNetwork != null)
+                        {
+                            if (popupNetwork.Opacity == 0)
+                                popupNetwork.PopupShow();
+                            else if (popupNetwork.Opacity == 1.0)
+                                popupNetwork.PopupHide();
+                        }
+
+                        // All other menus
+
+                        break;
+                    case PopupMenu.Settings:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                uDebugLogAdd($"Popup Menu Toggle Failure: {ex.Message}", DebugType.FAILURE);
             }
         }
 

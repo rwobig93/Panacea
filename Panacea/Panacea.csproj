@@ -145,6 +145,9 @@
     <Compile Include="Windows\MacPopup.xaml.cs">
       <DependentUpon>MacPopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Windows\NetworkPopup.xaml.cs">
+      <DependentUpon>NetworkPopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\ProcessOutline.xaml.cs">
       <DependentUpon>ProcessOutline.xaml</DependentUpon>
     </Compile>
@@ -198,6 +201,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Windows\NetworkPopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Windows\ProcessOutline.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

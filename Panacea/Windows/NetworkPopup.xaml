@@ -1,0 +1,67 @@
+﻿<Window x:Name="winNetMain" x:Class="Panacea.Windows.NetworkPopup"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Panacea.Windows"
+        mc:Ignorable="d" Topmost="True" ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="True"
+        Title="NetworkPopup" Height="300" MinHeight="300" Width="450" MinWidth="450" Foreground="{x:Null}" Background="#02000000">
+    <Grid x:Name="grdNetwork" Background="#02000000">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="165*"/>
+            <RowDefinition Height="17"/>
+        </Grid.RowDefinitions>
+        <Rectangle x:Name="rectNetworkBackground" Stroke="#FFA0A0A0" Grid.Row="0">
+            <Rectangle.Fill>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
+                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
+                    <GradientStop Color="#FF232323" Offset="0.267"/>
+                    <GradientStop Color="#FF191919" Offset="0.84"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <ScrollViewer x:Name="scrlNetTop" Grid.Row="0">
+            <Grid x:Name="grdNetSubTop">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="183*"/>
+                    <RowDefinition Height="100*"/>
+                </Grid.RowDefinitions>
+                <Label x:Name="lblNetPingTitle" Margin="10,3,0,0" Padding="0" Content="Ping" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="134" Foreground="#FF8D8D8D" Grid.Row="0" Background="{x:Null}"/>
+                <ListBox x:Name="lbNetPing" Grid.Row="0" Margin="10,23,0,4">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Height="30" Width="{Binding ElementName=lbBasicPingSessions, Path=ActualWidth, Converter={StaticResource Minus15Converter}}">
+                                <Border BorderThickness="2,2,2,2" Margin="0,1,0,1" CornerRadius="13,13,13,13" BorderBrush="{Binding PingResultColor}" />
+                                <Label Content="H:" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="19" Foreground="#FF8D8D8D" FontSize="15" Margin="7,0,0,0" />
+                                <Label Content="{Binding HighPing}" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="38" Foreground="#FF8D8D8D" FontSize="15" Margin="21,0,0,0" />
+                                <Label Content="L:" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="19" Foreground="#FF8D8D8D" FontSize="15" Margin="56,0,0,0" />
+                                <Label Content="{Binding LowPing}" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="38" Foreground="#FF8D8D8D" FontSize="15" Margin="68,0,0,0" />
+                                <Label Content="A:" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="19" Foreground="#FF8D8D8D" FontSize="15" Margin="104,0,0,0" />
+                                <Label Content="{Binding AvgPing}" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="38" Foreground="#FF8D8D8D" FontSize="15" Margin="118,0,0,0" />
+                                <Label Content="C:" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="19" Foreground="#FF8D8D8D" FontSize="15" Margin="153,0,0,0" />
+                                <Label Content="{Binding CurrentPing}" HorizontalContentAlignment="Center" Padding="0" BorderThickness="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" Width="38" Foreground="#FF8D8D8D" FontSize="15" Margin="167,0,0,0" />
+                                <Label Content="{Binding DisplayName}" VerticalContentAlignment="Center" Foreground="#FF8D8D8D" Margin="217,0,50,0"/>
+                                <Button Style="{StaticResource MahApps.Metro.Styles.MetroCircleButtonStyle}" Click="BtnBasicPingEntryClose_Click" Padding="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Foreground="#FF8D8D8D" BorderBrush="{Binding PingResultColor}" Margin="0,4,4,4" Content="X" Background="#02000000" FontWeight="Bold" HorizontalAlignment="Right" Width="23" />
+                                <Button Style="{StaticResource MahApps.Metro.Styles.MetroCircleButtonStyle}" Click="BtnBasicPingEntryToggle_Click" Padding="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Foreground="#FF8D8D8D" BorderBrush="{Binding PingResultColor}" Margin="0,4,27,4" Content="{Binding ToggleButton}" Background="#02000000" HorizontalAlignment="Right" Width="23" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Label x:Name="lblNetNSLookupTitle" Margin="10,0,0,0" Padding="0" Content="NSLookup" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="134" Foreground="#FF8D8D8D" Grid.Row="1" Background="{x:Null}"/>
+                <ListBox x:Name="lbNetNSLookup" Grid.Row="1" Margin="10,18,0,9">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid HorizontalAlignment="Left" Height="16" Margin="0,0,0,0" VerticalAlignment="Top" Width="{Binding ElementName=lbResolvedAddresses, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" Background="Black">
+                                <TextBlock MouseDown="lblNetDNS_MouseDown" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding IPAddress}" VerticalAlignment="Top" Width="87" Height="16" Foreground="#FF8D8D8D"/>
+                                <TextBlock MouseDown="lblNetDNSFull_MouseDown" HorizontalAlignment="Left" TextWrapping="Wrap" Text=" = " VerticalAlignment="Top" Width="15" Foreground="#FF8D8D8D" Height="16" Margin="87,0,0,0"/>
+                                <TextBlock MouseDown="lblNetDNS_MouseDown" TextWrapping="Wrap" Text="{Binding HostName}" VerticalAlignment="Top" Width="{Binding ElementName=lbResolvedAddresses, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" Foreground="#FF8D8D8D" Height="16" Margin="102,0,45,0"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </ScrollViewer>
+        <Polygon x:Name="plyNetVisualSlider" Points="28.9,.5,1.1,.5,15,16.1" Stroke="#FFA0A0A0" Grid.Row="1" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" Fill="#FFA0A0A0" />
+    </Grid>
+</Window>

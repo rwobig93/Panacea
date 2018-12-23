@@ -209,7 +209,7 @@ namespace Panacea.Windows
             }
         }
 
-        private string ConvertMacAddrNet(string macAddr)
+        public static string ConvertMacAddrNet(string macAddr)
         {
             string newMac = string.Empty;
             var counter = 1;
@@ -224,7 +224,7 @@ namespace Panacea.Windows
             return newMac.TrimEnd('.');
         }
 
-        private string ConvertMacAddrCol(string macAddr)
+        public static string ConvertMacAddrCol(string macAddr)
         {
             string newMac = string.Empty;
             var counter = 1;
@@ -239,7 +239,7 @@ namespace Panacea.Windows
             return newMac.TrimEnd(':');
         }
 
-        private string ConvertMacAddrDash(string macAddr)
+        public static string ConvertMacAddrDash(string macAddr)
         {
             string newMac = string.Empty;
             var counter = 1;

@@ -1,11 +1,16 @@
-﻿<Window x:Class="Panacea.Windows.UtilityBar"
+﻿<Window x:Name="winMain" x:Class="Panacea.Windows.UtilityBar"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Panacea.Windows"
-        mc:Ignorable="d" Height="28.564" MinHeight="0" Width="1104" MinWidth="0" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070"
-        Title="UtilityBar" Background="{x:Null}" ResizeMode="NoResize" Topmost="True">
+        xmlns:src="clr-namespace:Panacea.Classes"
+        mc:Ignorable="d" Height="28.564" MinHeight="28.5" Width="1104" MinWidth="1104" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070"
+        Title="UtilityBar" Background="{x:Null}" ResizeMode="NoResize" Topmost="True" MaxWidth="1500" MaxHeight="29" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Auto" SnapsToDevicePixels="True">
+    <Window.Resources>
+        <src:Minus15Converter x:Key="Minus15Converter"/>
+        <src:Minus204Converter x:Key="Minus204Converter"/>
+    </Window.Resources>
     <Grid x:Name="grdMain">
         <Polygon x:Name="plyLeftTrim" Points="29.6,1.1,1.25,28.15,29.5,28.5" Margin="0,0,1074,0" >
             <Polygon.Stroke>
@@ -53,9 +58,9 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <Label x:Name="lblLinkType" Content="" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,247,4" Foreground="#FF8D8D8D" FontSize="16" RenderTransformOrigin="0.5,0.5" Width="74"/>
-        <Label x:Name="lblLinkSpeed" Content="" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,111,4" Foreground="#FF8D8D8D" FontSize="16" Width="131"/>
-        <Button x:Name="btnExit" Click="btnExit_Click" Style="{StaticResource ButtonCurves}" Content="X" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="29" FontSize="16" Margin="30,1,0,0">
+        <Label x:Name="lblLinkType" Content="Wireless (2.4ax)" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,247,4" Foreground="#FF8D8D8D" FontSize="16" RenderTransformOrigin="0.5,0.5" Width="117"/>
+        <Label x:Name="lblLinkSpeed" Content="866.7 Mbps" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,111,4" Foreground="#FF8D8D8D" FontSize="16" Width="131"/>
+        <Button x:Name="btnExit" Click="btnExit_Click" Style="{DynamicResource ButtonCurves}" Content="X" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="29" FontSize="16" Margin="30,1,0,0">
             <Button.BorderBrush>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1B1B1B" Offset="0"/>
@@ -71,6 +76,23 @@
                 </LinearGradientBrush>
             </Button.Background>
         </Button>
-        <Label x:Name="lblWlanRSSI" Content="" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,30,4" Foreground="#FF8D8D8D" FontSize="16" Width="76"/>
+        <Label x:Name="lblWlanRSSI" Content="-127dBm" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,30,4" Foreground="#FF8D8D8D" FontSize="16" Width="76"/>
+        <Label x:Name="lblConnectivityStatus" Content="Internet" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,369,4" Foreground="#FF8D8D8D" FontSize="16" RenderTransformOrigin="0.5,0.5" Width="117" Background="{x:Null}"/>
+        <Button x:Name="btnMenuNetwork" Click="BtnMenuNetwork_Click" Style="{DynamicResource ButtonCurves}" Content="♆" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="29" FontSize="16" Margin="64,1,0,0">
+            <Button.BorderBrush>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
+                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
+                    <GradientStop Color="#FF232323" Offset="0.267"/>
+                    <GradientStop Color="#FF191919" Offset="0.84"/>
+                </LinearGradientBrush>
+            </Button.BorderBrush>
+            <Button.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF3C3C3C" Offset="0"/>
+                    <GradientStop Color="#FF212121" Offset="1"/>
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
     </Grid>
 </Window>
