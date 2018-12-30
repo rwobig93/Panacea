@@ -31,6 +31,7 @@ namespace Panacea.Windows
     {
         public UtilityBar()
         {
+            UtilityBar.UtilBarMain = this;
             this.Top = 2560;
             this.Left = 1920;
             InitializeComponent();
@@ -82,16 +83,25 @@ namespace Panacea.Windows
             DNSError
         }
 
-        private enum PopupMenu
+        public enum PopupMenu
         {
             Network,
-            Settings
+            Settings,
+            Audio,
+            Windows,
+            Emotes
+        }
+
+        public enum Emotes
+        {
+            Shrug
         }
 
         #endregion
 
         #region Globals
 
+        public static UtilityBar UtilBarMain;
         private WlanClient wClient;
         private List<NetworkInterface> netIfs;
         private List<NetworkInterface> _connectedEthIfs { get { return netIfs.FindAll(x => x.NetworkInterfaceType == NetworkInterfaceType.Ethernet && x.OperationalStatus == OperationalStatus.Up); } }
@@ -99,6 +109,7 @@ namespace Panacea.Windows
         private bool _connectedToWifi { get { return _connectedSSIDs.Count > 0 ? true : false; } }
         private bool _connectedToEth { get { return _connectedEthIfs.Count > 0 ? true : false; } }
         private bool _bssidChanged = true;
+        private bool _closing = false;
         private WlanClient.WlanInterface _currentWifiIf;
         private NetworkInterface _currentEthIf;
         private CurrentDisplay currentDisplay;
@@ -115,16 +126,11 @@ namespace Panacea.Windows
 
         #region Event Handlers
 
+        #region Menu
+
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                this.Close();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
+            CloseUtilBar();
         }
 
         private void BtnMenuNetwork_Click(object sender, RoutedEventArgs e)
@@ -132,9 +138,88 @@ namespace Panacea.Windows
             ToggleMenuPopup(PopupMenu.Network);
         }
 
+        private void BtnMenuWindows_Click(object sender, RoutedEventArgs e)
+        {
+            MoveProfileWindows();
+        }
+
+        private void BtnMenuWindows_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ToggleMenuPopup(PopupMenu.Windows);
+        }
+
+        private void BtnMenuWindows_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            ToggleMenuPopup(PopupMenu.Windows);
+        }
+
+        private void BtnMenuEmote_Click(object sender, RoutedEventArgs e)
+        {
+            CopyEmoteToClipbord();
+        }
+
+        private void BtnMenuEmote_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ToggleMenuPopup(PopupMenu.Emotes);
+        }
+
+        private void BtnMenuEmote_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            ToggleMenuPopup(PopupMenu.Emotes);
+        }
+
+        private void BtnMenuSettings_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleMenuPopup(PopupMenu.Settings);
+        }
+
+        private void BtnMenuAudio_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleMenuPopup(PopupMenu.Audio);
+        }
+
+        private void TxtNetMain_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                if (e.Key == Key.Enter)
+                {
+                    NetEnterAction();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void LblNetType_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void CirNetPing_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void CirNetNSLookup_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void CirNetTrace_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        #endregion
+
         #endregion
 
         #region Methods
+
+        #region General
 
         private void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO, [CallerMemberName] string caller = "")
         {
@@ -167,6 +252,26 @@ namespace Panacea.Windows
         {
             tLocationWatcher();
             tNetworkConnectivityMonitor();
+        }
+
+        private void CloseUtilBar()
+        {
+            if (_closing)
+                return;
+            try
+            {
+                _closing = true;
+                if (popupNetwork != null)
+                {
+                    popupNetwork.Close();
+                    popupNetwork = null;
+                }
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void tLocationWatcher()
@@ -219,11 +324,13 @@ namespace Panacea.Windows
                 if (currentDisplay != null)
                 {
                     var primeScreen = currentDisplay.Screens.Find(x => x.Primary == true);
-                    System.Drawing.Rectangle desiredLocation = new System.Drawing.Rectangle();
-                    //desiredLocation.X = primeScreen.WorkingArea.X + Convert.ToInt32(primeScreen.WorkingArea.Width * 0.10);
-                    desiredLocation.X = Convert.ToInt32((primeScreen.WorkingArea.Width / 2) - (grdMain.ActualWidth / 2));
-                    //desiredLocation.Width = primeScreen.WorkingArea.Width - Convert.ToInt32(primeScreen.WorkingArea.Width * 0.20);
-                    desiredLocation.Y = primeScreen.WorkingArea.Height - Convert.ToInt32(rectBackground.ActualHeight) + 1;
+                    System.Drawing.Rectangle desiredLocation = new System.Drawing.Rectangle
+                    {
+                        //desiredLocation.X = primeScreen.WorkingArea.X + Convert.ToInt32(primeScreen.WorkingArea.Width * 0.10);
+                        X = Convert.ToInt32((primeScreen.WorkingArea.Width / 2) - (grdMain.ActualWidth / 2)),
+                        //desiredLocation.Width = primeScreen.WorkingArea.Width - Convert.ToInt32(primeScreen.WorkingArea.Width * 0.20);
+                        Y = primeScreen.WorkingArea.Height - Convert.ToInt32(rectBackground.ActualHeight) + 1
+                    };
                     if ((this.Left != desiredLocation.X) && (this.Top != desiredLocation.Y))
                     {
                         this.Left = desiredLocation.X;
@@ -241,10 +348,256 @@ namespace Panacea.Windows
             }
         }
 
+        private void RefreshDisplaySizes()
+        {
+            try
+            {
+                if (currentDisplay == null)
+                {
+                    currentDisplay = new CurrentDisplay();
+                    uDebugLogAdd("Current display was null, created new current display");
+                }
+                currentDisplay.Screens.Clear();
+                foreach (var screen in System.Windows.Forms.Screen.AllScreens)
+                {
+                    currentDisplay.Screens.Add(screen);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void CopyToClipboard(string clip)
+        {
+            try
+            {
+                Clipboard.SetText(clip);
+            }
+            catch (Exception ex)
+            {
+                uDebugLogAdd($"Error occured when setting clipboard: {clip} | {ex.Message}", DebugType.FAILURE);
+            }
+        }
+
+        private void ToggleMenuPopup(PopupMenu menu)
+        {
+            try
+            {
+                switch (menu)
+                {
+                    case PopupMenu.Network:
+                        // Network Menu
+                        if (popupNetwork == null)
+                        {
+                            Rect dimensions = new Rect((this.Left + this.btnMenuNetwork.Margin.Left), (this.Top - 300), 0, 0);
+                            popupNetwork = new NetworkPopup(dimensions);
+                            popupNetwork.Show();
+                            uDebugLogAdd("Network Popup was null, Created new Network popup");
+                        }
+                        else if (popupNetwork != null)
+                        {
+                            if (popupNetwork.Opacity == 0)
+                                popupNetwork.PopupShow();
+                            else if (popupNetwork.Opacity == 1.0)
+                                popupNetwork.PopupHide();
+                        }
+                        break;
+                    case PopupMenu.Settings:
+                        throw new NotImplementedException();
+                    case PopupMenu.Audio:
+                        throw new NotImplementedException();
+                    case PopupMenu.Emotes:
+                        throw new NotImplementedException();
+                    case PopupMenu.Windows:
+                        throw new NotImplementedException();
+                }
+
+                // All other menus
+                HideSecondaryMenuPopups(menu);
+            }
+            catch (Exception ex)
+            {
+                uDebugLogAdd($"Popup Menu Toggle Failure: {ex.Message}", DebugType.FAILURE);
+            }
+        }
+
+        private void HideSecondaryMenuPopups(PopupMenu primary)
+        {
+            try
+            {
+                switch (primary)
+                {
+                    case PopupMenu.Network:
+                        throw new NotImplementedException();
+                    case PopupMenu.Settings:
+                        throw new NotImplementedException();
+                    case PopupMenu.Audio:
+                        throw new NotImplementedException();
+                    case PopupMenu.Emotes:
+                        throw new NotImplementedException();
+                    case PopupMenu.Windows:
+                        throw new NotImplementedException();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void CopyEmoteToClipbord()
+        {
+            try
+            {
+                string emoteString = string.Empty;
+                switch (Toolbox.settings.CurrentEmote)
+                {
+                    case Emotes.Shrug:
+                        emoteString = @"¯\_(ツ)_/¯";
+                        break;
+                }
+                CopyToClipboard(emoteString);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        #endregion
+
+        #region Network
+
+        private void NetEnterAction()
+        {
+            try
+            {
+                switch (Toolbox.settings.UtilBarEnterAction)
+                {
+                    case EnterAction.DNSLookup:
+                        NetNSLookupEntryAdd();
+                        break;
+                    case EnterAction.Ping:
+                        NetPingEntryAdd();
+                        break;
+                    case EnterAction.Trace:
+                        throw new NotImplementedException();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void NetPingEntryAdd()
+        {
+            try
+            {
+                var address = txtNetMain.Text;
+                if (VerifyIfMacAddress(address))
+                {
+                    uDebugLogAdd($"NetAddress value was found to be a Mac Address, opening Macpopup: {address}");
+                    OpenMacAddressWindow(address);
+                    return;
+                }
+                var sendNotif = false;
+                var addressNoSpace = Regex.Replace(address, @"\s+", "");
+                var entries = addressNoSpace.Split(',');
+                var validEntries = string.Empty;
+                foreach (var entry in entries)
+                {
+                    if (!VerifyInput(entry))
+                    {
+                        uDebugLogAdd($"Input entered was invalid, sending notification and canceling ping | Input: {entry}");
+                        sendNotif = true;
+                    }
+                    else
+                        validEntries = $"{validEntries}{entry},";
+                }
+                if (validEntries.Length > 0)
+                    validEntries = validEntries.Remove(validEntries.Length - 1);
+                if (sendNotif && validEntries == string.Empty)
+                {
+                    //ShowNotification("Address(es) entered incorrect or duplicate, try again");
+                    return;
+                }
+                else if (sendNotif && validEntries != string.Empty)
+                {
+                    //ShowNotification("Address(es) entered incorrect or duplicate, added non duplicate(s)");
+                    address = validEntries;
+                }
+                popupNetwork.AddPingEntry(address);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private bool VerifyInput(string input)
+        {
+            var isCorrect = true;
+            isCorrect = !string.IsNullOrWhiteSpace(input);
+            isCorrect = !popupNetwork.DoesPingSessionExist(input);
+            uDebugLogAdd($"Verified input, answer: {isCorrect} | input: {input}");
+            return isCorrect;
+        }
+
+        private void OpenMacAddressWindow(string v = null)
+        {
+            try
+            {
+                MacPopup macPopup = new MacPopup(v);
+                macPopup.Show();
+                uDebugLogAdd("Opened MacPopup window");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void NetNSLookupEntryAdd()
+        {
+            try
+            {
+                var address = txtNetMain.Text;
+                if (VerifyIfMacAddress(address))
+                {
+                    uDebugLogAdd($"NetAddress value was found to be a Mac Address, opening Macpopup: {address}");
+                    OpenMacAddressWindow(address);
+                    return;
+                }
+                if (!VerifyInput(address))
+                {
+                    uDebugLogAdd($"Input entered was invalid, sending notification and canceling dns lookup | Input: {address}");
+                    //ShowNotification("Address(es) entered incorrect or duplicate, try again");
+                    return;
+                }
+                if (popupNetwork.resolvingDNS)
+                {
+                    uDebugLogAdd($"resolvingDNS is {popupNetwork.resolvingDNS}, cancelling NsLookup");
+                    //ShowNotification("A DNS Lookup is in progress already");
+                }
+                else
+                    popupNetwork.AddNSLookupEntry(address);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         private void tNetworkConnectivityMonitor()
         {
             try
             {
+                tUpdateConnectedEthernet();
+                tUpdateConnectedSSIDs();
+                tUpdateNetworkConnectivity();
                 BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
                 worker.DoWork += (ws, we) =>
                 {
@@ -252,11 +605,8 @@ namespace Panacea.Windows
                     {
                         try
                         {
-                            UpdateConnectedEthernet();
-                            UpdateConnectedSSIDs();
-                            UpdateNetworkConnectivity();
                             worker.ReportProgress(1);
-                            Thread.Sleep(2000);
+                            Thread.Sleep(1000);
                         }
                         catch (Exception ex)
                         {
@@ -314,59 +664,25 @@ namespace Panacea.Windows
             }
         }
 
-        private void UpdateNetworkConnectivity()
+        private void tUpdateNetworkConnectivity()
         {
-            try
+            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+            worker.DoWork += (sender, e) =>
             {
                 Ping p = new Ping();
-                int successCounter = 0;
-                int failureCounter = 0;
+                while (true)
+                {
+                    try
+                    {
+                        int successCounter = 0;
+                        int failureCounter = 0;
 
-                /// Internet connectivity verification
-                // Google dns A
-                try
-                {
-                    var googleA = p.Send("8.8.8.8");
-                    if (googleA.Status == IPStatus.Success)
-                    {
-                        successCounter++;
-                        currentConnectivityStatus = ConnectivityStatus.Internet;
-                    }
-                    else
-                        failureCounter++;
-                }
-                catch (Exception)
-                {
-                    failureCounter++;
-                }
-                // Google dns B
-                if (successCounter <= 0)
-                {
-                    try
-                    {
-                        var googleB = p.Send("8.8.4.4");
-                        if (googleB.Status == IPStatus.Success)
+                        /// Internet connectivity verification
+                        // Google dns A
+                        try
                         {
-                            successCounter++;
-                            currentConnectivityStatus = ConnectivityStatus.Internet;
-                        }
-                        else
-                            failureCounter++;
-                    }
-                    catch (Exception)
-                    {
-                        failureCounter++;
-                    }
-                }
-                // Cloudflare dns 1
-                if (successCounter <= 0)
-                {
-                    try
-                    {
-                        var cloudFlare = p.Send("1.1.1.1");
-                        if (cloudFlare.RoundtripTime > 5)
-                        {
-                            if (cloudFlare.Status == IPStatus.Success)
+                            var googleA = p.Send("8.8.8.8", 100);
+                            if (googleA.Status == IPStatus.Success)
                             {
                                 successCounter++;
                                 currentConnectivityStatus = ConnectivityStatus.Internet;
@@ -374,147 +690,215 @@ namespace Panacea.Windows
                             else
                                 failureCounter++;
                         }
-                    }
-                    catch (Exception) { }
-                }
-                // Open DNS/Cisco Umbrella 1
-                if (successCounter <= 0)
-                {
-                    try
-                    {
-                        var oDNS = p.Send("208.67.222.222");
-                        if (oDNS.Status == IPStatus.Success)
+                        catch (Exception)
                         {
-                            successCounter++;
-                            currentConnectivityStatus = ConnectivityStatus.Internet;
-                        }
-                        else
                             failureCounter++;
-                    }
-                    catch (Exception) { }
-                }
-                // Telstra 1
-                if (successCounter <= 0)
-                {
-                    try
-                    {
-                        var telstra = p.Send("139.130.4.5");
-                        if (telstra.Status == IPStatus.Success)
-                        {
-                            successCounter++;
-                            currentConnectivityStatus = ConnectivityStatus.Internet;
                         }
-                        else
-                            failureCounter++;
-                    }
-                    catch (Exception) { }
-                }
-
-                /// Local connectivity verification
-                if (successCounter <= 0)
-                {
-                    var defGateway = string.Empty;
-                    if (_connectedToWifi)
-                    {
-                        try { defGateway = _currentWifiIf.NetworkInterface.GetIPProperties().GatewayAddresses[0].Address.ToString(); }
-                        catch (Exception) { }
-                    }
-                    else if (_connectedToEth)
-                    {
-                        try { defGateway = _currentEthIf.GetIPProperties().GatewayAddresses[0].Address.ToString(); }
-                        catch (Exception) { }
-                    }
-
-                    if (String.IsNullOrWhiteSpace(defGateway))
-                    {
-                        failureCounter++;
-                        currentConnectivityStatus = ConnectivityStatus.None;
-                    }
-                    else
-                    {
-                        try
+                        // Google dns B
+                        if (successCounter <= 0)
                         {
-                            var localGatewayRep = p.Send(defGateway);
-                            if (localGatewayRep.Status == IPStatus.Success)
+                            try
                             {
-                                successCounter++;
-                                currentConnectivityStatus = ConnectivityStatus.Local;
+                                var googleB = p.Send("8.8.4.4", 100);
+                                if (googleB.Status == IPStatus.Success)
+                                {
+                                    successCounter++;
+                                    currentConnectivityStatus = ConnectivityStatus.Internet;
+                                }
+                                else
+                                    failureCounter++;
                             }
-                            else
+                            catch (Exception)
+                            {
+                                failureCounter++;
+                            }
+                        }
+                        // Cloudflare dns 1
+                        if (successCounter <= 0)
+                        {
+                            try
+                            {
+                                var cloudFlare = p.Send("1.1.1.1", 100);
+                                if (cloudFlare.RoundtripTime > 5)
+                                {
+                                    if (cloudFlare.Status == IPStatus.Success)
+                                    {
+                                        successCounter++;
+                                        currentConnectivityStatus = ConnectivityStatus.Internet;
+                                    }
+                                    else
+                                        failureCounter++;
+                                }
+                            }
+                            catch (Exception) { }
+                        }
+                        // Open DNS/Cisco Umbrella 1
+                        if (successCounter <= 0)
+                        {
+                            try
+                            {
+                                var oDNS = p.Send("208.67.222.222", 100);
+                                if (oDNS.Status == IPStatus.Success)
+                                {
+                                    successCounter++;
+                                    currentConnectivityStatus = ConnectivityStatus.Internet;
+                                }
+                                else
+                                    failureCounter++;
+                            }
+                            catch (Exception) { }
+                        }
+                        // Telstra 1
+                        if (successCounter <= 0)
+                        {
+                            try
+                            {
+                                var telstra = p.Send("139.130.4.5", 100);
+                                if (telstra.Status == IPStatus.Success)
+                                {
+                                    successCounter++;
+                                    currentConnectivityStatus = ConnectivityStatus.Internet;
+                                }
+                                else
+                                    failureCounter++;
+                            }
+                            catch (Exception) { }
+                        }
+
+                        /// Local connectivity verification
+                        if (successCounter <= 0)
+                        {
+                            var defGateway = string.Empty;
+                            if (_connectedToWifi)
+                            {
+                                try { defGateway = _currentWifiIf.NetworkInterface.GetIPProperties().GatewayAddresses[0].Address.ToString(); }
+                                catch (Exception) { }
+                            }
+                            else if (_connectedToEth)
+                            {
+                                try { defGateway = _currentEthIf.GetIPProperties().GatewayAddresses[0].Address.ToString(); }
+                                catch (Exception) { }
+                            }
+
+                            if (String.IsNullOrWhiteSpace(defGateway))
                             {
                                 failureCounter++;
                                 currentConnectivityStatus = ConnectivityStatus.None;
                             }
+                            else
+                            {
+                                try
+                                {
+                                    var localGatewayRep = p.Send(defGateway, 50);
+                                    if (localGatewayRep.Status == IPStatus.Success)
+                                    {
+                                        successCounter++;
+                                        currentConnectivityStatus = ConnectivityStatus.Local;
+                                    }
+                                    else
+                                    {
+                                        failureCounter++;
+                                        currentConnectivityStatus = ConnectivityStatus.None;
+                                    }
+                                }
+                                catch (Exception)
+                                {
+                                    failureCounter++;
+                                    currentConnectivityStatus = ConnectivityStatus.None;
+                                }
+                            }
                         }
-                        catch (Exception)
+
+                        /// Log findings
+                        uDebugLogAdd($"Success: {successCounter} | Failure: {failureCounter} | CurrConn: {currentConnectivityStatus.ToString()}");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                    Thread.Sleep(1000);
+                }
+            };
+            worker.RunWorkerAsync();
+        }
+
+        private void tUpdateConnectedEthernet()
+        {
+            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+            worker.DoWork += (sender, e) =>
+            {
+                while (true)
+                {
+                    try
+                    {
+                        if (netIfs == null)
                         {
-                            failureCounter++;
-                            currentConnectivityStatus = ConnectivityStatus.None;
+                            netIfs = new List<NetworkInterface>();
+                            NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
+                            foreach (var adapter in interfaces.ToList().FindAll(x => x.NetworkInterfaceType == NetworkInterfaceType.Ethernet || x.NetworkInterfaceType == NetworkInterfaceType.GigabitEthernet || x.NetworkInterfaceType == NetworkInterfaceType.FastEthernetFx || x.NetworkInterfaceType == NetworkInterfaceType.FastEthernetT || x.NetworkInterfaceType == NetworkInterfaceType.Ethernet3Megabit))
+                            {
+                                netIfs.Add(adapter);
+                            }
+                        }
+                        if (_connectedEthIfs.Count > 0)
+                            _currentEthIf = _connectedEthIfs[0];
+                        uDebugLogAdd($"Connected eth ifs found: {_connectedEthIfs.Count}");
+                        if (_currentEthIf != null)
+                            uDebugLogAdd($"Primary connected eth if: {_currentEthIf.Name}");
+                    }
+                    catch (Win32Exception) { }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                    Thread.Sleep(10000);
+                }
+            };
+            worker.RunWorkerAsync();
+        }
+
+        private void tUpdateConnectedSSIDs()
+        {
+            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+            worker.DoWork += (sender, e) =>
+            {
+                while (true)
+                {
+                    try
+                    {
+                        if (wClient == null)
+                        {
+                            wClient = new WlanClient();
+                            uDebugLogAdd("WlanClient was null, initialized a new one");
+                        }
+                        _connectedSSIDs.Clear();
+                        foreach (var wlanIf in wClient.Interfaces)
+                        {
+                            Wlan.Dot11Ssid ssid = wlanIf.CurrentConnection.wlanAssociationAttributes.dot11Ssid;
+                            _connectedSSIDs.Add(new String(Encoding.ASCII.GetChars(ssid.SSID, 0, (int)ssid.SSIDLength)));
+                            if (_currentWifiIf != null)
+                                if (_currentWifiIf.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString() != wlanIf.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString())
+                                    _bssidChanged = true;
+                            _currentWifiIf = wlanIf;
+                        }
+                        if (_bssidChanged)
+                        {
+                            uDebugLogAdd($"Current Connected SSID's: {_connectedSSIDs.Count}");
+                            foreach (var ssid in _connectedSSIDs)
+                            {
+                                uDebugLogAdd($"Connected SSID: {ssid}");
+                            }
                         }
                     }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void UpdateConnectedEthernet()
-        {
-            try
-            {
-                if (netIfs == null)
-                {
-                    netIfs = new List<NetworkInterface>();
-                    NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
-                    foreach (var adapter in interfaces)
+                    catch (Win32Exception) { }
+                    catch (Exception ex)
                     {
-                        netIfs.Add(adapter);
+                        LogException(ex);
                     }
+                    Thread.Sleep(3000);
                 }
-                if (_connectedEthIfs.Count > 0)
-                    _currentEthIf = _connectedEthIfs[0];
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void UpdateConnectedSSIDs()
-        {
-            try
-            {
-                if (wClient == null)
-                {
-                    wClient = new WlanClient();
-                    uDebugLogAdd("WlanClient was null, initialized a new one");
-                }
-                _connectedSSIDs.Clear();
-                foreach (var wlanIf in wClient.Interfaces)
-                {
-                    Wlan.Dot11Ssid ssid = wlanIf.CurrentConnection.wlanAssociationAttributes.dot11Ssid;
-                    _connectedSSIDs.Add(new String(Encoding.ASCII.GetChars(ssid.SSID, 0, (int)ssid.SSIDLength)));
-                    if (_currentWifiIf != null)
-                        if (_currentWifiIf.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString() != wlanIf.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString())
-                            _bssidChanged = true;
-                    _currentWifiIf = wlanIf;
-                }
-                if (_bssidChanged)
-                {
-                    uDebugLogAdd($"Current Connected SSID's: {_connectedSSIDs.Count}");
-                    foreach (var ssid in _connectedSSIDs)
-                    {
-                        uDebugLogAdd($"Connected SSID: {ssid}");
-                    }
-                }
-            }
-            catch (Win32Exception) { }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
+            };
+            worker.RunWorkerAsync();
         }
 
         private void UpdateNetworkLinkUI()
@@ -856,73 +1240,40 @@ namespace Panacea.Windows
             return dblSpeed;
         }
 
-        private void RefreshDisplaySizes()
+        private bool VerifyIfMacAddress(string content)
         {
-            try
+            bool isMac = false;
+            if (content.Length == 12 || content.Length == 14 || content.Length == 17)
             {
-                if (currentDisplay == null)
+                if (content.Contains('.') && content.Length == 14)
                 {
-                    currentDisplay = new CurrentDisplay();
-                    uDebugLogAdd("Current display was null, created new current display");
+                    if (content.ToArray().ToList().FindAll(x => x == '.').Count == 2)
+                    {
+                        isMac = true;
+                    }
                 }
-                currentDisplay.Screens.Clear();
-                foreach (var screen in System.Windows.Forms.Screen.AllScreens)
+                else if ((content.Contains('-') || content.Contains(':')) && content.Length == 17)
                 {
-                    currentDisplay.Screens.Add(screen);
+                    isMac = true;
                 }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void CopyToClipboard(string clip, string optionalMessage = null)
-        {
-            try
-            {
-                Clipboard.SetText(clip);
-            }
-            catch (Exception ex)
-            {
-                uDebugLogAdd($"Error occured when setting clipboard: {clip} | {ex.Message}", DebugType.FAILURE);
-            }
-        }
-
-        private void ToggleMenuPopup(PopupMenu menu)
-        {
-            try
-            {
-                switch (menu)
+                else if ((!content.Contains('.')) && (!content.Contains('-')) && (!content.Contains(':')))
                 {
-                    case PopupMenu.Network:
-                        // Network Menu
-                        if (popupNetwork == null)
-                        {
-                            popupNetwork = new NetworkPopup((this.Top - 300), (this.Left + this.btnMenuNetwork.Margin.Left));
-                            popupNetwork.Show();
-                            uDebugLogAdd("Network Popup was null, Created new Network popup");
-                        }
-                        else if (popupNetwork != null)
-                        {
-                            if (popupNetwork.Opacity == 0)
-                                popupNetwork.PopupShow();
-                            else if (popupNetwork.Opacity == 1.0)
-                                popupNetwork.PopupHide();
-                        }
-
-                        // All other menus
-
-                        break;
-                    case PopupMenu.Settings:
-                        break;
+                    isMac = true;
                 }
             }
-            catch (Exception ex)
-            {
-                uDebugLogAdd($"Popup Menu Toggle Failure: {ex.Message}", DebugType.FAILURE);
-            }
+            return isMac;
         }
+
+        #endregion
+
+        #region Windows
+
+        private void MoveProfileWindows()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
 
         #endregion
     }

@@ -3519,10 +3519,17 @@ namespace Panacea
             };
             worker.ProgressChanged += (sender2, e2) =>
             {
-                if (e2.ProgressPercentage == 1)
+                try
                 {
-                    uDebugLogAdd($"Worker progress is {e2.ProgressPercentage}, adding ResolvedEntry | IP({resolvedEntry.IPAddress}) | HN({resolvedEntry.HostName})");
-                    lbResolvedAddresses.Items.Add(resolvedEntry);
+                    if (e2.ProgressPercentage == 1)
+                    {
+                        uDebugLogAdd($"Worker progress is {e2.ProgressPercentage}, adding ResolvedEntry | IP({resolvedEntry.IPAddress}) | HN({resolvedEntry.HostName})");
+                        lbResolvedAddresses.Items.Add(resolvedEntry);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex);
                 }
             };
             worker.RunWorkerAsync();
@@ -3543,20 +3550,27 @@ namespace Panacea
             };
             worker.ProgressChanged += (pc, pe) =>
             {
-                if (pe.ProgressPercentage == 1)
+                try
                 {
-                    if (lblNetResolved.Text == "NSlookup:")
-                        lblNetResolved.Text = ".";
-                    else if (lblNetResolved.Text != ".....")
-                        lblNetResolved.Text = $"{lblNetResolved.Text}.";
-                    else
-                        lblNetResolved.Text = ".";
+                    if (pe.ProgressPercentage == 1)
+                    {
+                        if (lblNetResolved.Text == "NSlookup:")
+                            lblNetResolved.Text = ".";
+                        else if (lblNetResolved.Text != ".....")
+                            lblNetResolved.Text = $"{lblNetResolved.Text}.";
+                        else
+                            lblNetResolved.Text = ".";
+                    }
+                    if (pe.ProgressPercentage == 2)
+                    {
+                        lblNetResolved.Text = "NSlookup:";
+                        resolvedEntries = 0;
+                        resolvingDNS = false;
+                    }
                 }
-                if (pe.ProgressPercentage == 2)
+                catch (Exception ex)
                 {
-                    lblNetResolved.Text = "NSlookup:";
-                    resolvedEntries = 0;
-                    resolvingDNS = false;
+                    LogException(ex);
                 }
             };
             worker.RunWorkerAsync();

@@ -19,10 +19,19 @@ namespace Panacea.Classes
         public static Thickness PingLBasicPIn = new Thickness(76, 29, 10, 53);
         public static Color enabledColor = Color.FromArgb(100, 0, 129, 24);
         public static Color disabledColor = Color.FromArgb(100, 160, 0, 0);
-        public static Color buttonBorderSelectedColor = Color.FromArgb(100, 44, 166, 8);
         public static Brush WinEnableButtonColorOn = new SolidColorBrush(enabledColor);
         public static Brush WinEnableButtonColorOff = new SolidColorBrush(disabledColor);
-        public static Brush ButtonBorderSelected = new SolidColorBrush(buttonBorderSelectedColor);
+        public static Brush ButtonBorderSelected = new LinearGradientBrush()
+        {
+            GradientStops = new GradientStopCollection()
+            {
+                new GradientStop() { Color = ((Color)ColorConverter.ConvertFromString("#FF0BC535")) },
+                new GradientStop() { Color = ((Color)ColorConverter.ConvertFromString("#FF303030")), Offset = 0.497 },
+                new GradientStop() { Color = ((Color)ColorConverter.ConvertFromString("#FF0BC535")), Offset = 1 }
+            },
+            EndPoint = new Point(0.5, 1),
+            StartPoint = new Point(0.5, 0)
+        };
         public static Brush BaseBorderBrush = new LinearGradientBrush()
         {
             GradientStops = new GradientStopCollection()

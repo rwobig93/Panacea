@@ -14,141 +14,6 @@
         <Style x:Key="ButtonControlFore">
             <Setter Property="Control.Foreground" Value="#FF8D8D8D" />
         </Style>
-        <Style x:Name="BaseTextbox" TargetType="{x:Type TextBox}">
-            <Setter Property="Foreground" Value="#FF8D8D8D" />
-            <Setter Property="Background">
-                <Setter.Value>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
-                        <GradientStop Color="Black" Offset="1"/>
-                    </LinearGradientBrush>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="BorderBrush">
-                <Setter.Value>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="#FF4B4A4A"/>
-                        <GradientStop Color="#FF303030" Offset="0.497"/>
-                        <GradientStop Color="#FF4B4A4A" Offset="1"/>
-                    </LinearGradientBrush>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type TextBoxBase}">
-                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
-                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" TargetName="border" Value="0.56"/>
-                            </Trigger>
-                            <Trigger Property="IsFocused" Value="True">
-                                <Setter Property="Foreground" Value="#FF8D8D8D" />
-                                <Setter Property="Background">
-                                    <Setter.Value>
-                                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                            <GradientStop Color="#FF1C1C1C" Offset="0"/>
-                                            <GradientStop Color="Black" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Setter.Value>
-                                </Setter>
-                                <Setter Property="BorderBrush">
-                                    <Setter.Value>
-                                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                            <GradientStop Color="#FF4B4A4A"/>
-                                            <GradientStop Color="#FF303030" Offset="0.497"/>
-                                            <GradientStop Color="#FF4B4A4A" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background">
-                                    <Setter.Value>
-                                        <LinearGradientBrush EndPoint="0.5,0" StartPoint="0.5,1">
-                                            <GradientStop Color="Black" Offset="0"/>
-                                            <GradientStop Color="#FF1C1C1C" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Setter.Value>
-                                </Setter>
-                                <Setter Property="BorderBrush">
-                                    <Setter.Value>
-                                        <LinearGradientBrush EndPoint="0.5,0" StartPoint="0.5,1">
-                                            <GradientStop Color="#FF303030"/>
-                                            <GradientStop Color="#FF4B4A4A" Offset="0.497"/>
-                                            <GradientStop Color="#FF303030" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter Property="Foreground" Value="#FF8D8D8D" />
-                                <Setter Property="Background">
-                                    <Setter.Value>
-                                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                            <GradientStop Color="#FF1C1C1C" Offset="0"/>
-                                            <GradientStop Color="Black" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Setter.Value>
-                                </Setter>
-                                <Setter Property="BorderBrush">
-                                    <Setter.Value>
-                                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                            <GradientStop Color="#FF4B4A4A"/>
-                                            <GradientStop Color="#FF303030" Offset="0.497"/>
-                                            <GradientStop Color="#FF4B4A4A" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsFocused" Value="True">
-                    <Setter Property="Foreground" Value="#FF8D8D8D" />
-                    <Setter Property="Background">
-                        <Setter.Value>
-                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                <GradientStop Color="#FF1C1C1C" Offset="0"/>
-                                <GradientStop Color="Black" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Setter.Value>
-                    </Setter>
-                    <Setter Property="BorderBrush">
-                        <Setter.Value>
-                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                <GradientStop Color="#FF4B4A4A"/>
-                                <GradientStop Color="#FF303030" Offset="0.497"/>
-                                <GradientStop Color="#FF4B4A4A" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background">
-                        <Setter.Value>
-                            <LinearGradientBrush EndPoint="0.5,0" StartPoint="0.5,1">
-                                <GradientStop Color="Black" Offset="0"/>
-                                <GradientStop Color="#FF1C1C1C" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Setter.Value>
-                    </Setter>
-                    <Setter Property="Foreground" Value="#FF4D4D4D"/>
-                    <Setter Property="BorderBrush">
-                        <Setter.Value>
-                            <LinearGradientBrush EndPoint="0.5,0" StartPoint="0.5,1">
-                                <GradientStop Color="#FF303030"/>
-                                <GradientStop Color="#FF4B4A4A" Offset="0.497"/>
-                                <GradientStop Color="#FF303030" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus204Converter x:Key="Minus204Converter"/>
     </Window.Resources>
@@ -202,23 +67,23 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Label x:Name="lblAudioDevices" HorizontalContentAlignment="Center" Content="Windows Playback Devices" VerticalAlignment="Top" Foreground="#FF8D8D8D" Margin="10,2,85,0"/>
-            <Button x:Name="btnRefreshAudio" Style="{StaticResource ButtonCurves}" Click="btnRefreshAudio_Click" Content="Refresh" HorizontalAlignment="Right" VerticalAlignment="Top" Width="70" Foreground="#FF8D8D8D" Margin="0,4,10,0" Height="24">
+            <Label x:Name="lblAudioDevices" HorizontalContentAlignment="Center" Content="Windows Playback Devices" VerticalAlignment="Top" Foreground="#FF8D8D8D" Margin="10,2,10,0"/>
+            <Button x:Name="btnRefreshAudio" Style="{StaticResource BaseButton}" Click="btnRefreshAudio_Click" Content="Refresh" HorizontalAlignment="Right" VerticalAlignment="Top" Width="70" Foreground="#FF8D8D8D" Margin="0,4,10,0" Height="24">
             </Button>
         </Grid>
         <StackPanel x:Name="pnlMenu" HorizontalAlignment="Left" Margin="2,30,0,20" Width="72" Panel.ZIndex="90" Background="#02000000">
-            <Button x:Name="btnMenuAudio" Style="{StaticResource ButtonCurves}" Content="Audio" Click="btnMenuAudio_Click" Margin="-1,0,1,0"/>
-            <Button x:Name="btnMenuWindows" Style="{StaticResource ButtonCurves}" Content="Windows" Click="btnMenuWindows_Click" Margin="-1,0,1,0"/>
-            <Button x:Name="btnMenuNetwork" Style="{StaticResource ButtonCurves}" Content="Network" Click="btnMenuNetwork_Click" Margin="-1,0,1,0"/>
-            <Button x:Name="btnMenuSettings" Style="{StaticResource ButtonCurves}" Content="Settings" Click="btnMenuSettings_Click" Margin="-1,0,1,0"/>
-            <Button x:Name="BtnUtilBar" Style="{StaticResource ButtonCurves}" Content="Util Bar" Click="BtnUtilBar_Click" Margin="-1,0,1,0" Visibility="Visible"/>
-            <Button x:Name="btnShrug" Style="{StaticResource ButtonCurves}" Content="¯\_(ツ)_/¯" Click="btnShrug_Click" Margin="-1,0,1,0"/>
-            <Button x:Name="btnMenuUpdate" Style="{StaticResource ButtonCurves}" Content="Update" Click="btnMenuUpdate_Click" Margin="-1,0,1,0" IsEnabled="False" Visibility="Hidden"/>
-            <Button x:Name="BtnTest" Style="{StaticResource ButtonCurves}" Content="Test" Click="BtnTest_Click" Margin="-1,0,1,0" Visibility="Hidden"/>
+            <Button x:Name="btnMenuAudio" Style="{StaticResource BaseButton}" Content="Audio" Click="btnMenuAudio_Click" Margin="-1,0,1,0"/>
+            <Button x:Name="btnMenuWindows" Style="{StaticResource BaseButton}" Content="Windows" Click="btnMenuWindows_Click" Margin="-1,0,1,0"/>
+            <Button x:Name="btnMenuNetwork" Style="{StaticResource BaseButton}" Content="Network" Click="btnMenuNetwork_Click" Margin="-1,0,1,0"/>
+            <Button x:Name="btnMenuSettings" Style="{StaticResource BaseButton}" Content="Settings" Click="btnMenuSettings_Click" Margin="-1,0,1,0"/>
+            <Button x:Name="BtnUtilBar" Style="{StaticResource BaseButton}" Content="Util Bar" Click="BtnUtilBar_Click" Margin="-1,0,1,0" Visibility="Visible"/>
+            <Button x:Name="btnShrug" Style="{StaticResource BaseButton}" Content="¯\_(ツ)_/¯" Click="btnShrug_Click" Margin="-1,0,1,0"/>
+            <Button x:Name="btnMenuUpdate" Style="{StaticResource BaseButton}" Content="Update" Click="btnMenuUpdate_Click" Margin="-1,0,1,0" IsEnabled="False" Visibility="Hidden"/>
+            <Button x:Name="BtnTest" Style="{StaticResource BaseButton}" Content="Test" Click="BtnTest_Click" Margin="-1,0,1,0" Visibility="Hidden"/>
         </StackPanel>
         <Grid x:Name="grdWindows" Margin="2,-340,-1,391" Background="#02000000">
-            <Button x:Name="btnGetPosition" Style="{StaticResource ButtonCurves}" Content="Update Location" HorizontalAlignment="Right" Click="btnGetPosition_Click" Margin="0,42,19,0" VerticalAlignment="Top" Width="100"/>
-            <Button x:Name="btnMoveWindow" Style="{StaticResource ButtonCurves}" Content="Move" HorizontalAlignment="Right" Click="btnMoveWindow_Click" Margin="0,68,72,0" VerticalAlignment="Top" Width="47"/>
+            <Button x:Name="btnGetPosition" Style="{StaticResource BaseButton}" Content="Update Location" HorizontalAlignment="Right" Click="btnGetPosition_Click" Margin="0,42,19,0" VerticalAlignment="Top" Width="100"/>
+            <Button x:Name="btnMoveWindow" Style="{StaticResource BaseButton}" Content="Move" HorizontalAlignment="Right" Click="btnMoveWindow_Click" Margin="0,68,72,0" VerticalAlignment="Top" Width="47"/>
             <ListBox x:Name="lbSavedWindows" Margin="10,7,139,10">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -237,8 +102,8 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Button x:Name="BtnDeleteWindowItem" Style="{StaticResource ButtonCurves}" Content="Delete" Click="BtnDeleteWindowItem_Click" HorizontalAlignment="Right" Margin="0,68,19,0" VerticalAlignment="Top" Width="47"/>
-            <Button x:Name="btnWinTarget" Style="{StaticResource ButtonCurves}" Click="btnWinTarget_Click" Content="Add New" HorizontalAlignment="Right" Margin="0,7,19,0" VerticalAlignment="Top" Width="100"/>
+            <Button x:Name="BtnDeleteWindowItem" Style="{StaticResource BaseButton}" Content="Delete" Click="BtnDeleteWindowItem_Click" HorizontalAlignment="Right" Margin="0,68,19,0" VerticalAlignment="Top" Width="47"/>
+            <Button x:Name="btnWinTarget" Style="{StaticResource BaseButton}" Click="btnWinTarget_Click" Content="Add New" HorizontalAlignment="Right" Margin="0,7,19,0" VerticalAlignment="Top" Width="100"/>
             <Rectangle x:Name="rectTarget" MouseDown="rectTarget_MouseDown" HorizontalAlignment="Left" Height="20" Margin="400,7,0,0" StrokeThickness="0.5" VerticalAlignment="Top" Width="20" Visibility="Hidden">
                 <Rectangle.Fill>
                     <ImageBrush ImageSource="/Panacea;component/Dependencies/target_small.png"/>
@@ -266,12 +131,20 @@
             </Rectangle>
             <Rectangle x:Name="rectWinSelArea" HorizontalAlignment="Right" Height="90" Margin="0,36,14,0" StrokeThickness="0.5" VerticalAlignment="Top" Width="110" Stroke="{StaticResource BaseBorderBrush}" d:IsLocked="True"/>
             <TextBlock x:Name="lblWinSelectedProcess" HorizontalAlignment="Right" Padding="0" Margin="0,116,19,0" TextWrapping="Wrap" Text="Selected Process" VerticalAlignment="Top" Height="14" Foreground="#FF8D8D8D" Width="95" TextAlignment="Center"/>
-            <Button x:Name="btnWinProfile1" Click="btnWinProfile1_Click" Content="Profile 1" Padding="0" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,140,72,0" VerticalAlignment="Top" Width="54"/>
+            <Button x:Name="btnWinProfile1" Click="btnWinProfile1_Click" Content="Profile 1" Padding="0" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,140,72,0" VerticalAlignment="Top" Width="54">
+                <Button.BorderBrush>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF4B4A4A"/>
+                        <GradientStop Color="#FF303030" Offset="0.497"/>
+                        <GradientStop Color="#FF4A4B4A" Offset="1"/>
+                    </LinearGradientBrush>
+                </Button.BorderBrush>
+            </Button>
             <Button x:Name="btnWinProfile2" Click="btnWinProfile2_Click" Content="Profile 2" Padding="0" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,140,12,0" VerticalAlignment="Top" Width="54"/>
             <Button x:Name="btnWinProfile3" Click="btnWinProfile3_Click" Content="Profile 3" Padding="0" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,167,72,0" VerticalAlignment="Top" Width="54"/>
             <Button x:Name="btnWinProfile4" Click="btnWinProfile4_Click" Content="Profile 4" Padding="0" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,167,12,0" VerticalAlignment="Top" Width="54"/>
-            <Button x:Name="btnWinUpdateManual" Style="{StaticResource ButtonCurves}" Click="btnWinUpdateManual_Click" Content="Edit" HorizontalAlignment="Right" Margin="0,94,72,0" VerticalAlignment="Top" Width="47" IsEnabled="False"/>
-            <Button x:Name="btnWinRefresh" Style="{StaticResource ButtonCurves}" Click="btnWinRefresh_Click" Content="Refresh" HorizontalAlignment="Right" Margin="0,94,19,0" VerticalAlignment="Top" Width="48"/>
+            <Button x:Name="btnWinUpdateManual" Style="{StaticResource BaseButton}" Click="btnWinUpdateManual_Click" Content="Edit" HorizontalAlignment="Right" Margin="0,94,72,0" VerticalAlignment="Top" Width="47" IsEnabled="False"/>
+            <Button x:Name="btnWinRefresh" Style="{StaticResource BaseButton}" Click="btnWinRefresh_Click" Content="Refresh" HorizontalAlignment="Right" Margin="0,94,19,0" VerticalAlignment="Top" Width="48"/>
         </Grid>
         <Grid x:Name="grdNetwork" Margin="689,31,-615,19" Background="#02000000">
             <ListBox x:Name="lbPingSessions" Margin="10,29,10,79">
@@ -317,7 +190,7 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <TextBox x:Name="txtNetAddress" Margin="222,2,51,0" KeyDown="txtNetAddress_KeyDown" Style="{StaticResource TextboxNoReaction}" TextWrapping="Wrap" Text="8.8.8.8" VerticalAlignment="Top"  Height="22" CaretBrush="#FFD6D6D6" SelectionBrush="WhiteSmoke">
+            <TextBox x:Name="txtNetAddress" Margin="222,2,51,0" KeyDown="txtNetAddress_KeyDown" Style="{StaticResource TextboxNoReaction}" TextWrapping="Wrap" Text="8.8.8.8" VerticalAlignment="Top"  Height="22">
                 <i:Interaction.Behaviors>
                     <src:DoubleClickBehavior/>
                 </i:Interaction.Behaviors>
@@ -366,7 +239,7 @@
                 <Rectangle x:Name="rectSettingsNetwork" HorizontalAlignment="Left" Height="70" Margin="10,89,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="392"/>
                 <Rectangle x:Name="rectSettingsNetTitle" HorizontalAlignment="Left" Height="16" Margin="10,89,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="53"/>
                 <TextBlock x:Name="txtSettingsNetLabel" HorizontalAlignment="Left" Margin="14,88,0,0" TextWrapping="Wrap" Text="Network" VerticalAlignment="Top" Foreground="#FF1DD8D0"/>
-                <TextBox x:Name="txtSetNetPingCount" KeyDown="txtSetNetPingCount_KeyDown" HorizontalAlignment="Left" Height="17" Margin="124,115,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="34"/>
+                <TextBox x:Name="txtSetNetPingCount" Style="{StaticResource TextboxNoReaction}" KeyDown="txtSetNetPingCount_KeyDown" HorizontalAlignment="Left" Height="17" Margin="124,115,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="34"/>
                 <ComboBox x:Name="cmbxSetNetDTFormat" SelectionChanged="cmbxSetNetDTFormat_SelectionChanged" HorizontalAlignment="Left" Style="{StaticResource {x:Type ComboBox}}" Margin="273,115,0,0" VerticalAlignment="Top" Width="120" Height="9" Foreground="#FF8D8D8D"/>
                 <TextBlock x:Name="lblSetNetPingCount" HorizontalAlignment="Left" Margin="20,114,0,0" TextWrapping="Wrap" Text="Visual Ping Length:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
                 <TextBlock x:Name="lblSetNetPingDTF" HorizontalAlignment="Left" Margin="172,114,0,0" TextWrapping="Wrap" Text="Ping Time Format:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
@@ -380,24 +253,24 @@
                 <Rectangle x:Name="rectSettingsGenTitle" HorizontalAlignment="Left" Height="16" Margin="10,10,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="50"/>
                 <TextBlock x:Name="lblSettingsBeta" HorizontalAlignment="Left" Margin="65,13,0,0" TextWrapping="Wrap" Text="Upgrade to Beta/Test Clients:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="155" Height="16"/>
                 <CheckBox x:Name="chkSettingsBeta" Click="chkSettingsBeta_Click" Content="" HorizontalAlignment="Left" Margin="220,15,0,0" VerticalAlignment="Top" Width="18" Background="#FF767575" BorderBrush="#FF918C8C" Foreground="{x:Null}" Height="17"/>
-                <Button x:Name="btnDefaultConfig" Style="{StaticResource ButtonCurves}" Click="btnDefaultConfig_Click" Content="Reset Config to Default" HorizontalAlignment="Left" Margin="260,52,0,0" VerticalAlignment="Top" Width="133" Height="22"/>
-                <Button x:Name="btnViewChangeLog" Style="{StaticResource ButtonCurves}" Click="btnViewChangeLog_Click" Content="View Changelog" HorizontalAlignment="Left" Margin="15,52,0,0" VerticalAlignment="Top" Width="102"/>
-                <Button x:Name="btnSendDiag" Style="{StaticResource ButtonCurves}" Click="btnSendDiag_Click" Content="Send Diagnostic Logs" HorizontalAlignment="Left" Margin="122,52,0,0" VerticalAlignment="Top" Width="133"/>
+                <Button x:Name="btnDefaultConfig" Style="{StaticResource BaseButton}" Click="btnDefaultConfig_Click" Content="Reset Config to Default" HorizontalAlignment="Left" Margin="260,52,0,0" VerticalAlignment="Top" Width="133" Height="22"/>
+                <Button x:Name="btnViewChangeLog" Style="{StaticResource BaseButton}" Click="btnViewChangeLog_Click" Content="View Changelog" HorizontalAlignment="Left" Margin="15,52,0,0" VerticalAlignment="Top" Width="102"/>
+                <Button x:Name="btnSendDiag" Style="{StaticResource BaseButton}" Click="btnSendDiag_Click" Content="Send Diagnostic Logs" HorizontalAlignment="Left" Margin="122,52,0,0" VerticalAlignment="Top" Width="133"/>
                 <Rectangle x:Name="rectSettingsWindowsBorder" HorizontalAlignment="Left" Height="124" Margin="10,168,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="392"/>
                 <Rectangle x:Name="rectSettingsWindowsTitle" HorizontalAlignment="Left" Height="16" Margin="10,168,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="56"/>
                 <TextBlock x:Name="lblSettingsWindowsTitle" HorizontalAlignment="Left" Margin="14,168,0,0" TextWrapping="Wrap" Text="Windows" VerticalAlignment="Top" Foreground="#FF1DD8D0" Width="52"/>
                 <Label x:Name="lblSettingsWindowName1" Content="Window Profile 1 Name:" Padding="0" HorizontalAlignment="Left" Margin="15,184,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D" Background="{x:Null}"/>
-                <TextBox x:Name="txtWindowProfileName1" KeyDown="txtWindowProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="48" Margin="148,183,0,0" TextWrapping="NoWrap" VerticalAlignment="Top"/>
+                <TextBox x:Name="txtWindowProfileName1" Style="{StaticResource TextboxNoReaction}" KeyDown="txtWindowProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="48" Margin="148,183,0,0" TextWrapping="NoWrap" VerticalAlignment="Top"/>
                 <Label x:Name="lblSettingsWindowName2" Content="Window Profile 2 Name:" Padding="0" HorizontalAlignment="Left" Margin="15,211,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D" Background="{x:Null}"/>
-                <TextBox x:Name="txtWindowProfileName2" KeyDown="txtWindowProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="48" Margin="148,210,0,0" TextWrapping="NoWrap" VerticalAlignment="Top"/>
+                <TextBox x:Name="txtWindowProfileName2" Style="{StaticResource TextboxNoReaction}" KeyDown="txtWindowProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="48" Margin="148,210,0,0" TextWrapping="NoWrap" VerticalAlignment="Top"/>
                 <Label x:Name="lblSettingsWindowName3" Content="Window Profile 3 Name:" Padding="0" HorizontalAlignment="Left" Margin="15,238,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D" Background="{x:Null}"/>
-                <TextBox x:Name="txtWindowProfileName3" KeyDown="txtWindowProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="48" Margin="148,237,0,0" TextWrapping="NoWrap" VerticalAlignment="Top"/>
+                <TextBox x:Name="txtWindowProfileName3" Style="{StaticResource TextboxNoReaction}" KeyDown="txtWindowProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="48" Margin="148,237,0,0" TextWrapping="NoWrap" VerticalAlignment="Top"/>
                 <Label x:Name="lblSettingsWindowName4" Content="Window Profile 4 Name:" Padding="0" HorizontalAlignment="Left" Margin="15,265,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D" Background="{x:Null}"/>
-                <TextBox x:Name="txtWindowProfileName4" KeyDown="txtWindowProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="48" Margin="148,264,0,0" TextWrapping="NoWrap" VerticalAlignment="Top"/>
+                <TextBox x:Name="txtWindowProfileName4" Style="{StaticResource TextboxNoReaction}" KeyDown="txtWindowProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="48" Margin="148,264,0,0" TextWrapping="NoWrap" VerticalAlignment="Top"/>
                 <Label x:Name="lblSettingsStartName1" Content="Start Profile 1 Name:" Padding="0" HorizontalAlignment="Left" Margin="207,184,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D" Background="{x:Null}" Visibility="Hidden"/>
-                <TextBox x:Name="txtStartProfileName1" KeyDown="txtStartProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="54" Margin="321,183,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Hidden"/>
+                <TextBox x:Name="txtStartProfileName1" Style="{StaticResource TextboxNoReaction}" KeyDown="txtStartProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="54" Margin="321,183,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Hidden"/>
                 <Label x:Name="lblSettingsStartName2" Content="Start Profile 2 Name:" Padding="0" HorizontalAlignment="Left" Margin="207,211,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D" Background="{x:Null}" Visibility="Hidden"/>
-                <TextBox x:Name="txtStartProfileName2" KeyDown="txtStartProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="54" Margin="321,210,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Hidden"/>
+                <TextBox x:Name="txtStartProfileName2" Style="{StaticResource TextboxNoReaction}" KeyDown="txtStartProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="54" Margin="321,210,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Hidden"/>
                 <TextBlock x:Name="lblSettingsStartup" HorizontalAlignment="Left" Margin="238,13,0,0" TextWrapping="Wrap" Text="Start on Windows Startup:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="141" Height="16"/>
                 <CheckBox x:Name="chkSettingsStartup" Click="chkSettingsStartup_Click" Content="" HorizontalAlignment="Left" Margin="377,15,0,0" VerticalAlignment="Top" Width="18" Background="#FF767575" BorderBrush="#FF918C8C" Foreground="{x:Null}" Height="17"/>
                 <TextBlock x:Name="lblSetGenUtilBar" HorizontalAlignment="Left" Margin="15,31,0,0" TextWrapping="Wrap" Text="Show Util Bar on Startup:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="134" Height="16"/>

@@ -3,14 +3,22 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mStyles="MahApps.Metro.Styles"
         xmlns:local="clr-namespace:Panacea.Windows"
+        xmlns:src="clr-namespace:Panacea.Classes"
         mc:Ignorable="d" Topmost="True" ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="True"
-        Title="NetworkPopup" Height="300" MinHeight="300" Width="450" MinWidth="450" Foreground="{x:Null}" Background="#02000000">
-    <Grid x:Name="grdNetwork" Background="#02000000">
+        Title="NetworkPopup" Height="300" MinHeight="300" Width="535.027" MinWidth="450" Foreground="{x:Null}" Background="#02000000" ShowInTaskbar="False">
+    <Window.Resources>
+        <src:Minus15Converter x:Key="Minus15Converter"/>
+        <src:Minus25Converter x:Key="Minus25Converter"/>
+        <src:Minus204Converter x:Key="Minus204Converter"/>
+    </Window.Resources>
+    <Grid x:Name="grdNetwork" Background="#02010101">
         <Grid.RowDefinitions>
             <RowDefinition Height="165*"/>
             <RowDefinition Height="17"/>
         </Grid.RowDefinitions>
+        <Rectangle x:Name="rectGrabBar" MouseDown="RectGrabBar_MouseDown" Grid.Row="0" Height="22" VerticalAlignment="Top" Margin="40,1,41,0" Fill="#02010102" Panel.ZIndex="100" />
         <Rectangle x:Name="rectNetworkBackground" Stroke="#FFA0A0A0" Grid.Row="0">
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -21,13 +29,14 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <ScrollViewer x:Name="scrlNetTop" Grid.Row="0">
+        <ScrollViewer x:Name="scrlNetTop" Grid.Row="0" Background="#02010101">
             <Grid x:Name="grdNetSubTop">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="183*"/>
                     <RowDefinition Height="100*"/>
                 </Grid.RowDefinitions>
-                <Label x:Name="lblNetPingTitle" Margin="10,3,0,0" Padding="0" Content="Ping" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="134" Foreground="#FF8D8D8D" Grid.Row="0" Background="{x:Null}"/>
+                <Label x:Name="lblNetPingTitle" Margin="10,3,0,0" Padding="0" Content="Ping" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="28" Foreground="#FF8D8D8D" Grid.Row="0" Background="{x:Null}"/>
+                <Button x:Name="btnPopInOut" Click="BtnPopInOut_Click" Content="🢅" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,1,1,0" Height="22" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="21" Background="{x:Null}" />
                 <ListBox x:Name="lbNetPing" Grid.Row="0" Margin="10,23,0,4">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -48,14 +57,14 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-                <Label x:Name="lblNetNSLookupTitle" Margin="10,0,0,0" Padding="0" Content="NSLookup" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="134" Foreground="#FF8D8D8D" Grid.Row="1" Background="{x:Null}"/>
+                <Label x:Name="lblNetNSLookupTitle" Margin="10,0,0,0" Padding="0" Content="NSLookup" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="61" Foreground="#FF8D8D8D" Grid.Row="1" Background="{x:Null}"/>
                 <ListBox x:Name="lbNetNSLookup" Grid.Row="1" Margin="10,18,0,9">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Grid HorizontalAlignment="Left" Height="16" Margin="0,0,0,0" VerticalAlignment="Top" Width="{Binding ElementName=lbResolvedAddresses, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" Background="Black">
-                                <TextBlock MouseDown="lblNetDNS_MouseDown" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding IPAddress}" VerticalAlignment="Top" Width="87" Height="16" Foreground="#FF8D8D8D"/>
-                                <TextBlock MouseDown="lblNetDNSFull_MouseDown" HorizontalAlignment="Left" TextWrapping="Wrap" Text=" = " VerticalAlignment="Top" Width="15" Foreground="#FF8D8D8D" Height="16" Margin="87,0,0,0"/>
-                                <TextBlock MouseDown="lblNetDNS_MouseDown" TextWrapping="Wrap" Text="{Binding HostName}" VerticalAlignment="Top" Width="{Binding ElementName=lbResolvedAddresses, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" Foreground="#FF8D8D8D" Height="16" Margin="102,0,45,0"/>
+                                <TextBlock x:Name="lblNetDNSAddress" MouseDown="lblNetDNS_MouseDown" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding IPAddress}" VerticalAlignment="Top" Width="87" Height="16" Foreground="#FF8D8D8D"/>
+                                <TextBlock x:Name="lblNetDNSFull" MouseDown="lblNetDNSFull_MouseDown" HorizontalAlignment="Left" TextWrapping="Wrap" Text=" = " VerticalAlignment="Top" Width="15" Foreground="#FF8D8D8D" Height="16" Margin="87,0,0,0"/>
+                                <TextBlock x:Name="lblNetDNSHostname" MouseDown="lblNetDNS_MouseDown" TextWrapping="Wrap" Text="{Binding HostName}" VerticalAlignment="Top" Width="{Binding ElementName=lbResolvedAddresses, Path=ActualWidth, Converter={StaticResource Minus15Converter}}" Foreground="#FF8D8D8D" Height="16" Margin="102,0,45,0"/>
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>

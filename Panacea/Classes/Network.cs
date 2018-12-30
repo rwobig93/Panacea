@@ -31,7 +31,8 @@ namespace Panacea.Classes
     public enum EnterAction
     {
         Ping,
-        DNSLookup
+        DNSLookup,
+        Trace
     }
 
     public enum PingStat

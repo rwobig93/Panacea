@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Media;
+using static Panacea.Windows.UtilityBar;
 
 namespace Panacea.Classes
 {
@@ -56,7 +57,9 @@ namespace Panacea.Classes
         private string _latestChangelog { get; set; } = "I'm a default Changelog! You shouldn't ever see me! :D";
         private WindowProfile _currentWinProfile { get; set; } = WindowProfile.Profile1;
         private EnterAction _toolboxEnterAction { get; set; } = EnterAction.DNSLookup;
+        private EnterAction _utilBarEnterAction { get; set; } = EnterAction.DNSLookup;
         private DTFormat _dateTimeFormat { get; set; } = DTFormat.Sec;
+        private Emotes _currentEmote { get; set; } = Emotes.Shrug;
 
         #endregion
 
@@ -388,6 +391,15 @@ namespace Panacea.Classes
                 OnPropertyChanged("ToolboxEnterAction");
             }
         }
+        public EnterAction UtilBarEnterAction
+        {
+            get { return _utilBarEnterAction; }
+            set
+            {
+                _utilBarEnterAction = value;
+                OnPropertyChanged("UtilBarEnterAction");
+            }
+        }
         public DTFormat DateTimeFormat
         {
             get { return _dateTimeFormat; }
@@ -395,6 +407,15 @@ namespace Panacea.Classes
             {
                 _dateTimeFormat = value;
                 OnPropertyChanged("DateTimeFormat");
+            }
+        }
+        public Emotes CurrentEmote
+        {
+            get { return _currentEmote; }
+            set
+            {
+                _currentEmote = value;
+                OnPropertyChanged("CurrentEmote");
             }
         }
 
