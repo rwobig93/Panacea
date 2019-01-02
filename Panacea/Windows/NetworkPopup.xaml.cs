@@ -19,6 +19,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Shell;
 using static Panacea.MainWindow;
 
 namespace Panacea.Windows
@@ -28,12 +29,10 @@ namespace Panacea.Windows
     /// </summary>
     public partial class NetworkPopup : Window
     {
-        public NetworkPopup(Rect dimensions)
+        public NetworkPopup()
         {
-            if (dimensions == null)
-                dimensions = new Rect(0, 0, this.ActualWidth, this.ActualHeight);
-            this.Top = dimensions.Top;
-            this.Left = dimensions.Left;
+            this.Top = UtilityBar.UtilBarMain.Top - 300;
+            this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuNetwork.Margin.Left;
             this.Opacity = 0;
             InitializeComponent();
             Startup();
@@ -41,11 +40,64 @@ namespace Panacea.Windows
 
         #region Globals
 
+        private bool _startingUp = true;
         private DoubleAnimation outAnimation = new DoubleAnimation() { To = 0.0, Duration = TimeSpan.FromSeconds(.2) };
         private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.2) };
+        private double PopinLeft { get { return UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuNetwork.Margin.Left; } }
+        private double PopinTop { get { return UtilityBar.UtilBarMain.Top - this.ActualHeight; } }
+        private double PopinWidth { get { return 535; } }
+        private double PopinHeight { get { return 300; } }
         public bool Popout { get; set; } = false;
         public bool resolvingDNS = false;
         private int resolvedEntries = 0;
+
+        #endregion
+
+        #region Form Handling
+
+        private void WinNetMain_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Allow borderless window to be resized
+                WindowChrome.SetWindowChrome(this, new WindowChrome() { ResizeBorderThickness = new Thickness(5), CaptionHeight = .05 });
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void WinNetMain_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (!_startingUp)
+                VerifyResetButtonRequirement();
+        }
+
+        private void BtnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                this.WindowState = WindowState.Minimized;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void RectGrabBar_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                if (e.ChangedButton == MouseButton.Left && Popout)
+                    winNetMain.DragMove();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
 
         #endregion
 
@@ -134,17 +186,9 @@ namespace Panacea.Windows
             TogglePopout();
         }
 
-        private void RectGrabBar_MouseDown(object sender, MouseButtonEventArgs e)
+        private void BtnReset_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                if (e.ChangedButton == MouseButton.Left && Popout)
-                    winNetMain.DragMove();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
+            ResetPopupSizeAndLocation();
         }
 
         #endregion
@@ -154,6 +198,19 @@ namespace Panacea.Windows
         private void Startup()
         {
             PopupShow();
+            FinishStartup();
+        }
+
+        private void FinishStartup()
+        {
+            try
+            {
+                _startingUp = false;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO, [CallerMemberName] string caller = "")
@@ -345,16 +402,14 @@ namespace Panacea.Windows
                 {
                     if (pe.ProgressPercentage == 1)
                     {
-                        //if (lblNetResolved.Text == "NSlookup:")
-                        //    lblNetResolved.Text = ".";
-                        //else if (lblNetResolved.Text != ".....")
-                        //    lblNetResolved.Text = $"{lblNetResolved.Text}.";
-                        //else
-                        //    lblNetResolved.Text = ".";
+                        if (lblNetNSLookupTitle.Content.ToString() != "NSlookup..." && lblNetNSLookupTitle.Content.ToString().Length < 12)
+                            lblNetNSLookupTitle.Content = $"{lblNetNSLookupTitle.Content}.";
+                        else
+                            lblNetNSLookupTitle.Content = "NSlookup";
                     }
                     if (pe.ProgressPercentage == 2)
                     {
-                        //lblNetResolved.Text = "NSlookup:";
+                        lblNetNSLookupTitle.Content = "NSlookup";
                         resolvedEntries = 0;
                         resolvingDNS = false;
                     }
@@ -374,11 +429,12 @@ namespace Panacea.Windows
                 if (Popout)
                 {
                     Popout = false;
-                    UtilityBar utilBar = UtilityBar.UtilBarMain;
-                    this.Left = utilBar.Left + utilBar.btnMenuNetwork.Margin.Left;
-                    this.Top = utilBar.Top - this.ActualHeight;
+                    this.Left = PopinLeft;
+                    this.Top = PopinTop;
                     this.ResizeMode = ResizeMode.NoResize;
+                    this.ShowInTaskbar = false;
                     plyNetVisualSlider.Visibility = Visibility.Visible;
+                    btnMinimize.Visibility = Visibility.Hidden;
                     btnPopInOut.Content = "🢅";
                 }
                 else if (!Popout)
@@ -387,8 +443,44 @@ namespace Panacea.Windows
                     this.Left += 10;
                     this.Top -= 10;
                     this.ResizeMode = ResizeMode.CanResize;
+                    this.ShowInTaskbar = true;
                     plyNetVisualSlider.Visibility = Visibility.Hidden;
+                    btnMinimize.Visibility = Visibility.Visible;
                     btnPopInOut.Content = "🢇";
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ResetPopupSizeAndLocation()
+        {
+            try
+            {
+                uDebugLogAdd("Resetting Network Popup Size and Location to Default");
+                this.Left = PopinLeft;
+                this.Top = PopinTop;
+                this.Width = PopinWidth;
+                this.Height = PopinHeight;
+                btnReset.Visibility = Visibility.Hidden;
+                Popout = true;
+                TogglePopout();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void VerifyResetButtonRequirement()
+        {
+            try
+            {
+                if ((this.Left != PopinLeft || this.Top != PopinTop || this.ActualWidth != PopinWidth || this.ActualHeight != PopinHeight) && btnReset.Visibility != Visibility.Visible)
+                {
+                    btnReset.Visibility = Visibility.Visible;
                 }
             }
             catch (Exception ex)

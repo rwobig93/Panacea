@@ -32,7 +32,8 @@ namespace Panacea.Classes
     {
         Ping,
         DNSLookup,
-        Trace
+        Trace,
+        NA
     }
 
     public enum PingStat

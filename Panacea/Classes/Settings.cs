@@ -52,6 +52,7 @@ namespace Panacea.Classes
         private bool _pingTypeChosen { get; set; } = false;
         private bool _windowsStartup { get; set; } = false;
         private bool _showUtilBarOnStartup { get; set; } = false;
+        private bool _startMinimized { get; set; } = false;
         private string _productionURI { get; set; } = null;
         private string _upProductionURI { get; set; } = null;
         private string _latestChangelog { get; set; } = "I'm a default Changelog! You shouldn't ever see me! :D";
@@ -293,6 +294,15 @@ namespace Panacea.Classes
                 OnPropertyChanged("ShowUtilBarOnStartup");
             }
         }
+        public bool StartMinimized
+        {
+            get { return _startMinimized; }
+            set
+            {
+                _startMinimized = value;
+                OnPropertyChanged("StartMinimized");
+            }
+        }
         public string ProductionURI
         {
             get { return _productionURI; }
@@ -431,6 +441,7 @@ namespace Panacea.Classes
         BetaCheck,
         ProfileName,
         WinStartup,
-        UtilBar
+        UtilBar,
+        StartMin
     }
 }

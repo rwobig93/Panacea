@@ -887,6 +887,11 @@ namespace Panacea
             StartSettingsUpdate(SettingsUpdate.UtilBar);
         }
 
+        private void ChkSettingsStartMinimized_Click(object sender, RoutedEventArgs e)
+        {
+            StartSettingsUpdate(SettingsUpdate.StartMin);
+        }
+
         #endregion
 
         #endregion
@@ -955,7 +960,10 @@ namespace Panacea
                 {
                     WorkerReportsProgress = true
                 };
-                worker.ProgressChanged += Worker_ProgressChanged;
+                worker.ProgressChanged += (sender, e) => 
+                {
+                    ToggleNotification(e.ProgressPercentage);
+                };
                 worker.DoWork += (sender, e) =>
                 {
                     try
@@ -994,18 +1002,6 @@ namespace Panacea
             }
         }
 
-        private void Worker_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
-        {
-            try
-            {
-                ToggleNotification(e.ProgressPercentage);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
         private void uStatusUpdate(string _status)
         {
             try
@@ -1031,19 +1027,26 @@ namespace Panacea
                 switch (state)
                 {
                     case 1:
-                        if (lblNotification.Text.Length <= 98)
+                        Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate
                         {
-                            grdNotification.BeginAnimation(FrameworkElement.HeightProperty, slideIn);
-                            lblNotification.BeginAnimation(FrameworkElement.HeightProperty, oneLiner);
-                        }
-                        else
-                        {
-                            grdNotification.BeginAnimation(FrameworkElement.HeightProperty, slideIn2);
-                            lblNotification.BeginAnimation(FrameworkElement.HeightProperty, twoLiner);
-                        }
+                            try
+                            {
+                                if (lblNotification.Text.Length <= 98)
+                                {
+                                    grdNotification.BeginAnimation(FrameworkElement.HeightProperty, slideIn);
+                                    lblNotification.BeginAnimation(FrameworkElement.HeightProperty, oneLiner);
+                                }
+                                else
+                                {
+                                    grdNotification.BeginAnimation(FrameworkElement.HeightProperty, slideIn2);
+                                    lblNotification.BeginAnimation(FrameworkElement.HeightProperty, twoLiner);
+                                }
+                            }
+                            catch (Exception ex) { LogException(ex); }
+                        });
                         break;
                     case 2:
-                        grdNotification.BeginAnimation(FrameworkElement.HeightProperty, slideOut);
+                        Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { grdNotification.BeginAnimation(FrameworkElement.HeightProperty, slideOut); } catch (Exception ex) { LogException(ex); } });
                         break;
                     default:
                         uDebugLogAdd("Something happened and the incorrect notification state was used, accepted states: 1 or 2");
@@ -2140,9 +2143,18 @@ namespace Panacea
                 uDebugLogAdd("SettingsGEN: working on general settings");
                 chkSettingsBeta.IsChecked = Toolbox.settings.BetaUpdate;
                 chkSettingsStartup.IsChecked = Toolbox.settings.WindowsStartup;
+                chkSettingsStartMinimized.IsChecked = Toolbox.settings.StartMinimized;
                 chkSetGenUtilBar.IsChecked = Toolbox.settings.ShowUtilBarOnStartup;
                 if (Toolbox.settings.ShowUtilBarOnStartup)
+                {
+                    uDebugLogAdd($"SettingsACT: Show Util on Startup is: {Toolbox.settings.ShowUtilBarOnStartup} | Showing utility bar");
                     OpenUtilityBar();
+                }
+                if (Toolbox.settings.StartMinimized)
+                {
+                    uDebugLogAdd($"SettingsACT: Start minimized is: {Toolbox.settings.StartMinimized} | Minimizing window");
+                    this.WindowState = WindowState.Minimized;
+                }
                 uDebugLogAdd("Default settings set");
             }
             catch (Exception ex)
@@ -3457,6 +3469,12 @@ namespace Panacea
                                 AddToWindowsStartup(false);
                                 Toolbox.settings.WindowsStartup = false;
                             }
+                            // Set startup minimized
+                            uDebugLogAdd("SETUPDATE: Start minimized");
+                            if (chkSettingsStartMinimized.IsChecked == true)
+                                Toolbox.settings.StartMinimized = true;
+                            else
+                                Toolbox.settings.StartMinimized = false;
                             // Set util bar
                             uDebugLogAdd("SETUPDATE: Util bar");
                             if (chkSetGenUtilBar.IsChecked == true)

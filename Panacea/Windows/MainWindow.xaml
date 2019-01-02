@@ -49,7 +49,7 @@
             <Rectangle Stroke="#FF368DB6" Margin="1,1,1,0"/>
         </Grid>
         <Button x:Name="btnExit" Click="btnExit_Click" Style="{StaticResource ExitButton}" Content="X" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" FontSize="18"/>
-        <TextBox x:Name="txtStatus" src:TextBoxBehaviour.ScrollOnTextChanged="True" Height="20" VerticalAlignment="Bottom" BorderBrush="#FF707070" Foreground="#FF8D8D8D" IsReadOnly="True" SelectionBrush="#FF444444" VerticalContentAlignment="Stretch" FontSize="13" Panel.ZIndex="97">
+        <TextBox x:Name="txtStatus" Style="{StaticResource TextboxNoReaction}" Padding="0" src:TextBoxBehaviour.ScrollOnTextChanged="True" Height="20" VerticalAlignment="Bottom" BorderBrush="#FF707070" Foreground="#FF8D8D8D" IsReadOnly="True" SelectionBrush="#FF444444" VerticalContentAlignment="Stretch" FontSize="13" Panel.ZIndex="97">
             <TextBox.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1C1C1C" Offset="0"/>
@@ -273,8 +273,10 @@
                 <TextBox x:Name="txtStartProfileName2" Style="{StaticResource TextboxNoReaction}" KeyDown="txtStartProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="54" Margin="321,210,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Hidden"/>
                 <TextBlock x:Name="lblSettingsStartup" HorizontalAlignment="Left" Margin="238,13,0,0" TextWrapping="Wrap" Text="Start on Windows Startup:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="141" Height="16"/>
                 <CheckBox x:Name="chkSettingsStartup" Click="chkSettingsStartup_Click" Content="" HorizontalAlignment="Left" Margin="377,15,0,0" VerticalAlignment="Top" Width="18" Background="#FF767575" BorderBrush="#FF918C8C" Foreground="{x:Null}" Height="17"/>
-                <TextBlock x:Name="lblSetGenUtilBar" HorizontalAlignment="Left" Margin="15,31,0,0" TextWrapping="Wrap" Text="Show Util Bar on Startup:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="134" Height="16"/>
-                <CheckBox x:Name="chkSetGenUtilBar" Click="chkSetGenUtilBar_Click" Content="" HorizontalAlignment="Left" Margin="149,33,0,0" VerticalAlignment="Top" Width="18" Background="#FF767575" BorderBrush="#FF918C8C" Foreground="{x:Null}" Height="17"/>
+                <TextBlock x:Name="lblSetGenUtilBar" HorizontalAlignment="Left" Margin="86,31,0,0" TextWrapping="Wrap" Text="Show Util Bar on Startup:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="134" Height="16"/>
+                <CheckBox x:Name="chkSetGenUtilBar" Click="chkSetGenUtilBar_Click" Content="" HorizontalAlignment="Left" Margin="220,33,0,0" VerticalAlignment="Top" Width="18" Background="#FF767575" BorderBrush="#FF918C8C" Foreground="{x:Null}" Height="17"/>
+                <TextBlock x:Name="lblSettingsStartMinimized" HorizontalAlignment="Left" Margin="290,31,0,0" TextWrapping="Wrap" Text="Start Minimized:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="89" Height="16"/>
+                <CheckBox x:Name="chkSettingsStartMinimized" Click="ChkSettingsStartMinimized_Click" Content="" HorizontalAlignment="Left" Margin="377,33,0,0" VerticalAlignment="Top" Width="18" Background="#FF767575" BorderBrush="#FF918C8C" Foreground="{x:Null}" Height="17"/>
             </Grid>
         </ScrollViewer>
         <Button x:Name="btnMinimize" Click="btnMinimize_Click" Style="{StaticResource ExitButton}" Content="_" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" FontSize="18" Margin="0,0,29,0"/>

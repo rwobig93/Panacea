@@ -20,7 +20,9 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using static Panacea.MainWindow;
+using INTER = System.Windows.Interop;
 
 namespace Panacea.Windows
 {
@@ -31,9 +33,7 @@ namespace Panacea.Windows
     {
         public UtilityBar()
         {
-            UtilityBar.UtilBarMain = this;
-            this.Top = 2560;
-            this.Left = 1920;
+            PreInitializeStartup();
             InitializeComponent();
             Startup();
         }
@@ -110,6 +110,9 @@ namespace Panacea.Windows
         private bool _connectedToEth { get { return _connectedEthIfs.Count > 0 ? true : false; } }
         private bool _bssidChanged = true;
         private bool _closing = false;
+        private bool _notificationPlaying = false;
+        private int _totalNotificationsRun = 0;
+        private List<string> notifications = new List<string>();
         private WlanClient.WlanInterface _currentWifiIf;
         private NetworkInterface _currentEthIf;
         private CurrentDisplay currentDisplay;
@@ -117,10 +120,12 @@ namespace Panacea.Windows
         private WifiFrequency currentFrequency = WifiFrequency.None;
         private WifiPHYProto currentPHYProto = WifiPHYProto.None;
         private ConnectivityStatus currentConnectivityStatus = ConnectivityStatus.None;
+        private EnterAction currentEnterAction = EnterAction.DNSLookup;
         private double? currentLinkSpeed;
         private DoubleAnimation outAnimation = new DoubleAnimation() { To = 0.0, Duration = TimeSpan.FromSeconds(.7) };
         private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.7) };
         private NetworkPopup popupNetwork;
+        private INTER.HwndSource _source;
 
         #endregion
 
@@ -129,6 +134,16 @@ namespace Panacea.Windows
         #region Menu
 
         private void btnExit_Click(object sender, RoutedEventArgs e)
+        {
+            CloseUtilBar();
+        }
+
+        private void WinMain_Loaded(object sender, RoutedEventArgs e)
+        {
+            InitializeGlobalHotkey();
+        }
+
+        private void WinMain_Closing(object sender, CancelEventArgs e)
         {
             CloseUtilBar();
         }
@@ -184,7 +199,12 @@ namespace Panacea.Windows
             {
                 if (e.Key == Key.Enter)
                 {
-                    NetEnterAction();
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                    {
+                        NetToggleEnterAction();
+                    }
+                    else
+                        NetEnterAction();
                 }
             }
             catch (Exception ex)
@@ -193,24 +213,27 @@ namespace Panacea.Windows
             }
         }
 
-        private void LblNetType_KeyDown(object sender, KeyEventArgs e)
+        private void CirNetPing_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                NetToggleEnterAction(EnterAction.Ping);
+        }
+
+        private void CirNetNSLookup_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                NetToggleEnterAction(EnterAction.DNSLookup);
+        }
+
+        private void CirNetTrace_MouseDown(object sender, MouseButtonEventArgs e)
         {
 
         }
 
-        private void CirNetPing_KeyDown(object sender, KeyEventArgs e)
+        private void LblNetType_MouseDown(object sender, MouseButtonEventArgs e)
         {
-
-        }
-
-        private void CirNetNSLookup_KeyDown(object sender, KeyEventArgs e)
-        {
-
-        }
-
-        private void CirNetTrace_KeyDown(object sender, KeyEventArgs e)
-        {
-
+            if (e.ChangedButton == MouseButton.Left)
+                NetToggleEnterAction();
         }
 
         #endregion
@@ -248,10 +271,114 @@ namespace Panacea.Windows
             }
         }
 
+        private void PreInitializeStartup()
+        {
+            UtilityBar.UtilBarMain = this;
+            this.Top = 2560;
+            this.Left = 1920;
+            tLocationWatcher();
+        }
+
         private void Startup()
         {
-            tLocationWatcher();
             tNetworkConnectivityMonitor();
+            NetToggleEnterAction(currentEnterAction);
+        }
+
+        private void InitializeGlobalHotkey()
+        {
+            try
+            {
+                var helper = new INTER.WindowInteropHelper(this);
+                _source = INTER.HwndSource.FromHwnd(helper.Handle);
+                _source.AddHook(HwndHook);
+                RegisterHotKey();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void TearDownGlobalHotkey()
+        {
+            try
+            {
+                _source.RemoveHook(HwndHook);
+                _source = null;
+                UnregisterHotKey();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            const int WM_HOTKEY = 0x0312;
+            switch (msg)
+            {
+                case WM_HOTKEY:
+                    switch (wParam.ToInt32())
+                    {
+                        case WinAPIWrapper.HOTKEY_ID:
+                            OnHotKeyPressed();
+                            handled = true;
+                            break;
+                    }
+                    break;
+            }
+            return IntPtr.Zero;
+        }
+
+        private void RegisterHotKey()
+        {
+            try
+            {
+                var helper = new INTER.WindowInteropHelper(this);
+                const uint VK_RETURN = 0x0D;
+                const uint MOD_CTRL = 0x0002;
+                if (!WinAPIWrapper.RegisterHotKey(helper.Handle, WinAPIWrapper.HOTKEY_ID, MOD_CTRL, VK_RETURN))
+                {
+                    uDebugLogAdd("Failure registering global hotkey", DebugType.FAILURE);
+                    ShowNotification("Couldn't register Ctrl+Enter Globally");
+                }
+                else
+                    uDebugLogAdd("Registered Global Hotkey: Ctrl+Enter");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void UnregisterHotKey()
+        {
+            try
+            {
+                var helper = new INTER.WindowInteropHelper(this);
+                WinAPIWrapper.UnregisterHotKey(helper.Handle, WinAPIWrapper.HOTKEY_ID);
+                uDebugLogAdd("Unregistered Global Hotkey: Ctrl+Enter");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void OnHotKeyPressed()
+        {
+            try
+            {
+                this.Activate();
+                this.txtNetMain.Focus();
+                Keyboard.Focus(this.txtNetMain);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void CloseUtilBar()
@@ -260,6 +387,8 @@ namespace Panacea.Windows
                 return;
             try
             {
+                TearDownGlobalHotkey();
+
                 _closing = true;
                 if (popupNetwork != null)
                 {
@@ -391,10 +520,8 @@ namespace Panacea.Windows
                         // Network Menu
                         if (popupNetwork == null)
                         {
-                            Rect dimensions = new Rect((this.Left + this.btnMenuNetwork.Margin.Left), (this.Top - 300), 0, 0);
-                            popupNetwork = new NetworkPopup(dimensions);
-                            popupNetwork.Show();
-                            uDebugLogAdd("Network Popup was null, Created new Network popup");
+                            uDebugLogAdd("Network Popup is null, Creating new Network popup");
+                            CreatePopup(menu);
                         }
                         else if (popupNetwork != null)
                         {
@@ -420,6 +547,34 @@ namespace Panacea.Windows
             catch (Exception ex)
             {
                 uDebugLogAdd($"Popup Menu Toggle Failure: {ex.Message}", DebugType.FAILURE);
+            }
+        }
+
+        private void CreatePopup(PopupMenu menu)
+        {
+            try
+            {
+                uDebugLogAdd($"Initializing new popup: {menu.ToString()}");
+                switch (menu)
+                {
+                    case PopupMenu.Network:
+                        popupNetwork = new NetworkPopup();
+                        popupNetwork.Show();
+                        uDebugLogAdd($"Initialed new Network Popup");
+                        break;
+                    case PopupMenu.Settings:
+                        throw new NotImplementedException();
+                    case PopupMenu.Audio:
+                        throw new NotImplementedException();
+                    case PopupMenu.Emotes:
+                        throw new NotImplementedException();
+                    case PopupMenu.Windows:
+                        throw new NotImplementedException();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
             }
         }
 
@@ -466,6 +621,85 @@ namespace Panacea.Windows
             }
         }
 
+        private void ShowNotification(string notification)
+        {
+            try
+            {
+                BackgroundWorker worker = new BackgroundWorker()
+                {
+                    WorkerReportsProgress = true
+                };
+                worker.ProgressChanged += (sender, e) =>
+                {
+                    ToggleNotification(e.ProgressPercentage);
+                };
+                worker.DoWork += (sender, e) =>
+                {
+                    try
+                    {
+                        uDebugLogAdd($"Adding Notification: {notification} [ms: {9 * notification.Length}]");
+                        Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { notifications.Add(notification); _totalNotificationsRun++; } catch (Exception ex) { LogException(ex); } });
+                        if (_notificationPlaying) { uDebugLogAdd("Notification is currently playing, returning"); return; }
+                        _notificationPlaying = true;
+                        uDebugLogAdd("Notification wasn't playing, starting notification play cycles");
+                        int notificationCount = 0;
+                        while (notifications.Count != 0)
+                        {
+                            foreach (var message in notifications.ToList())
+                            {
+                                notificationCount++;
+                                Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { lblNotification.Text = message; lblNotificationCount.Text = $"{notificationCount}\\{_totalNotificationsRun}"; } catch (Exception ex) { LogException(ex); } });
+                                worker.ReportProgress(1);
+                                //Thread.Sleep(TimeSpan.FromMilliseconds(95 * notification.Replace(" ", "").Length));
+                                Thread.Sleep(TimeSpan.FromSeconds(2));
+                                worker.ReportProgress(2);
+                                notifications.Remove(message);
+                                uDebugLogAdd(string.Format("Removed notification: {0}", message));
+                                uDebugLogAdd(string.Format("Notifications left: {0}", notifications.Count));
+                            }
+                        }
+                        _notificationPlaying = false;
+                        _totalNotificationsRun = 0;
+                        uDebugLogAdd("Finished playing all notifications");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogException(ex);
+                    }
+                };
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ToggleNotification(int state)
+        {
+            try
+            {
+                ThicknessAnimation slideIn = new ThicknessAnimation { AccelerationRatio = .5, Duration = new Duration(TimeSpan.FromSeconds(0.2)), To = new Thickness(534, 0, 30, -30) };
+                ThicknessAnimation slideOut = new ThicknessAnimation { AccelerationRatio = .5, Duration = new Duration(TimeSpan.FromSeconds(0.2)), To = new Thickness(534, 30, 30, -30) };
+                switch (state)
+                {
+                    case 1:
+                        Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { grdNotification.BeginAnimation(FrameworkElement.MarginProperty, slideIn); } catch (Exception ex) { LogException(ex); } });
+                        break;
+                    case 2:
+                        Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { grdNotification.BeginAnimation(FrameworkElement.MarginProperty, slideOut); } catch (Exception ex) { LogException(ex); } });
+                        break;
+                    default:
+                        uDebugLogAdd("Something happened and the incorrect notification state was used, accepted states: 1 or 2");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         #endregion
 
         #region Network
@@ -474,7 +708,12 @@ namespace Panacea.Windows
         {
             try
             {
-                switch (Toolbox.settings.UtilBarEnterAction)
+                if (popupNetwork == null)
+                {
+                    uDebugLogAdd("Network popup is null, initializing new network popup");
+                    CreatePopup(PopupMenu.Network);
+                }
+                switch (currentEnterAction)
                 {
                     case EnterAction.DNSLookup:
                         NetNSLookupEntryAdd();
@@ -484,6 +723,51 @@ namespace Panacea.Windows
                         break;
                     case EnterAction.Trace:
                         throw new NotImplementedException();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void NetToggleEnterAction(EnterAction action = EnterAction.NA)
+        {
+            try
+            {
+                uDebugLogAdd($"Current Enter Action being changed, current: {currentEnterAction.ToString()}");
+                if (action == EnterAction.NA)
+                {
+                    if (currentEnterAction == EnterAction.DNSLookup)
+                    {
+                        currentEnterAction = EnterAction.Ping;
+                    }
+                    else if (currentEnterAction == EnterAction.Ping)
+                    {
+                        currentEnterAction = EnterAction.DNSLookup;
+                    }
+                }
+                else
+                {
+                    currentEnterAction = action;
+                }
+                uDebugLogAdd($"Current Enter Action Changed to: {currentEnterAction.ToString()}");
+                switch (currentEnterAction)
+                {
+                    case EnterAction.DNSLookup:
+                        cirNetNSLookup.Fill = Defaults.NetRadioSelected;
+                        lblNetType.Content = "NSLookup";
+                        cirNetPing.Fill = Defaults.NetRadioNotSelected;
+                        cirNetTrace.Fill = Defaults.NetRadioNotSelected;
+                        uDebugLogAdd("Set Enter Action to NSLookup");
+                        break;
+                    case EnterAction.Ping:
+                        cirNetPing.Fill = Defaults.NetRadioSelected;
+                        lblNetType.Content = "Ping";
+                        cirNetNSLookup.Fill = Defaults.NetRadioNotSelected;
+                        cirNetTrace.Fill = Defaults.NetRadioNotSelected;
+                        uDebugLogAdd("Set Enter Action to Ping");
+                        break;
                 }
             }
             catch (Exception ex)
@@ -509,7 +793,7 @@ namespace Panacea.Windows
                 var validEntries = string.Empty;
                 foreach (var entry in entries)
                 {
-                    if (!VerifyInput(entry))
+                    if (!VerifyInput(entry, EnterAction.Ping))
                     {
                         uDebugLogAdd($"Input entered was invalid, sending notification and canceling ping | Input: {entry}");
                         sendNotif = true;
@@ -521,12 +805,12 @@ namespace Panacea.Windows
                     validEntries = validEntries.Remove(validEntries.Length - 1);
                 if (sendNotif && validEntries == string.Empty)
                 {
-                    //ShowNotification("Address(es) entered incorrect or duplicate, try again");
+                    ShowNotification("Address(es) entered incorrect or duplicate, try again");
                     return;
                 }
                 else if (sendNotif && validEntries != string.Empty)
                 {
-                    //ShowNotification("Address(es) entered incorrect or duplicate, added non duplicate(s)");
+                    ShowNotification("Address(es) entered incorrect or duplicate, added non duplicate(s)");
                     address = validEntries;
                 }
                 popupNetwork.AddPingEntry(address);
@@ -537,11 +821,12 @@ namespace Panacea.Windows
             }
         }
 
-        private bool VerifyInput(string input)
+        private bool VerifyInput(string input, EnterAction action)
         {
             var isCorrect = true;
             isCorrect = !string.IsNullOrWhiteSpace(input);
-            isCorrect = !popupNetwork.DoesPingSessionExist(input);
+            if (action == EnterAction.Ping)
+                isCorrect = !popupNetwork.DoesPingSessionExist(input);
             uDebugLogAdd($"Verified input, answer: {isCorrect} | input: {input}");
             return isCorrect;
         }
@@ -565,22 +850,27 @@ namespace Panacea.Windows
             try
             {
                 var address = txtNetMain.Text;
+                if (string.IsNullOrWhiteSpace(address))
+                {
+                    popupNetwork.lbNetNSLookup.Items.Clear();
+                    return;
+                }
                 if (VerifyIfMacAddress(address))
                 {
                     uDebugLogAdd($"NetAddress value was found to be a Mac Address, opening Macpopup: {address}");
                     OpenMacAddressWindow(address);
                     return;
                 }
-                if (!VerifyInput(address))
+                if (!VerifyInput(address, EnterAction.DNSLookup))
                 {
                     uDebugLogAdd($"Input entered was invalid, sending notification and canceling dns lookup | Input: {address}");
-                    //ShowNotification("Address(es) entered incorrect or duplicate, try again");
+                    ShowNotification("Address(es) entered incorrect or duplicate, try again");
                     return;
                 }
                 if (popupNetwork.resolvingDNS)
                 {
                     uDebugLogAdd($"resolvingDNS is {popupNetwork.resolvingDNS}, cancelling NsLookup");
-                    //ShowNotification("A DNS Lookup is in progress already");
+                    ShowNotification("A DNS Lookup is in progress already");
                 }
                 else
                     popupNetwork.AddNSLookupEntry(address);
@@ -670,13 +960,14 @@ namespace Panacea.Windows
             worker.DoWork += (sender, e) =>
             {
                 Ping p = new Ping();
+                int prevSuccess = -1;
+                int prevFailure = -1;
                 while (true)
                 {
                     try
                     {
                         int successCounter = 0;
                         int failureCounter = 0;
-
                         /// Internet connectivity verification
                         // Google dns A
                         try
@@ -810,7 +1101,10 @@ namespace Panacea.Windows
                         }
 
                         /// Log findings
-                        uDebugLogAdd($"Success: {successCounter} | Failure: {failureCounter} | CurrConn: {currentConnectivityStatus.ToString()}");
+                        if ((prevSuccess != successCounter) && (prevFailure != failureCounter))
+                            uDebugLogAdd($"Success: {successCounter} | Failure: {failureCounter} | CurrConn: {currentConnectivityStatus.ToString()}");
+                        prevSuccess = successCounter;
+                        prevFailure = failureCounter;
                     }
                     catch (Exception ex)
                     {
@@ -832,19 +1126,21 @@ namespace Panacea.Windows
                     try
                     {
                         if (netIfs == null)
-                        {
                             netIfs = new List<NetworkInterface>();
-                            NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
-                            foreach (var adapter in interfaces.ToList().FindAll(x => x.NetworkInterfaceType == NetworkInterfaceType.Ethernet || x.NetworkInterfaceType == NetworkInterfaceType.GigabitEthernet || x.NetworkInterfaceType == NetworkInterfaceType.FastEthernetFx || x.NetworkInterfaceType == NetworkInterfaceType.FastEthernetT || x.NetworkInterfaceType == NetworkInterfaceType.Ethernet3Megabit))
-                            {
-                                netIfs.Add(adapter);
-                            }
+                        NetworkInterface tempEthIf = _currentEthIf;
+                        NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
+                        foreach (var adapter in interfaces.ToList().FindAll(x => x.NetworkInterfaceType == NetworkInterfaceType.Ethernet || x.NetworkInterfaceType == NetworkInterfaceType.GigabitEthernet || x.NetworkInterfaceType == NetworkInterfaceType.FastEthernetFx || x.NetworkInterfaceType == NetworkInterfaceType.FastEthernetT || x.NetworkInterfaceType == NetworkInterfaceType.Ethernet3Megabit))
+                        {
+                            netIfs.Add(adapter);
                         }
                         if (_connectedEthIfs.Count > 0)
                             _currentEthIf = _connectedEthIfs[0];
-                        uDebugLogAdd($"Connected eth ifs found: {_connectedEthIfs.Count}");
                         if (_currentEthIf != null)
-                            uDebugLogAdd($"Primary connected eth if: {_currentEthIf.Name}");
+                            if (tempEthIf != _currentEthIf)
+                            {
+                                uDebugLogAdd($"Connected eth ifs found: {_connectedEthIfs.Count}");
+                                uDebugLogAdd($"Primary connected eth if: {_currentEthIf.Name}");
+                            }
                     }
                     catch (Win32Exception) { }
                     catch (Exception ex)

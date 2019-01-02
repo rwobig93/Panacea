@@ -4,8 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Panacea.Windows"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:src="clr-namespace:Panacea.Classes"
-        mc:Ignorable="d" Height="28.564" MinHeight="28.5" Width="1104" MinWidth="1104" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070"
+        mc:Ignorable="d" Height="28.564" MinHeight="28.5" Width="1104" MinWidth="1104" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070" Closing="WinMain_Closing" Loaded="WinMain_Loaded"
         Title="UtilityBar" Background="{x:Null}" ResizeMode="NoResize" Topmost="True" MaxWidth="1500" MaxHeight="29" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Auto" SnapsToDevicePixels="True" ShowInTaskbar="False" SizeToContent="Width">
     <Window.Resources>
         <src:Minus15Converter x:Key="Minus15Converter"/>
@@ -94,7 +95,11 @@
                 </LinearGradientBrush>
             </Button.Background>
         </Button>
-        <TextBox x:Name="txtNetMain" Style="{StaticResource TextboxNoReaction}" KeyDown="TxtNetMain_KeyDown" HorizontalAlignment="Left" Margin="306,3,0,3" TextWrapping="NoWrap" Width="211"/>
+        <TextBox x:Name="txtNetMain" Style="{StaticResource TextboxNoReaction}" KeyDown="TxtNetMain_KeyDown" Focusable="True" HorizontalAlignment="Left" Margin="306,3,0,3" TextWrapping="NoWrap" Width="211">
+            <i:Interaction.Behaviors>
+                <src:DoubleClickBehavior/>
+            </i:Interaction.Behaviors>
+        </TextBox>
         <Button x:Name="btnMenuAudio" Click="BtnMenuAudio_Click" Style="{DynamicResource ButtonCurves}" Content="🎧" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" FontSize="16" Margin="98,1,0,0">
             <Button.BorderBrush>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -111,7 +116,7 @@
                 </LinearGradientBrush>
             </Button.Background>
         </Button>
-        <Button x:Name="btnMenuSettings" Click="BtnMenuSettings_Click" Style="{DynamicResource ButtonCurves}" Content="💾 " Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" FontSize="16" Margin="132,1,0,0">
+        <Button x:Name="btnMenuSettings" Click="BtnMenuSettings_Click" Style="{DynamicResource ButtonCurves}" Content="💾" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" FontSize="16" Margin="132,1,0,0">
             <Button.BorderBrush>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1B1B1B" Offset="0"/>
@@ -143,7 +148,7 @@
                 </LinearGradientBrush>
             </Button.Background>
         </Button>
-        <Ellipse x:Name="cirNetPing" KeyDown="CirNetPing_KeyDown" HorizontalAlignment="Left" Height="7" Margin="522,3,0,0" VerticalAlignment="Top" Width="7">
+        <Ellipse x:Name="cirNetPing" MouseDown="CirNetPing_MouseDown" HorizontalAlignment="Left" Height="7" Margin="522,3,0,0" VerticalAlignment="Top" Width="7">
             <Ellipse.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#191BCB0A" Offset="0"/>
@@ -154,7 +159,7 @@
                 </LinearGradientBrush>
             </Ellipse.Fill>
         </Ellipse>
-        <Ellipse x:Name="cirNetNSLookup" KeyDown="CirNetNSLookup_KeyDown" HorizontalAlignment="Left" Height="7" Margin="522,11,0,0" VerticalAlignment="Top" Width="7">
+        <Ellipse x:Name="cirNetNSLookup" MouseDown="CirNetNSLookup_MouseDown" HorizontalAlignment="Left" Height="7" Margin="522,11,0,0" VerticalAlignment="Top" Width="7">
             <Ellipse.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#19595959" Offset="0"/>
@@ -165,7 +170,7 @@
                 </LinearGradientBrush>
             </Ellipse.Fill>
         </Ellipse>
-        <Ellipse x:Name="cirNetTrace" KeyDown="CirNetTrace_KeyDown" HorizontalAlignment="Left" Height="7" Margin="522,19,0,0" VerticalAlignment="Top" Width="7">
+        <Ellipse x:Name="cirNetTrace" MouseDown="CirNetTrace_MouseDown" HorizontalAlignment="Left" Height="7" Margin="522,19,0,0" VerticalAlignment="Top" Width="7">
             <Ellipse.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#19595959" Offset="0"/>
@@ -176,7 +181,7 @@
                 </LinearGradientBrush>
             </Ellipse.Fill>
         </Ellipse>
-        <Label x:Name="lblNetType" Content="NSLookup" KeyDown="LblNetType_KeyDown" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,3,491,3" Foreground="#FF8D8D8D" FontSize="16" RenderTransformOrigin="0.5,0.5" Width="81" Background="{x:Null}"/>
+        <Label x:Name="lblNetType" Content="Ping" MouseDown="LblNetType_MouseDown" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,3,491,3" Foreground="#FF8D8D8D" FontSize="16" RenderTransformOrigin="0.5,0.5" Width="81" Background="{x:Null}"/>
         <Button x:Name="btnMenuWindows" Click="BtnMenuWindows_Click" MouseDown="BtnMenuWindows_MouseDown" MouseDoubleClick="BtnMenuWindows_MouseDoubleClick" Style="{DynamicResource ButtonCurves}" Content="Profile 1" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="54" Margin="167,1,0,0">
             <Button.BorderBrush>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -193,5 +198,26 @@
                 </LinearGradientBrush>
             </Button.Background>
         </Button>
+        <Grid x:Name="grdNotification" Height="29" VerticalAlignment="Top" Panel.ZIndex="50" Margin="534,30,30,-30" d:IsLocked="True" d:IsHidden="True">
+            <TextBlock x:Name="lblNotification" TextWrapping="Wrap" Foreground="#FF368DB6" TextAlignment="Center" FontSize="16" Margin="49,1,0,0" Text="This is a test notification, you shouldn't see me ever! :D">
+                <TextBlock.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black" Offset="0"/>
+                        <GradientStop Color="#FF1C1C1C" Offset="0.51"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </TextBlock.Background>
+            </TextBlock>
+            <Rectangle x:Name="rectNotification" Stroke="#FF368DB6" d:IsLocked="True" Panel.ZIndex="10" />
+            <TextBlock x:Name="lblNotificationCount" TextWrapping="Wrap" Foreground="#FF368DB6" TextAlignment="Center" FontSize="16" Margin="0,1,0,0" Text="99/99" HorizontalAlignment="Left" Width="49">
+                <TextBlock.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black" Offset="0"/>
+                        <GradientStop Color="#FF1C1C1C" Offset="0.51"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </TextBlock.Background>
+            </TextBlock>
+        </Grid>
     </Grid>
 </Window>

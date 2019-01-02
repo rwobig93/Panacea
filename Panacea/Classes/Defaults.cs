@@ -43,6 +43,32 @@ namespace Panacea.Classes
             EndPoint = new Point(0.5, 1),
             StartPoint = new Point(0.5, 0)
         };
+        public static Brush NetRadioSelected = new LinearGradientBrush()
+        {
+            GradientStops = new GradientStopCollection()
+            {
+                new GradientStop() { Color = ((Color)ColorConverter.ConvertFromString("#191BCB0A")) },
+                new GradientStop() { Color = ((Color)ColorConverter.ConvertFromString("#191BCB0A")), Offset = 0.97 },
+                new GradientStop() { Color = ((Color)ColorConverter.ConvertFromString("#991BCB0A")), Offset = 0.25 },
+                new GradientStop() { Color = ((Color)ColorConverter.ConvertFromString("#991BCB0A")), Offset = 0.75 },
+                new GradientStop() { Color = ((Color)ColorConverter.ConvertFromString("#FF1BCB0A")), Offset = 0.5 }
+            },
+            EndPoint = new Point(0.5, 1),
+            StartPoint = new Point(0.5, 0)
+        };
+        public static Brush NetRadioNotSelected = new LinearGradientBrush()
+        {
+            GradientStops = new GradientStopCollection()
+            {
+                new GradientStop() { Color = ((Color)ColorConverter.ConvertFromString("#19595959")) },
+                new GradientStop() { Color = ((Color)ColorConverter.ConvertFromString("#19595959")), Offset = 0.97 },
+                new GradientStop() { Color = ((Color)ColorConverter.ConvertFromString("#99595959")), Offset = 0.25 },
+                new GradientStop() { Color = ((Color)ColorConverter.ConvertFromString("#99595959")), Offset = 0.75 },
+                new GradientStop() { Color = ((Color)ColorConverter.ConvertFromString("#FF595959")), Offset = 0.5 }
+            },
+            EndPoint = new Point(0.5, 1),
+            StartPoint = new Point(0.5, 0)
+        };
         public static string GitUpdateURIBase = $@"https://github.com/rwobig93/Panacea/releases/download";
     }
 }
