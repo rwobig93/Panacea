@@ -17,7 +17,7 @@
             <RowDefinition Height="165*"/>
             <RowDefinition Height="17"/>
         </Grid.RowDefinitions>
-        <Rectangle x:Name="rectGrabBar" MouseDown="RectGrabBar_MouseDown" Grid.Row="0" Height="22" VerticalAlignment="Top" Margin="40,1,82,0" Fill="#02010102" Panel.ZIndex="100" />
+        <Rectangle x:Name="rectGrabBar" MouseDown="RectGrabBar_MouseDown" Grid.Row="0" Height="22" VerticalAlignment="Top" Margin="157,1,83,0" Fill="#02010102" Panel.ZIndex="100" />
         <Rectangle x:Name="rectNetworkBackground" Stroke="#FFA0A0A0" Grid.Row="0">
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -74,5 +74,6 @@
             </Grid>
         </ScrollViewer>
         <Polygon x:Name="plyNetVisualSlider" Points="28.9,.5,1.1,.5,15,16.1" Stroke="#FFA0A0A0" Grid.Row="1" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" Fill="#FFA0A0A0" />
+        <Button x:Name="btnPopInOut_Copy" Click="BtnPopInOut_Click" Content="🢅" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,1,457,0" Height="22" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="39" Background="{x:Null}" Panel.ZIndex="200" />
     </Grid>
 </Window>

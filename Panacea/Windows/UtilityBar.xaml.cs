@@ -113,7 +113,6 @@ namespace Panacea.Windows
         private bool _notificationPlaying = false;
         private int _totalNotificationsRun = 0;
         private List<string> notifications = new List<string>();
-        private WlanClient.WlanInterface _currentWifiIf;
         private NetworkInterface _currentEthIf;
         private CurrentDisplay currentDisplay;
         private NetConnectionType currentConnType = NetConnectionType.Unknown;
@@ -126,6 +125,8 @@ namespace Panacea.Windows
         private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.7) };
         private NetworkPopup popupNetwork;
         private INTER.HwndSource _source;
+
+        public WlanClient.WlanInterface CurrentWifiInterface { get; private set; }
 
         #endregion
 
@@ -585,15 +586,15 @@ namespace Panacea.Windows
                 switch (primary)
                 {
                     case PopupMenu.Network:
-                        throw new NotImplementedException();
+                        break;
                     case PopupMenu.Settings:
-                        throw new NotImplementedException();
+                        break;
                     case PopupMenu.Audio:
-                        throw new NotImplementedException();
+                        break;
                     case PopupMenu.Emotes:
-                        throw new NotImplementedException();
+                        break;
                     case PopupMenu.Windows:
-                        throw new NotImplementedException();
+                        break;
                 }
             }
             catch (Exception ex)
@@ -1062,7 +1063,7 @@ namespace Panacea.Windows
                             var defGateway = string.Empty;
                             if (_connectedToWifi)
                             {
-                                try { defGateway = _currentWifiIf.NetworkInterface.GetIPProperties().GatewayAddresses[0].Address.ToString(); }
+                                try { defGateway = CurrentWifiInterface.NetworkInterface.GetIPProperties().GatewayAddresses[0].Address.ToString(); }
                                 catch (Exception) { }
                             }
                             else if (_connectedToEth)
@@ -1162,20 +1163,21 @@ namespace Panacea.Windows
                 {
                     try
                     {
-                        if (wClient == null)
-                        {
-                            wClient = new WlanClient();
-                            uDebugLogAdd("WlanClient was null, initialized a new one");
-                        }
+                        //if (wClient == null)
+                        //{
+                        //    wClient = new WlanClient();
+                        //    uDebugLogAdd("WlanClient was null, initialized a new one");
+                        //}
+                        wClient = new WlanClient();
                         _connectedSSIDs.Clear();
                         foreach (var wlanIf in wClient.Interfaces)
                         {
                             Wlan.Dot11Ssid ssid = wlanIf.CurrentConnection.wlanAssociationAttributes.dot11Ssid;
                             _connectedSSIDs.Add(new String(Encoding.ASCII.GetChars(ssid.SSID, 0, (int)ssid.SSIDLength)));
-                            if (_currentWifiIf != null)
-                                if (_currentWifiIf.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString() != wlanIf.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString())
+                            if (CurrentWifiInterface != null)
+                                if (CurrentWifiInterface.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString() != wlanIf.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString())
                                     _bssidChanged = true;
-                            _currentWifiIf = wlanIf;
+                            CurrentWifiInterface = wlanIf;
                         }
                         if (_bssidChanged)
                         {
@@ -1277,14 +1279,14 @@ namespace Panacea.Windows
 
                     Process p = new Process();
                     p.StartInfo.FileName = "cmd.exe";
-                    p.StartInfo.Arguments = $"/c netsh wlan show networks interface=\"{_currentWifiIf.InterfaceName}\" mode=Bssid";
+                    p.StartInfo.Arguments = $"/c netsh wlan show networks interface=\"{CurrentWifiInterface.InterfaceName}\" mode=Bssid";
                     p.StartInfo.UseShellExecute = false;
                     p.StartInfo.RedirectStandardOutput = true;
                     p.StartInfo.CreateNoWindow = true;
                     p.Start();
                     string output = p.StandardOutput.ReadToEnd();
                     p.WaitForExit();
-                    Regex rbssid = new Regex($@"({MacPopup.ConvertMacAddrCol(_currentWifiIf.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString()).ToLower()})([\s\S]*?)Basic rates");
+                    Regex rbssid = new Regex($@"({MacPopup.ConvertMacAddrCol(CurrentWifiInterface.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString()).ToLower()})([\s\S]*?)Basic rates");
                     Regex rphyProto = new Regex(@"Radio.*");
                     var bssidOut = rbssid.Match(output);
                     var phyProtoOut = Regex.Replace(rphyProto.Match(bssidOut.Value).Value.Replace("Radio type", "").Replace(":", ""), @"\s+", "");
@@ -1366,7 +1368,7 @@ namespace Panacea.Windows
         private WifiFrequency GetCurrentWifiFrequency()
         {
             WifiFrequency freq = WifiFrequency.None;
-            if (_currentWifiIf.Channel > 14)
+            if (CurrentWifiInterface.Channel > 14)
                 freq = WifiFrequency.RF5G;
             else
                 freq = WifiFrequency.RF24G;
@@ -1451,7 +1453,21 @@ namespace Panacea.Windows
                 if (!(currentConnType == NetConnectionType.EthWifi || currentConnType == NetConnectionType.Wireless))
                     lblWlanRSSI.Content = "";
                 else
-                    lblWlanRSSI.Content = $"-{_currentWifiIf.RSSI} dBm";
+                {
+                    var signalQuality = CurrentWifiInterface.CurrentConnection.wlanAssociationAttributes.wlanSignalQuality;
+                    var rssi = string.Empty;
+                    double half = signalQuality / 2;
+                    double dBm = half - 100;
+                    if (signalQuality <= 0)
+                        rssi = "-100 dBm";
+                    else if (signalQuality >= 100)
+                        rssi = "< -50 dBm";
+                    else
+                        rssi = $"{dBm} dBm";
+                    lblWlanRSSI.Content = rssi;
+                    uDebugLogAdd($"RSSI: {rssi} | HALF: {half} | DBM: {dBm} | SQ: {signalQuality}");
+                    //lblWlanRSSI.Content = $"-{CurrentWifiInterface.RSSI} dBm";
+                }
             }
             catch (Exception)
             {
