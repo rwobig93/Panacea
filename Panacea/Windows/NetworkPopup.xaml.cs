@@ -41,6 +41,7 @@ namespace Panacea.Windows
         #region Globals
 
         private bool _startingUp = true;
+        private bool _pingPaused = false;
         private DoubleAnimation outAnimation = new DoubleAnimation() { To = 0.0, Duration = TimeSpan.FromSeconds(.2) };
         private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.2) };
         private double PopinLeft { get { return UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuNetwork.Margin.Left; } }
@@ -191,6 +192,21 @@ namespace Panacea.Windows
             ResetPopupSizeAndLocation();
         }
 
+        private void BtnPingPauseAll_Click(object sender, RoutedEventArgs e)
+        {
+            TogglePingsStatus();
+        }
+
+        private void BtnPingRemoveAll_Click(object sender, RoutedEventArgs e)
+        {
+            DestroyAllPings();
+        }
+
+        private void BtnClose_Click(object sender, RoutedEventArgs e)
+        {
+            PopupHide();
+        }
+
         #endregion
 
         #region Methods
@@ -318,8 +334,11 @@ namespace Panacea.Windows
                 uDebugLogAdd("Starting address lookup");
                 foreach (var entry in entries)
                 {
-                    entriesToLookFor++;
-                    tResolveDNSEntry(entry);
+                    if (!string.IsNullOrWhiteSpace(entry))
+                    {
+                        entriesToLookFor++;
+                        tResolveDNSEntry(entry);
+                    }
                 }
                 tDNSResolvingHelper(entriesToLookFor);
             }
@@ -482,6 +501,84 @@ namespace Panacea.Windows
                 {
                     btnReset.Visibility = Visibility.Visible;
                 }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ShowNotification(string text)
+        {
+            try
+            {
+                uDebugLogAdd($"Calling ShowNotification from NetPopup: {text}");
+                UtilityBar.UtilBarMain.ShowNotification(text);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void TogglePingsStatus()
+        {
+            try
+            {
+                if (lbNetPing.Items.Count <= 0)
+                {
+                    ShowNotification("You aren't pinging anything currently");
+                    return;
+                }
+
+                PingStat setPingStat = PingStat.Unknown;
+
+                if (_pingPaused)
+                {
+                    _pingPaused = false;
+                    setPingStat = PingStat.Active;
+                    btnPingPauseAll.Content = @"❚❚ All";
+                }
+                else
+                {
+                    _pingPaused = true;
+                    setPingStat = PingStat.Paused;
+                    btnPingPauseAll.Content = @"▶ All";
+                }
+
+                foreach (BasicPingEntry item in lbNetPing.Items)
+                {
+                    item.TogglePing(setPingStat);
+                }
+
+                if (setPingStat == PingStat.Active)
+                    ShowNotification("All Pings Resumed");
+                else if (setPingStat == PingStat.Paused)
+                    ShowNotification("All Pings Paused");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void DestroyAllPings()
+        {
+            try
+            {
+                if (lbNetPing.Items.Count <= 0)
+                {
+                    ShowNotification("You aren't pinging anything currently");
+                    return;
+                }
+
+                foreach (var item in lbNetPing.Items.Cast<BasicPingEntry>().ToList())
+                {
+                    lbNetPing.Items.Remove(item);
+                    item.Destroy();
+                }
+
+                ShowNotification("All Pings Destroyed!");
             }
             catch (Exception ex)
             {

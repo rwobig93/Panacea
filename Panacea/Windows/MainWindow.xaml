@@ -8,7 +8,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
         mc:Ignorable="d"
-        Title="MainWindow" Height="340" MinHeight="340" Width="625" MinWidth="625" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070"
+        Title="Panacea" Height="340" MinHeight="340" Width="625" MinWidth="625" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070"
         MouseDown="winMain_MouseDown" Loaded="winMain_Loaded" Closing="winMain_Closing" Closed="winMain_Closed" Background="{x:Null}">
     <Window.Resources>
         <Style x:Key="ButtonControlFore">
@@ -16,6 +16,18 @@
         </Style>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus204Converter x:Key="Minus204Converter"/>
+        <ContextMenu x:Key="cmNotificationIcon" Foreground="#FF8D8D8D" >
+            <ContextMenu.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                    <GradientStop Color="Black" Offset="1"/>
+                </LinearGradientBrush>
+            </ContextMenu.Background>
+            <MenuItem x:Name="HDShowPanacea" Header="Show Panacea" Click="HDShowPanacea_Click" />
+            <MenuItem x:Name="HDShowUtilBar" Header="Show UtilityBar" Click="HDShowUtilBar_Click" />
+            <Separator />
+            <MenuItem x:Name="HDQuit" Header="Quit" Click="HDQuit_Click" />
+        </ContextMenu>
     </Window.Resources>
     <Grid x:Name="grdMain" Focusable="True">
         <Grid.Background>
@@ -190,7 +202,13 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <TextBox x:Name="txtNetAddress" Margin="222,2,51,0" KeyDown="txtNetAddress_KeyDown" Style="{StaticResource TextboxNoReaction}" TextWrapping="Wrap" Text="8.8.8.8" VerticalAlignment="Top"  Height="22">
+            <TextBox x:Name="txtNetAddress" Margin="222,2,51,0" KeyDown="txtNetAddress_KeyDown" Style="{StaticResource TextboxNoReaction}" TextWrapping="Wrap" Text="8.8.8.8" VerticalAlignment="Top" VerticalContentAlignment="Center" Height="24">
+                <TextBox.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF2C2C2C" Offset="0"/>
+                        <GradientStop Color="#FF171717" Offset="1"/>
+                    </LinearGradientBrush>
+                </TextBox.Background>
                 <i:Interaction.Behaviors>
                     <src:DoubleClickBehavior/>
                 </i:Interaction.Behaviors>

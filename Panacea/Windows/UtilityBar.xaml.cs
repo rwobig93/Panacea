@@ -275,8 +275,8 @@ namespace Panacea.Windows
         private void PreInitializeStartup()
         {
             UtilityBar.UtilBarMain = this;
-            this.Top = 2560;
-            this.Left = 1920;
+            this.Top = -32000;
+            this.Left = -32000;
             tLocationWatcher();
         }
 
@@ -504,6 +504,7 @@ namespace Panacea.Windows
             try
             {
                 Clipboard.SetText(clip);
+                ShowNotification($"Clipboard Set: {clip}");
             }
             catch (Exception ex)
             {
@@ -622,7 +623,7 @@ namespace Panacea.Windows
             }
         }
 
-        private void ShowNotification(string notification)
+        public void ShowNotification(string notification)
         {
             try
             {
@@ -717,9 +718,11 @@ namespace Panacea.Windows
                 switch (currentEnterAction)
                 {
                     case EnterAction.DNSLookup:
+                        popupNetwork.PopupShow();
                         NetNSLookupEntryAdd();
                         break;
                     case EnterAction.Ping:
+                        popupNetwork.PopupShow();
                         NetPingEntryAdd();
                         break;
                     case EnterAction.Trace:
@@ -782,6 +785,11 @@ namespace Panacea.Windows
             try
             {
                 var address = txtNetMain.Text;
+                if (string.IsNullOrWhiteSpace(address))
+                {
+                    ShowNotification("Nothing was entered, try again");
+                    return;
+                }
                 if (VerifyIfMacAddress(address))
                 {
                     uDebugLogAdd($"NetAddress value was found to be a Mac Address, opening Macpopup: {address}");
@@ -794,7 +802,7 @@ namespace Panacea.Windows
                 var validEntries = string.Empty;
                 foreach (var entry in entries)
                 {
-                    if (!VerifyInput(entry, EnterAction.Ping))
+                    if (!VerifyInput(entry, EnterAction.Ping) || string.IsNullOrWhiteSpace(entry))
                     {
                         uDebugLogAdd($"Input entered was invalid, sending notification and canceling ping | Input: {entry}");
                         sendNotif = true;
@@ -1159,16 +1167,16 @@ namespace Panacea.Windows
             BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
             worker.DoWork += (sender, e) =>
             {
+                uint? wlanSignalQuality = null;
                 while (true)
                 {
                     try
                     {
-                        //if (wClient == null)
-                        //{
-                        //    wClient = new WlanClient();
-                        //    uDebugLogAdd("WlanClient was null, initialized a new one");
-                        //}
-                        wClient = new WlanClient();
+                        if (wClient == null)
+                        {
+                            wClient = new WlanClient();
+                            uDebugLogAdd("WlanClient was null, initialized a new one");
+                        }
                         _connectedSSIDs.Clear();
                         foreach (var wlanIf in wClient.Interfaces)
                         {
@@ -1178,6 +1186,10 @@ namespace Panacea.Windows
                                 if (CurrentWifiInterface.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString() != wlanIf.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString())
                                     _bssidChanged = true;
                             CurrentWifiInterface = wlanIf;
+                            if (wlanSignalQuality != null)
+                                if (wlanSignalQuality != CurrentWifiInterface.CurrentConnection.wlanAssociationAttributes.wlanSignalQuality)
+                                    uDebugLogAdd($"Wlan Signal quality changed: [B] {wlanSignalQuality} [A] {CurrentWifiInterface.CurrentConnection.wlanAssociationAttributes.wlanSignalQuality}");
+                            wlanSignalQuality = CurrentWifiInterface.CurrentConnection.wlanAssociationAttributes.wlanSignalQuality;
                         }
                         if (_bssidChanged)
                         {
@@ -1465,8 +1477,6 @@ namespace Panacea.Windows
                     else
                         rssi = $"{dBm} dBm";
                     lblWlanRSSI.Content = rssi;
-                    uDebugLogAdd($"RSSI: {rssi} | HALF: {half} | DBM: {dBm} | SQ: {signalQuality}");
-                    //lblWlanRSSI.Content = $"-{CurrentWifiInterface.RSSI} dBm";
                 }
             }
             catch (Exception)

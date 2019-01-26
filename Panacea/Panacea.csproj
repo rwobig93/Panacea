@@ -84,6 +84,9 @@
     <Reference Include="Costura, Version=3.2.1.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
       <HintPath>..\packages\Costura.Fody.3.2.1\lib\net40\Costura.dll</HintPath>
     </Reference>
+    <Reference Include="Hardcodet.Wpf.TaskbarNotification, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.0.8\lib\net451\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
+    </Reference>
     <Reference Include="LiveCharts, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
       <HintPath>..\packages\LiveCharts.0.9.7\lib\net45\LiveCharts.dll</HintPath>
     </Reference>
@@ -240,7 +243,7 @@
     <Resource Include="Resources\Entypo.ttf" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Dependencies\Panacea_Icon.ico" />
+    <EmbeddedResource Include="Dependencies\Panacea_Icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">

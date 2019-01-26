@@ -19,6 +19,7 @@ namespace Panacea.Classes
         private static string logDir = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\";
         private static string exDir = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\Exceptions\";
         private static Random random = new Random((int)(DateTime.Now.Ticks & 0x7FFFFFFF));
+        public static MainWindow MainWindow = null;
         
         public static void LogException(Exception ex, [CallerLineNumber] int lineNum = 0, [CallerMemberName] string caller = "", [CallerFilePath] string path = "")
         {
@@ -113,6 +114,27 @@ namespace Panacea.Classes
         public static Version GetVersionNumber(string assemblyPath)
         {
             return Assembly.LoadFile(assemblyPath).GetName().Version;
+        }
+
+        private static string FormatResourceName(Assembly assembly, string resourceName)
+        {
+            return assembly.GetName().Name + "." + resourceName.Replace(" ", "_")
+                                                               .Replace("\\", ".")
+                                                               .Replace("/", ".");
+        }
+
+        public static Stream GetEmbeddedResource(string resourceName, Assembly assembly)
+        {
+            Stream desiredStream;
+            resourceName = FormatResourceName(assembly, resourceName);
+            using (Stream resourceStream = assembly.GetManifestResourceStream(resourceName))
+            {
+                if (resourceStream == null)
+                    return null;
+
+                desiredStream = resourceStream;
+            }
+            return desiredStream;
         }
     }
 }

@@ -30,6 +30,7 @@ using System.IO.Compression;
 using System.Net.Mail;
 using MahApps.Metro.Controls;
 using Octokit;
+using System.Windows.Media.Imaging;
 
 namespace Panacea
 {
@@ -106,6 +107,8 @@ namespace Panacea
         {
             // Allow borderless window to be resized
             WindowChrome.SetWindowChrome(this, new WindowChrome() { ResizeBorderThickness = new Thickness(5), CaptionHeight = .05 });
+            if (UtilityBar.UtilBarMain != null)
+                HideWinMainInBackground();
             CleanupOldFiles();
         }
 
@@ -125,7 +128,8 @@ namespace Panacea
 
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            //this.Close();
+            HideWinMainInBackground();
         }
 
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
@@ -134,6 +138,30 @@ namespace Panacea
             {
                 uDebugLogAdd("Minimizing window");
                 this.WindowState = WindowState.Minimized;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void HDShowPanacea_Click(object sender, RoutedEventArgs e)
+        {
+            BringWinMainBackFromTheVoid();
+        }
+
+        private void HDShowUtilBar_Click(object sender, RoutedEventArgs e)
+        {
+            OpenUtilityBar();
+        }
+
+        private void HDQuit_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var response = Prompt.YesNo("Are you sure you want to Anihilate the Panacea process completely?");
+                if (response == Prompt.PromptResponse.Yes)
+                    this.Close();
             }
             catch (Exception ex)
             {
@@ -907,6 +935,7 @@ namespace Panacea
             BtnTest.Visibility = Visibility.Visible;
 #endif
             DataContext = this;
+            Toolbox.MainWindow = this;
             startingUp = true;
             SubscribeToEvents();
             SetupAppFiles();
@@ -1437,7 +1466,7 @@ namespace Panacea
             }
         }
 
-        private void OpenUtilityBar()
+        public void OpenUtilityBar()
         {
             try
             {
@@ -1449,6 +1478,50 @@ namespace Panacea
                 }
                 else
                     ShowNotification("A Utility Bar is Already Open");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void InitializeBackgroundNotificationIcon()
+        {
+            try
+            {
+                uDebugLogAdd("Initializing Background Notification Icon");
+                Hardcodet.Wpf.TaskbarNotification.TaskbarIcon taskIcon = new Hardcodet.Wpf.TaskbarNotification.TaskbarIcon { Icon = new System.Drawing.Icon(Assembly.GetExecutingAssembly().GetManifestResourceStream("Panacea.Dependencies.Panacea_Icon.ico")) };
+                taskIcon.LeftClickCommand = new CommandShowPanacea();
+                taskIcon.ContextMenu = this.FindResource("cmNotificationIcon") as ContextMenu;
+                uDebugLogAdd("Background Notification Icon successfully initialized");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void HideWinMainInBackground()
+        {
+            try
+            {
+                this.WindowState = WindowState.Minimized;
+                this.ShowInTaskbar = false;
+                uDebugLogAdd("MainWindow has been hidden in the background");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void BringWinMainBackFromTheVoid()
+        {
+            try
+            {
+                this.WindowState = WindowState.Normal;
+                this.ShowInTaskbar = true;
+                uDebugLogAdd("MainWindow has been brought back from the void");
             }
             catch (Exception ex)
             {
@@ -2149,6 +2222,7 @@ namespace Panacea
                 {
                     uDebugLogAdd($"SettingsACT: Show Util on Startup is: {Toolbox.settings.ShowUtilBarOnStartup} | Showing utility bar");
                     OpenUtilityBar();
+                    InitializeBackgroundNotificationIcon();
                 }
                 if (Toolbox.settings.StartMinimized)
                 {
