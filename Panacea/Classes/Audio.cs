@@ -27,6 +27,26 @@ namespace Panacea.Classes
                 OnPropertyChanged("EndpointAudioDeviceList");
             }
         }
+        private static List<MMDevice> _endpointAudioRecordingDevices = new List<MMDevice>();
+        public List<MMDevice> EndpointAudioRecordingDeviceList
+        {
+            get { return _endpointAudioRecordingDevices; }
+            set
+            {
+                _endpointAudioRecordingDevices = value;
+                OnPropertyChanged("EndpointAudioRecordingDeviceList");
+            }
+        }
+        private static List<MMDevice> _endpointAudioPlaybackDevices = new List<MMDevice>();
+        public List<MMDevice> EndpointAudioPlaybackDeviceList
+        {
+            get { return _endpointAudioPlaybackDevices; }
+            set
+            {
+                _endpointAudioPlaybackDevices = value;
+                OnPropertyChanged("EndpointAudioPlaybackDeviceList");
+            }
+        }
 
         public static List<MMDevice> GetAudioDevices(DeviceState deviceState = DeviceState.Active)
         {
@@ -39,10 +59,44 @@ namespace Panacea.Classes
             return audioList;
         }
 
+        public static List<MMDevice> GetAudioRecordingDevices(DeviceState deviceState = DeviceState.Active)
+        {
+            var audioList = new List<MMDevice>();
+            var enumerator = new MMDeviceEnumerator();
+            foreach (var wasapi in enumerator.EnumerateAudioEndPoints(DataFlow.Capture, deviceState))
+            {
+                audioList.Add(wasapi);
+            }
+            return audioList;
+        }
+
+        public static List<MMDevice> GetAudioPlaybackDevices(DeviceState deviceState = DeviceState.Active)
+        {
+            var audioList = new List<MMDevice>();
+            var enumerator = new MMDeviceEnumerator();
+            foreach (var wasapi in enumerator.EnumerateAudioEndPoints(DataFlow.Render, deviceState))
+            {
+                audioList.Add(wasapi);
+            }
+            return audioList;
+        }
+
         public static MMDevice GetDefaultAudioDevice(Role role = Role.Multimedia)
         {
             var enumerator = new MMDeviceEnumerator();
             return enumerator.GetDefaultAudioEndpoint(DataFlow.Render, role);
+        }
+
+        public static MMDevice GetDefaultAudioPlaybackDevice(Role role = Role.Multimedia)
+        {
+            var enumerator = new MMDeviceEnumerator();
+            return enumerator.GetDefaultAudioEndpoint(DataFlow.Render, role);
+        }
+
+        public static MMDevice GetDefaultAudioRecordingDevice(Role role = Role.Multimedia)
+        {
+            var enumerator = new MMDeviceEnumerator();
+            return enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, role);
         }
 
         public static void SetDefaultAudioDevice(MMDevice mMDevice)

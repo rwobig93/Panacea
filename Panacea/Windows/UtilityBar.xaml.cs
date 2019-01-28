@@ -124,6 +124,7 @@ namespace Panacea.Windows
         private DoubleAnimation outAnimation = new DoubleAnimation() { To = 0.0, Duration = TimeSpan.FromSeconds(.7) };
         private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.7) };
         private NetworkPopup popupNetwork;
+        private AudioPopup popupAudio;
         private INTER.HwndSource _source;
 
         public WlanClient.WlanInterface CurrentWifiInterface { get; private set; }
@@ -536,7 +537,20 @@ namespace Panacea.Windows
                     case PopupMenu.Settings:
                         throw new NotImplementedException();
                     case PopupMenu.Audio:
-                        throw new NotImplementedException();
+                        // Audio Menu
+                        if (popupAudio == null)
+                        {
+                            uDebugLogAdd("Audio Popup is null, Creating new Audio popup");
+                            CreatePopup(menu);
+                        }
+                        else if (popupAudio != null)
+                        {
+                            if (popupAudio.Opacity == 0)
+                                popupAudio.PopupShow();
+                            else if (popupAudio.Opacity == 1.0)
+                                popupAudio.PopupHide();
+                        }
+                        break;
                     case PopupMenu.Emotes:
                         throw new NotImplementedException();
                     case PopupMenu.Windows:
@@ -562,12 +576,15 @@ namespace Panacea.Windows
                     case PopupMenu.Network:
                         popupNetwork = new NetworkPopup();
                         popupNetwork.Show();
-                        uDebugLogAdd($"Initialed new Network Popup");
+                        uDebugLogAdd($"Initialized new Network Popup");
                         break;
                     case PopupMenu.Settings:
                         throw new NotImplementedException();
                     case PopupMenu.Audio:
-                        throw new NotImplementedException();
+                        popupAudio = new AudioPopup();
+                        popupAudio.Show();
+                        uDebugLogAdd("Initialized new Audio Popup");
+                        break;
                     case PopupMenu.Emotes:
                         throw new NotImplementedException();
                     case PopupMenu.Windows:
@@ -587,10 +604,14 @@ namespace Panacea.Windows
                 switch (primary)
                 {
                     case PopupMenu.Network:
+                        if (!popupAudio.PoppedOut)
+                            popupAudio.PopupHide();
                         break;
                     case PopupMenu.Settings:
                         break;
                     case PopupMenu.Audio:
+                        if (!popupNetwork.PoppedOut)
+                        popupNetwork.PopupHide();
                         break;
                     case PopupMenu.Emotes:
                         break;

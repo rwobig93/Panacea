@@ -31,9 +31,7 @@ namespace Panacea.Windows
     {
         public NetworkPopup()
         {
-            this.Top = UtilityBar.UtilBarMain.Top - 300;
-            this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuNetwork.Margin.Left;
-            this.Opacity = 0;
+            SetDefaultLocation();
             InitializeComponent();
             Startup();
         }
@@ -48,7 +46,7 @@ namespace Panacea.Windows
         private double PopinTop { get { return UtilityBar.UtilBarMain.Top - this.ActualHeight; } }
         private double PopinWidth { get { return 535; } }
         private double PopinHeight { get { return 300; } }
-        public bool Popout { get; set; } = false;
+        public bool PoppedOut { get; set; } = false;
         public bool resolvingDNS = false;
         private int resolvedEntries = 0;
 
@@ -58,15 +56,7 @@ namespace Panacea.Windows
 
         private void WinNetMain_Loaded(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                // Allow borderless window to be resized
-                WindowChrome.SetWindowChrome(this, new WindowChrome() { ResizeBorderThickness = new Thickness(5), CaptionHeight = .05 });
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
+            EnableWindowResizing();
         }
 
         private void WinNetMain_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -91,7 +81,7 @@ namespace Panacea.Windows
         {
             try
             {
-                if (e.ChangedButton == MouseButton.Left && Popout)
+                if (e.ChangedButton == MouseButton.Left && PoppedOut)
                     winNetMain.DragMove();
             }
             catch (Exception ex)
@@ -205,6 +195,7 @@ namespace Panacea.Windows
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             PopupHide();
+            this.ShowInTaskbar = false;
         }
 
         #endregion
@@ -215,6 +206,26 @@ namespace Panacea.Windows
         {
             PopupShow();
             FinishStartup();
+        }
+
+        private void SetDefaultLocation()
+        {
+            this.Top = UtilityBar.UtilBarMain.Top - 300;
+            this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuNetwork.Margin.Left;
+            this.Opacity = 0;
+        }
+
+        private void EnableWindowResizing()
+        {
+            try
+            {
+                // Allow borderless window to be resized
+                WindowChrome.SetWindowChrome(this, new WindowChrome() { ResizeBorderThickness = new Thickness(5), CaptionHeight = .05 });
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void FinishStartup()
@@ -445,9 +456,9 @@ namespace Panacea.Windows
         {
             try
             {
-                if (Popout)
+                if (PoppedOut)
                 {
-                    Popout = false;
+                    PoppedOut = false;
                     this.Left = PopinLeft;
                     this.Top = PopinTop;
                     this.ResizeMode = ResizeMode.NoResize;
@@ -456,9 +467,9 @@ namespace Panacea.Windows
                     btnMinimize.Visibility = Visibility.Hidden;
                     btnPopInOut.Content = "🢅";
                 }
-                else if (!Popout)
+                else if (!PoppedOut)
                 {
-                    Popout = true;
+                    PoppedOut = true;
                     this.Left += 10;
                     this.Top -= 10;
                     this.ResizeMode = ResizeMode.CanResize;
@@ -484,7 +495,6 @@ namespace Panacea.Windows
                 this.Width = PopinWidth;
                 this.Height = PopinHeight;
                 btnReset.Visibility = Visibility.Hidden;
-                Popout = true;
                 TogglePopout();
             }
             catch (Exception ex)

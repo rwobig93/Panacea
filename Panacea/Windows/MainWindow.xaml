@@ -80,8 +80,7 @@
                 </ListBox.ItemTemplate>
             </ListBox>
             <Label x:Name="lblAudioDevices" HorizontalContentAlignment="Center" Content="Windows Playback Devices" VerticalAlignment="Top" Foreground="#FF8D8D8D" Margin="10,2,10,0"/>
-            <Button x:Name="btnRefreshAudio" Style="{StaticResource BaseButton}" Click="btnRefreshAudio_Click" Content="Refresh" HorizontalAlignment="Right" VerticalAlignment="Top" Width="70" Foreground="#FF8D8D8D" Margin="0,4,10,0" Height="24">
-            </Button>
+            <Button x:Name="btnRefreshAudio" Style="{StaticResource BaseButton}" Click="btnRefreshAudio_Click" Content="Refresh" HorizontalAlignment="Right" VerticalAlignment="Top" Width="70" Foreground="#FF8D8D8D" Margin="0,4,10,0" Height="24"/>
         </Grid>
         <StackPanel x:Name="pnlMenu" HorizontalAlignment="Left" Margin="2,30,0,20" Width="72" Panel.ZIndex="90" Background="#02000000">
             <Button x:Name="btnMenuAudio" Style="{StaticResource BaseButton}" Content="Audio" Click="btnMenuAudio_Click" Margin="-1,0,1,0"/>
