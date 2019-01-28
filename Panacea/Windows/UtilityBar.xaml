@@ -95,7 +95,7 @@
                 </LinearGradientBrush>
             </Button.Background>
         </Button>
-        <TextBox x:Name="txtNetMain" Style="{StaticResource TextboxNoReaction}" KeyDown="TxtNetMain_KeyDown" Focusable="True" HorizontalAlignment="Left" Margin="306,3,0,3" TextWrapping="NoWrap" Width="211">
+        <TextBox x:Name="txtNetMain" Style="{StaticResource TextboxNoReaction}" PreviewKeyDown="TxtNetMain_PreviewKeyDown" Focusable="True" HorizontalAlignment="Left" Margin="306,3,0,3" TextWrapping="NoWrap" Width="211">
             <i:Interaction.Behaviors>
                 <src:DoubleClickBehavior/>
             </i:Interaction.Behaviors>
