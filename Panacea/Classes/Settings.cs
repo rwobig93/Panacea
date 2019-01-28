@@ -61,6 +61,7 @@ namespace Panacea.Classes
         private EnterAction _utilBarEnterAction { get; set; } = EnterAction.DNSLookup;
         private DTFormat _dateTimeFormat { get; set; } = DTFormat.Sec;
         private Emotes _currentEmote { get; set; } = Emotes.Shrug;
+        private List<PopoutPreferences> _popoutPreferencesList { get; set; } = new List<PopoutPreferences>();
 
         #endregion
 
@@ -426,6 +427,15 @@ namespace Panacea.Classes
             {
                 _currentEmote = value;
                 OnPropertyChanged("CurrentEmote");
+            }
+        }
+        public List<PopoutPreferences> PopoutPreferencesList
+        {
+            get { return _popoutPreferencesList; }
+            set
+            {
+                _popoutPreferencesList = value;
+                OnPropertyChanged("PopoutPreferencesList");
             }
         }
 

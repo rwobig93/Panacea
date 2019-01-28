@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Forms;
 using static Panacea.MainWindow;
 using System.Windows.Input;
+using static Panacea.Windows.UtilityBar;
 
 namespace Panacea.Classes
 {
@@ -52,6 +53,12 @@ namespace Panacea.Classes
         public int BottomMostWorkArea { get { return Screens.OrderBy(x => x.WorkingArea.Height).Last().WorkingArea.Y + Screens.OrderBy(x => x.WorkingArea.Y).Last().WorkingArea.Height; } }
         public System.Drawing.Rectangle TotalBounds { get { return new System.Drawing.Rectangle() { X = LeftMostBound, Width = RightMostBound - LeftMostBound, Y = TopMostBound, Height = BottomMostBound - TopMostBound, Location = new System.Drawing.Point(LeftMostBound, TopMostBound), Size = new System.Drawing.Size(RightMostBound - LeftMostBound, BottomMostBound - TopMostBound) }; } }
         public System.Drawing.Rectangle TotalWorkArea { get { return new System.Drawing.Rectangle() { X = LeftMostWorkArea, Width = RightMostWorkArea - LeftMostWorkArea, Y = TopMostWorkArea, Height = BottomMostWorkArea - TopMostWorkArea, Location = new System.Drawing.Point(LeftMostWorkArea, TopMostWorkArea), Size = new System.Drawing.Size(RightMostWorkArea - LeftMostWorkArea, BottomMostWorkArea - TopMostWorkArea) }; } }
+    }
+    public class PopoutPreferences
+    {
+        public PopupMenu PopupType { get; set; }
+        public System.Drawing.Rectangle PreferredLocation { get; set; }
+        public bool PoppedOut { get; set; }
     }
     public class CommandShowPanacea : ICommand
     {

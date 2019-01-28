@@ -3049,7 +3049,7 @@ namespace Panacea
                         btnWinProfile1.BorderBrush = Defaults.BaseBorderBrush;
                         break;
                 }
-                UpdateWindowItemOptions();
+                //UpdateWindowItemOptions();
             }
             catch (Exception ex)
             {

@@ -147,6 +147,7 @@ namespace Panacea.Windows
 
         private void WinMain_Closing(object sender, CancelEventArgs e)
         {
+            SavePopoutPreferences();
             CloseUtilBar();
         }
 
@@ -285,6 +286,7 @@ namespace Panacea.Windows
         {
             tNetworkConnectivityMonitor();
             NetToggleEnterAction(currentEnterAction);
+            UpdateCurrentWindowProfile();
         }
 
         private void InitializeGlobalHotkey()
@@ -716,6 +718,91 @@ namespace Panacea.Windows
                         uDebugLogAdd("Something happened and the incorrect notification state was used, accepted states: 1 or 2");
                         break;
                 }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void SavePopoutPreferences()
+        {
+            try
+            {
+                uDebugLogAdd("Saving popout preferences");
+                if (popupNetwork != null)
+                {
+                    uDebugLogAdd($"Popout isn't null: {PopupMenu.Network}");
+                    if (Toolbox.settings.PopoutPreferencesList.Find(x => x.PopupType == PopupMenu.Network) != null)
+                    {
+                        UpdatePopoutPreferenceEntry(PopupMenu.Network);
+                    }
+                    else
+                    {
+                        Toolbox.settings.PopoutPreferencesList.Add(new PopoutPreferences()
+                        {
+                            PopupType = PopupMenu.Network,
+                            PoppedOut = popupNetwork.PoppedOut,
+                            PreferredLocation = new System.Drawing.Rectangle(Convert.ToInt32(popupNetwork.Left), Convert.ToInt32(popupNetwork.Top), Convert.ToInt32(popupNetwork.ActualWidth), Convert.ToInt32(popupNetwork.ActualHeight))
+                        });
+                        uDebugLogAdd($"Created new popout preferences entry for one that didn't previously exist: [type]{PopupMenu.Network}  [po]{popupNetwork.PoppedOut}  [left]{popupNetwork.Left}  [top]{popupNetwork.Top}  [w]{popupNetwork.ActualWidth}  [h]{popupNetwork.ActualHeight}");
+                    }
+                }
+                if (popupAudio != null)
+                {
+                    uDebugLogAdd($"Popout isn't null: {PopupMenu.Audio}");
+                    if (Toolbox.settings.PopoutPreferencesList.Find(x => x.PopupType == PopupMenu.Audio) != null)
+                    {
+                        UpdatePopoutPreferenceEntry(PopupMenu.Audio);
+                    }
+                    else
+                    {
+                        Toolbox.settings.PopoutPreferencesList.Add(new PopoutPreferences()
+                        {
+                            PopupType = PopupMenu.Audio,
+                            PoppedOut = popupAudio.PoppedOut,
+                            PreferredLocation = new System.Drawing.Rectangle(Convert.ToInt32(popupAudio.Left), Convert.ToInt32(popupAudio.Top), Convert.ToInt32(popupAudio.ActualWidth), Convert.ToInt32(popupAudio.ActualHeight))
+                        });
+                        uDebugLogAdd($"Created new popout preferences entry for one that didn't previously exist: [type]{PopupMenu.Audio}  [po]{popupAudio.PoppedOut}  [left]{popupAudio.Left}  [top]{popupAudio.Top}  [w]{popupAudio.ActualWidth}  [h]{popupAudio.ActualHeight}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void UpdatePopoutPreferenceEntry(PopupMenu menu)
+        {
+            try
+            {
+                uDebugLogAdd($"Updating popout preference entry for {menu.ToString()} popout");
+                Window winToUpdate = null;
+                bool poppedOut = false;
+                switch (menu)
+                {
+                    case PopupMenu.Network:
+                        winToUpdate = popupNetwork;
+                        poppedOut = popupNetwork.PoppedOut;
+                        break;
+                    case PopupMenu.Settings:
+                        throw new NotImplementedException();
+                    case PopupMenu.Audio:
+                        winToUpdate = popupAudio;
+                        poppedOut = popupAudio.PoppedOut;
+                        break;
+                    case PopupMenu.Emotes:
+                        throw new NotImplementedException();
+                    case PopupMenu.Windows:
+                        throw new NotImplementedException();
+                }
+                uDebugLogAdd($"Secured winToUpdate: {winToUpdate.Name}");
+                var prefToUpdate = Toolbox.settings.PopoutPreferencesList.Find(x => x.PopupType == menu);
+                uDebugLogAdd($"Secured prefToUpdate: {prefToUpdate.PopupType}");
+                prefToUpdate.PoppedOut = poppedOut;
+                prefToUpdate.PreferredLocation = new System.Drawing.Rectangle(Convert.ToInt32(winToUpdate.Left), Convert.ToInt32(winToUpdate.Top), Convert.ToInt32(winToUpdate.ActualWidth), Convert.ToInt32(winToUpdate.ActualHeight));
+                uDebugLogAdd($"Finished updating popout preference: [type]{prefToUpdate.PopupType}  [po]{poppedOut}  [left]{winToUpdate.Left}  [top]{winToUpdate.Top}  [w]{winToUpdate.ActualWidth}  [h]{winToUpdate.ActualHeight}");
             }
             catch (Exception ex)
             {
@@ -1613,7 +1700,161 @@ namespace Panacea.Windows
 
         private void MoveProfileWindows()
         {
-            throw new NotImplementedException();
+            try
+            {
+                uDebugLogAdd("Starting All Window Move");
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                var workerCount = 0;
+                foreach (var window in Toolbox.settings.ActiveWindowList.ToList())
+                {
+                    workerCount++;
+                    BackgroundWorker worker = new BackgroundWorker();
+                    worker.DoWork += (sender, e) =>
+                    {
+                        try
+                        {
+                            MoveProcessHandle(window);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogException(ex);
+                        }
+                        finally
+                        {
+                            workerCount--;
+                        }
+                    };
+                    worker.RunWorkerAsync();
+                }
+                BackgroundWorker verifyier = new BackgroundWorker() { WorkerReportsProgress = true };
+                verifyier.DoWork += (ws, we) =>
+                {
+                    while (workerCount != 0)
+                    {
+                        Thread.Sleep(100);
+                    }
+                    stopwatch.Stop();
+                    uDebugLogAdd($"Finished All Window Move after {stopwatch.Elapsed.Seconds}s {stopwatch.Elapsed.Milliseconds}ms");
+                    ShowNotification("Moved all windows");
+                };
+                verifyier.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void UpdateCurrentWindowProfile()
+        {
+            try
+            {
+                uDebugLogAdd($"Current window profile is {Toolbox.settings.CurrentWindowProfile}");
+                string profileName = string.Empty;
+                switch (Toolbox.settings.CurrentWindowProfile)
+                {
+                    case WindowProfile.Profile1:
+                        profileName = Toolbox.settings.WindowProfileName1;
+                        break;
+                    case WindowProfile.Profile2:
+                        profileName = Toolbox.settings.WindowProfileName2;
+                        break;
+                    case WindowProfile.Profile3:
+                        profileName = Toolbox.settings.WindowProfileName3;
+                        break;
+                    case WindowProfile.Profile4:
+                        profileName = Toolbox.settings.WindowProfileName4;
+                        break;
+                }
+                uDebugLogAdd($"Profile name is: {profileName}");
+                btnMenuWindows.Content = profileName;
+                uDebugLogAdd("Finished updating current windows profile");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveProcessHandle(WindowItem selectedWindow)
+        {
+            try
+            {
+                bool moveAll = false;
+
+                /// Title is a wildcard, lets move ALL THE WINDOWS!!!
+                if (selectedWindow.WindowInfo.Title == "*")
+                {
+                    moveAll = true;
+                    uDebugLogAdd($"WindowInfo title for {selectedWindow.WindowInfo.Name} is {selectedWindow.WindowInfo.Title} so we will be MOVING ALL THE WINDOWS!!!!");
+                }
+                /// Title isn't a wildcard, lets only move the windows we want
+                else
+                    uDebugLogAdd($"WindowInfo title for {selectedWindow.WindowInfo.Name} is {selectedWindow.WindowInfo.Title} so I can only move matching handles... :(");
+
+                List<DetailedProcess> foundList = new List<DetailedProcess>();
+                foreach (var proc in Process.GetProcessesByName(selectedWindow.WindowInfo.Name))
+                {
+                    foreach (var handle in WinAPIWrapper.EnumerateProcessWindowHandles(proc.Id))
+                    {
+                        try
+                        {
+                            var detProc = DetailedProcess.Create(proc, handle);
+                            foundList.Add(detProc);
+                            uDebugLogAdd($"Added to list | [{detProc.Handle}]{detProc.Name} :: {detProc.Title}");
+                        }
+                        catch (Exception ex)
+                        {
+                            uDebugLogAdd($"Unable to add handle to the list | [{handle}]{proc.ProcessName}: {ex.Message}");
+                        }
+                    }
+                }
+                if (moveAll)
+                    foreach (var detProc in foundList)
+                    {
+                        try
+                        {
+                            if (Toolbox.settings.ActiveWindowList.Find(x =>
+                            x.WindowInfo.Name == detProc.Name &&
+                            x.WindowInfo.Title == detProc.Title
+                            ) == null)
+                            {
+                                uDebugLogAdd($"Moving handle | [{detProc.Handle}]{detProc.Name} :: {detProc.Title}");
+                                WinAPIWrapper.MoveWindow(detProc.Handle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                            }
+                            else
+                                uDebugLogAdd($"Skipping handle window as it has another place to be | [{detProc.Handle}]{detProc.Name} {detProc.Title}");
+                        }
+                        catch (Exception ex)
+                        {
+                            uDebugLogAdd($"Unable to move handle window | [{detProc.Handle}]{detProc.Name} {detProc.Title}: {ex.Message}");
+                        }
+                    }
+                else
+                {
+                    foreach (var detProc in foundList)
+                    {
+                        try
+                        {
+                            if (detProc.Name == selectedWindow.WindowInfo.Name &&
+                                            detProc.Title == selectedWindow.WindowInfo.Title)
+                            {
+                                uDebugLogAdd($"Matched window & title, moving: [{detProc.Handle}]{detProc.Name} | {detProc.Title}");
+                                WinAPIWrapper.MoveWindow(detProc.Handle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            uDebugLogAdd($"Unable to move handle window | [{detProc.Handle}]{detProc.Name} {detProc.Title}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion
