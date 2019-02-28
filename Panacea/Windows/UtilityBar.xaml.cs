@@ -1,5 +1,6 @@
 ﻿using NativeWifi;
 using Panacea.Classes;
+using Panacea.Windows.Popups;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -127,6 +128,9 @@ namespace Panacea.Windows
         private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.7) };
         private NetworkPopup popupNetwork;
         private AudioPopup popupAudio;
+        private WindowPopup popupWindows;
+        private EmotePopup popupEmote;
+        private SettingsPopup popupSettings;
         private INTER.HwndSource _source;
 
         public WlanClient.WlanInterface CurrentWifiInterface { get; private set; }
@@ -165,7 +169,8 @@ namespace Panacea.Windows
 
         private void BtnMenuWindows_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            ToggleMenuPopup(PopupMenu.Windows);
+            if (e.ChangedButton == MouseButton.Right)
+                ToggleMenuPopup(PopupMenu.Windows);
         }
 
         private void BtnMenuWindows_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -180,7 +185,8 @@ namespace Panacea.Windows
 
         private void BtnMenuEmote_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            ToggleMenuPopup(PopupMenu.Emotes);
+            if (e.ChangedButton == MouseButton.Right)
+                ToggleMenuPopup(PopupMenu.Emotes);
         }
 
         private void BtnMenuEmote_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -570,6 +576,7 @@ namespace Panacea.Windows
         {
             try
             {
+                uDebugLogAdd($"Toggling Popup Menu {menu.ToString()}");
                 switch (menu)
                 {
                     case PopupMenu.Network:
@@ -588,7 +595,20 @@ namespace Panacea.Windows
                         }
                         break;
                     case PopupMenu.Settings:
-                        throw new NotImplementedException();
+                        // Settings Menu
+                        if (popupSettings == null)
+                        {
+                            uDebugLogAdd("Settings Popup is null, Creating new Settings popup");
+                            CreatePopup(menu);
+                        }
+                        else if (popupSettings != null)
+                        {
+                            if (popupSettings.Opacity == 0)
+                                popupSettings.PopupShow();
+                            else if (popupSettings.Opacity == 1.0)
+                                popupSettings.PopupHide();
+                        }
+                        break;
                     case PopupMenu.Audio:
                         // Audio Menu
                         if (popupAudio == null)
@@ -605,9 +625,35 @@ namespace Panacea.Windows
                         }
                         break;
                     case PopupMenu.Emotes:
-                        throw new NotImplementedException();
+                        // Emote Menu
+                        if (popupEmote == null)
+                        {
+                            uDebugLogAdd("Emote Popup is null, Creating new Emote popup");
+                            CreatePopup(menu);
+                        }
+                        else if (popupEmote != null)
+                        {
+                            if (popupEmote.Opacity == 0)
+                                popupEmote.PopupShow();
+                            else if (popupEmote.Opacity == 1.0)
+                                popupEmote.PopupHide();
+                        }
+                        break;
                     case PopupMenu.Windows:
-                        throw new NotImplementedException();
+                        // Window Profile Menu
+                        if (popupWindows == null)
+                        {
+                            uDebugLogAdd("Windows Popup is null, Creating new Windows popup");
+                            CreatePopup(menu);
+                        }
+                        else if (popupWindows != null)
+                        {
+                            if (popupWindows.Opacity == 0)
+                                popupWindows.PopupShow();
+                            else if (popupWindows.Opacity == 1.0)
+                                popupWindows.PopupHide();
+                        }
+                        break;
                 }
 
                 // All other menus
@@ -632,16 +678,25 @@ namespace Panacea.Windows
                         uDebugLogAdd($"Initialized new Network Popup");
                         break;
                     case PopupMenu.Settings:
-                        throw new NotImplementedException();
+                        popupSettings = new SettingsPopup();
+                        popupSettings.Show();
+                        uDebugLogAdd("Initialized new Settings Popup");
+                        break;
                     case PopupMenu.Audio:
                         popupAudio = new AudioPopup();
                         popupAudio.Show();
                         uDebugLogAdd("Initialized new Audio Popup");
                         break;
                     case PopupMenu.Emotes:
-                        throw new NotImplementedException();
+                        popupEmote = new EmotePopup();
+                        popupEmote.Show();
+                        uDebugLogAdd("Initialized new Emote Popup");
+                        break;
                     case PopupMenu.Windows:
-                        throw new NotImplementedException();
+                        popupWindows = new WindowPopup();
+                        popupWindows.Show();
+                        uDebugLogAdd("Initialized new Windows Popup");
+                        break;
                 }
             }
             catch (Exception ex)
@@ -654,21 +709,63 @@ namespace Panacea.Windows
         {
             try
             {
+                var audioPopped = popupAudio != null ? popupAudio.PoppedOut : true;
+                var networkPopped = popupNetwork != null ? popupNetwork.PoppedOut : true;
+                var settingsPopped = popupSettings != null ? popupSettings.PoppedOut : true;
+                var emotePopped = popupEmote != null ? popupEmote.PoppedOut : true;
+                var windowsPopped = popupWindows != null ? popupWindows.PoppedOut : true;
+                uDebugLogAdd($"Hide Secondary Popups: Prime[{primary.ToString()}] Audio[{audioPopped}] Net[{networkPopped}] Sett[{settingsPopped}] Emote[{emotePopped}] Win[{windowsPopped}]");
                 switch (primary)
                 {
                     case PopupMenu.Network:
-                        if (!popupAudio.PoppedOut)
+                        if (!audioPopped)
                             popupAudio.PopupHide();
+                        if (!emotePopped)
+                            popupEmote.PopupHide();
+                        if (!windowsPopped)
+                            popupWindows.PopupHide();
+                        if (!settingsPopped)
+                            popupSettings.PopupHide();
                         break;
                     case PopupMenu.Settings:
+                        if (!audioPopped)
+                            popupAudio.PopupHide();
+                        if (!emotePopped)
+                            popupEmote.PopupHide();
+                        if (!windowsPopped)
+                            popupWindows.PopupHide();
+                        if (!networkPopped)
+                            popupNetwork.PopupHide();
                         break;
                     case PopupMenu.Audio:
-                        if (!popupNetwork.PoppedOut)
-                        popupNetwork.PopupHide();
+                        if (!settingsPopped)
+                            popupSettings.PopupHide();
+                        if (!emotePopped)
+                            popupEmote.PopupHide();
+                        if (!windowsPopped)
+                            popupWindows.PopupHide();
+                        if (!networkPopped)
+                            popupNetwork.PopupHide();
                         break;
                     case PopupMenu.Emotes:
+                        if (!settingsPopped)
+                            popupSettings.PopupHide();
+                        if (!audioPopped)
+                            popupAudio.PopupHide();
+                        if (!windowsPopped)
+                            popupWindows.PopupHide();
+                        if (!networkPopped)
+                            popupNetwork.PopupHide();
                         break;
                     case PopupMenu.Windows:
+                        if (!settingsPopped)
+                            popupSettings.PopupHide();
+                        if (!audioPopped)
+                            popupAudio.PopupHide();
+                        if (!emotePopped)
+                            popupEmote.PopupHide();
+                        if (!networkPopped)
+                            popupNetwork.PopupHide();
                         break;
                 }
             }
