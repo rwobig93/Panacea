@@ -70,7 +70,46 @@ namespace Panacea.Windows
         {
             PopupShow();
             RefreshAudioDevicesLists();
+            SubscribeToEvents();
             FinishStartup();
+        }
+
+        private void SubscribeToEvents()
+        {
+            try
+            {
+                Events.UtilBarMoveTrigger += Events_UtilBarMoveTrigger;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void Events_UtilBarMoveTrigger(UtilMoveArgs args)
+        {
+            try
+            {
+                if (!PoppedOut)
+                    MoveToNewLocation();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveToNewLocation()
+        {
+            try
+            {
+                this.Top = UtilityBar.UtilBarMain.Top - 335;
+                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuAudio.Margin.Left;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void FinishStartup()
@@ -127,9 +166,16 @@ namespace Panacea.Windows
 
         private void SetDefaultLocation()
         {
-            this.Top = UtilityBar.UtilBarMain.Top - 335;
-            this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuAudio.Margin.Left;
-            this.Opacity = 0;
+            try
+            {
+                this.Top = UtilityBar.UtilBarMain.Top - 335;
+                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuAudio.Margin.Left;
+                this.Opacity = 0;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         public void PopupHide()
@@ -184,6 +230,7 @@ namespace Panacea.Windows
                     {
                         selectedPlaybackEndpoint = selectedEndpoint;
                         Audio.SetDefaultAudioDevice(selectedEndpoint);
+                        ShowNotification($"Playback Device Changed: {selectedEndpoint.DeviceFriendlyName}");
                     }
                 }
             }
@@ -204,6 +251,7 @@ namespace Panacea.Windows
                     {
                         selectedRecordingEndpoint = selectedEndpoint;
                         Audio.SetDefaultAudioDevice(selectedEndpoint);
+                        ShowNotification($"Recording Device Changed: {selectedEndpoint.DeviceFriendlyName}");
                     }
                 }
             }
@@ -270,6 +318,7 @@ namespace Panacea.Windows
                     }
                 }
                 playbackDeviceRefreshing = false;
+                UtilityBar.UtilBarMain.ShowNotification("Audio Devices Refreshed");
             }
             catch (Exception ex)
             {
@@ -372,8 +421,16 @@ namespace Panacea.Windows
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
-            PopupHide();
-            this.ShowInTaskbar = false;
+            try
+            {
+                if (PoppedOut)
+                    TogglePopout();
+                PopupHide();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void BtnMinimize_Click(object sender, RoutedEventArgs e)

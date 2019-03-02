@@ -26,7 +26,9 @@ namespace Panacea.Windows
     {
         public WindowPopup()
         {
+            SetDefaultLocation();
             InitializeComponent();
+            Startup();
         }
 
         #region Globals
@@ -57,7 +59,46 @@ namespace Panacea.Windows
         {
             UpdateWindowProfileButtons();
             PopupShow();
+            SubscribeToEvents();
             FinishStartup();
+        }
+
+        private void SubscribeToEvents()
+        {
+            try
+            {
+                Events.UtilBarMoveTrigger += Events_UtilBarMoveTrigger;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void Events_UtilBarMoveTrigger(UtilMoveArgs args)
+        {
+            try
+            {
+                if (!PoppedOut)
+                    MoveToNewLocation();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveToNewLocation()
+        {
+            try
+            {
+                this.Top = UtilityBar.UtilBarMain.Top - 140;
+                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuWindows.Margin.Left;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void UpdateWindowProfileButtons()
@@ -130,9 +171,16 @@ namespace Panacea.Windows
 
         private void SetDefaultLocation()
         {
-            this.Top = UtilityBar.UtilBarMain.Top - 140;
-            this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuWindows.Margin.Left;
-            this.Opacity = 0;
+            try
+            {
+                this.Top = UtilityBar.UtilBarMain.Top - 140;
+                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuWindows.Margin.Left;
+                this.Opacity = 0;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         public void PopupHide()
@@ -186,6 +234,7 @@ namespace Panacea.Windows
                 UtilityBar.UtilBarMain.btnMenuWindows.Content = profileName;
                 PopupHide();
                 uDebugLogAdd("Changed window profile");
+                UtilityBar.UtilBarMain.ShowNotification($"Window Profile Changed to: {profileName}");
                 UpdateWindowProfileButtons();
             }
             catch (Exception ex)

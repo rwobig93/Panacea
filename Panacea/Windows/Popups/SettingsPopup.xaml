@@ -28,6 +28,9 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <TextBlock Margin="10" TextAlignment="Center" TextWrapping="Wrap" Text="¯\_(ツ)_/¯" FontSize="36" Foreground="#FF767676"/>
+        <TextBlock x:Name="TxtShrug" Margin="10,4,10,50" TextAlignment="Center" TextWrapping="Wrap" Text="¯\_(ツ)_/¯" FontSize="16" Foreground="#FF767676"/>
+        <Button x:Name="BtnArrowLeft" Click="BtnArrowLeft_Click" Content="⮜" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="10,33,0,0" VerticalAlignment="Top" Width="35" Height="35" FontSize="20"/>
+        <Button x:Name="BtnArrowRight" Click="BtnArrowRight_Click" Content="⮞" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="135,33,0,0" VerticalAlignment="Top" Width="35" Height="35" FontSize="20"/>
+        <TextBlock x:Name="TxtUtilMsg" Margin="45,33,45,10" TextAlignment="Center" TextWrapping="Wrap" Text="Move Util Bar To Other Screen" Foreground="#FF767676"/>
     </Grid>
 </Window>

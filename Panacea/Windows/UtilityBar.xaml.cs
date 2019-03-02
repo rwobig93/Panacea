@@ -500,7 +500,15 @@ namespace Panacea.Windows
                 {
                     System.Windows.Forms.Screen chosenScreen = null;
                     if (dockedScreen == null)
+                    {
                         chosenScreen = currentDisplay.Screens.Find(x => x.Primary == true);
+                        dockedScreen = chosenScreen;
+                    }
+                    //else if (this.Left != Convert.ToInt32((dockedScreen.WorkingArea.Width / 2) - (grdMain.ActualWidth / 2)) || this.Top != chosenScreen.WorkingArea.Height - Convert.ToInt32(rectBackground.ActualHeight) + 1)
+                    //    chosenScreen = dockedScreen;
+                    else
+                        chosenScreen = dockedScreen;
+
                     MoveUtilBar(chosenScreen);
                 }
                 else
@@ -519,15 +527,16 @@ namespace Panacea.Windows
                 System.Drawing.Rectangle desiredLocation = new System.Drawing.Rectangle
                 {
                     //desiredLocation.X = primeScreen.WorkingArea.X + Convert.ToInt32(primeScreen.WorkingArea.Width * 0.10);
-                    X = Convert.ToInt32((chosenScreen.WorkingArea.Width / 2) - (grdMain.ActualWidth / 2)),
+                    X = Convert.ToInt32(((chosenScreen.WorkingArea.Width / 2) + chosenScreen.WorkingArea.X) - (grdMain.ActualWidth / 2)),
                     //desiredLocation.Width = primeScreen.WorkingArea.Width - Convert.ToInt32(primeScreen.WorkingArea.Width * 0.20);
                     Y = chosenScreen.WorkingArea.Height - Convert.ToInt32(rectBackground.ActualHeight) + 1
                 };
-                if ((this.Left != desiredLocation.X) && (this.Top != desiredLocation.Y))
+                if ((this.Left != desiredLocation.X) || (this.Top != desiredLocation.Y))
                 {
                     this.Left = desiredLocation.X;
                     //this.Width = desiredLocation.Width;
                     this.Top = desiredLocation.Y;
+                    Events.TriggerUtilBarMove(desiredLocation.X, desiredLocation.Y);
                     uDebugLogAdd($"Moved utility bar to new location [x]{this.Left} [y]{this.Top} [dx]{desiredLocation.X} [dy]{desiredLocation.Y}");
                 }
             }
@@ -559,12 +568,15 @@ namespace Panacea.Windows
             }
         }
 
-        private void CopyToClipboard(string clip)
+        public void CopyToClipboard(string clip, string optionalMessage = null)
         {
             try
             {
                 Clipboard.SetText(clip);
-                ShowNotification($"Clipboard Set: {clip}");
+                if (optionalMessage == null)
+                    ShowNotification($"Clipboard Set: {clip}");
+                else
+                    ShowNotification(optionalMessage);
             }
             catch (Exception ex)
             {
@@ -958,7 +970,7 @@ namespace Panacea.Windows
             }
         }
 
-        private void MoveUtilBarToOtherScreen(Key key)
+        public void MoveUtilBarToOtherScreen(Key key)
         {
             try
             {

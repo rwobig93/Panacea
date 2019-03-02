@@ -194,8 +194,16 @@ namespace Panacea.Windows
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
-            PopupHide();
-            this.ShowInTaskbar = false;
+            try
+            {
+                if (PoppedOut)
+                    TogglePopout();
+                PopupHide();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion
@@ -205,14 +213,60 @@ namespace Panacea.Windows
         private void Startup()
         {
             PopupShow();
+            SubscribeToEvents();
             FinishStartup();
+        }
+
+        private void SubscribeToEvents()
+        {
+            try
+            {
+                Events.UtilBarMoveTrigger += Events_UtilBarMoveTrigger;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void Events_UtilBarMoveTrigger(UtilMoveArgs args)
+        {
+            try
+            {
+                if (!PoppedOut)
+                    MoveToNewLocation();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveToNewLocation()
+        {
+            try
+            {
+                this.Top = UtilityBar.UtilBarMain.Top - 300;
+                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuNetwork.Margin.Left;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void SetDefaultLocation()
         {
-            this.Top = UtilityBar.UtilBarMain.Top - 300;
-            this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuNetwork.Margin.Left;
-            this.Opacity = 0;
+            try
+            {
+                this.Top = UtilityBar.UtilBarMain.Top - 300;
+                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuNetwork.Margin.Left;
+                this.Opacity = 0;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void EnableWindowResizing()
@@ -271,7 +325,7 @@ namespace Panacea.Windows
         {
             try
             {
-                Clipboard.SetText(clip);
+                UtilityBar.UtilBarMain.CopyToClipboard(clip, optionalMessage);
             }
             catch (Exception ex)
             {

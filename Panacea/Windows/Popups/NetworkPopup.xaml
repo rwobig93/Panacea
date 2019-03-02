@@ -36,7 +36,7 @@
                 </Grid.RowDefinitions>
                 <Label x:Name="lblNetPingTitle" Margin="10,3,0,0" Padding="0" Content="Ping" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="28" Foreground="#FF8D8D8D" Grid.Row="0" Background="{x:Null}"/>
                 <Button x:Name="btnPopInOut" Click="BtnPopInOut_Click" Content="🢅" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,1,20,0" Height="22" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="21" Background="{x:Null}" Panel.ZIndex="200" />
-                <ListBox x:Name="lbNetPing" Grid.Row="0" Margin="10,23,0,4">
+                <ListBox x:Name="lbNetPing" Grid.Row="0" Margin="10,23,0,4" ItemContainerStyle="{StaticResource BaseListBoxItemNoBackColor}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Grid Height="30" Width="{Binding ElementName=lbNetPing, Path=ActualWidth, Converter={StaticResource Minus15Converter}}">

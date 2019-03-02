@@ -28,7 +28,9 @@ namespace Panacea.Windows.Popups
     {
         public SettingsPopup()
         {
+            SetDefaultLocation();
             InitializeComponent();
+            Startup();
         }
 
         #region Globals
@@ -38,8 +40,8 @@ namespace Panacea.Windows.Popups
         private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.2) };
         private double PopinLeft { get { return UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuSettings.Margin.Left; } }
         private double PopinTop { get { return UtilityBar.UtilBarMain.Top - this.ActualHeight; } }
-        private double PopinWidth { get { return 95; } }
-        private double PopinHeight { get { return 140; } }
+        private double PopinWidth { get { return 180; } }
+        private double PopinHeight { get { return 95; } }
         public bool PoppedOut { get; set; } = false;
 
         #endregion
@@ -53,13 +55,80 @@ namespace Panacea.Windows.Popups
 
         #endregion
 
+        #region Event Handlers
+
+        private void BtnArrowLeft_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                UtilityBar.UtilBarMain.MoveUtilBarToOtherScreen(Key.Left);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void BtnArrowRight_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                UtilityBar.UtilBarMain.MoveUtilBarToOtherScreen(Key.Right);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        #endregion
+
         #region Methods
 
         private void Startup()
         {
             PopupShow();
-            HideTimerActivate();
+            //HideTimerActivate();
+            SubscribeToEvents();
             FinishStartup();
+        }
+
+        private void SubscribeToEvents()
+        {
+            try
+            {
+                Events.UtilBarMoveTrigger += Events_UtilBarMoveTrigger;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void Events_UtilBarMoveTrigger(UtilMoveArgs args)
+        {
+            try
+            {
+                if (!PoppedOut)
+                    MoveToNewLocation();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveToNewLocation()
+        {
+            try
+            {
+                this.Top = UtilityBar.UtilBarMain.Top - 95;
+                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuSettings.Margin.Left;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void HideTimerActivate()
@@ -130,9 +199,16 @@ namespace Panacea.Windows.Popups
 
         private void SetDefaultLocation()
         {
-            this.Top = UtilityBar.UtilBarMain.Top - 140;
-            this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuSettings.Margin.Left;
-            this.Opacity = 0;
+            try
+            {
+                this.Top = UtilityBar.UtilBarMain.Top - 140;
+                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuSettings.Margin.Left;
+                this.Opacity = 0;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         public void PopupHide()
@@ -161,7 +237,7 @@ namespace Panacea.Windows.Popups
             }
             finally
             {
-                HideTimerActivate();
+                //HideTimerActivate();
             }
         }
 

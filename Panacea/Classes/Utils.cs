@@ -148,6 +148,7 @@ namespace Panacea.Classes
 
     public class Events
     {
+        // Window Handle Event
         public delegate void UpdateWinHandleInfo(WinInfoArgs args);
         public static event UpdateWinHandleInfo UpdateWinHandle;
         public static void UpdateWindowInfo(Process process)
@@ -155,6 +156,7 @@ namespace Panacea.Classes
             WinInfoArgs args = new WinInfoArgs(WindowInfo.GetWindowInfoFromProc(process));
             UpdateWinHandle(args);
         }
+        // Debug Log Add Event
         public delegate void AddDebugLogStatus(DebugUpdateArgs args);
         public static event AddDebugLogStatus UpdateDebugStatus;
         public static void AddDebugStatus(string logUpdate, DebugType debugType = DebugType.INFO)
@@ -162,27 +164,42 @@ namespace Panacea.Classes
             DebugUpdateArgs args = new DebugUpdateArgs(logUpdate, debugType);
             UpdateDebugStatus(args);
         }
+        // Util Bar Move Event
+        public delegate void UtilBarMoved(UtilMoveArgs args);
+        public static event UtilBarMoved UtilBarMoveTrigger;
+        public static void TriggerUtilBarMove(int x, int y)
+        {
+            UtilMoveArgs args = new UtilMoveArgs(x, y);
+            UtilBarMoveTrigger(args);
+        }
     }
     public class WinInfoArgs : EventArgs
     {
-        private WindowInfo winInfo;
         public WinInfoArgs(WindowInfo windowInfo)
         {
-            this.winInfo = windowInfo;
+            this.WindowInfo = windowInfo;
         }
-        public WindowInfo WindowInfo { get { return winInfo; } }
+        public WindowInfo WindowInfo { get; }
     }
     public class DebugUpdateArgs : EventArgs
     {
-        private string _logUpdate;
-        private DebugType _debugType;
         public DebugUpdateArgs(string logUpdate, DebugType debugType = DebugType.INFO)
         {
-            this._logUpdate = logUpdate;
-            this._debugType = debugType;
+            this.LogUpdate = logUpdate;
+            this.DebugType = debugType;
         }
-        public string LogUpdate { get { return _logUpdate; } }
-        public DebugType DebugType { get { return _debugType; } }
+        public string LogUpdate { get; }
+        public DebugType DebugType { get; }
+    }
+    public class UtilMoveArgs : EventArgs
+    {
+        public UtilMoveArgs(int x, int y)
+        {
+            this.X = x;
+            this.Y = y;
+        }
+        public int X { get; }
+        public int Y { get; }
     }
 
     #endregion

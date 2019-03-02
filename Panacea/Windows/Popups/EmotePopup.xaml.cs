@@ -26,7 +26,9 @@ namespace Panacea.Windows.Popups
     {
         public EmotePopup()
         {
+            SetDefaultLocation();
             InitializeComponent();
+            Startup();
         }
 
         #region Globals
@@ -56,7 +58,46 @@ namespace Panacea.Windows.Popups
         private void Startup()
         {
             PopupShow();
+            SubscribeToEvents();
             FinishStartup();
+        }
+
+        private void SubscribeToEvents()
+        {
+            try
+            {
+                Events.UtilBarMoveTrigger += Events_UtilBarMoveTrigger;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void Events_UtilBarMoveTrigger(UtilMoveArgs args)
+        {
+            try
+            {
+                if (!PoppedOut)
+                    MoveToNewLocation();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveToNewLocation()
+        {
+            try
+            {
+                this.Top = UtilityBar.UtilBarMain.Top - 60;
+                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuEmote.Margin.Left;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void FinishStartup()
@@ -113,9 +154,16 @@ namespace Panacea.Windows.Popups
 
         private void SetDefaultLocation()
         {
-            this.Top = UtilityBar.UtilBarMain.Top - 60;
-            this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuEmote.Margin.Left;
-            this.Opacity = 0;
+            try
+            {
+                this.Top = UtilityBar.UtilBarMain.Top - 60;
+                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuEmote.Margin.Left;
+                this.Opacity = 0;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         public void PopupHide()
@@ -146,7 +194,15 @@ namespace Panacea.Windows.Popups
 
         private void BtnEmote1_Click(object sender, RoutedEventArgs e)
         {
-            PopupHide();
+            try
+            {
+                UtilityBar.UtilBarMain.ShowNotification(@"Changed Emote to: ¯\_(ツ)_/¯");
+                PopupHide();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion
