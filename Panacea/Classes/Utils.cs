@@ -40,19 +40,78 @@ namespace Panacea.Classes
         public Visibility NewFeatures { get; set; }
         public Visibility BetaRelease { get; set; }
     }
+    public class Display
+    {
+        public System.Drawing.Rectangle Bounds { get; set; }
+        public System.Drawing.Rectangle WorkingArea { get; set; }
+        public string DeviceName { get; set; }
+        public bool PrimaryDisplay { get; set; }
+        public static Display ConvertFromScreen(Screen screen)
+        {
+            return new Display()
+            {
+                Bounds = screen.Bounds,
+                WorkingArea = screen.WorkingArea,
+                PrimaryDisplay = screen.Primary,
+                DeviceName = screen.DeviceName
+            };
+        }
+    }
     public class CurrentDisplay
     {
-        public List<Screen> Screens { get; set; } = new List<Screen>();
-        public int LeftMostBound {  get { return Screens.OrderBy(x => x.Bounds.X).First().Bounds.X; } }
-        public int RightMostBound { get { return Screens.OrderBy(x => x.Bounds.X).Last().Bounds.X + Screens.OrderBy(x => x.Bounds.X).Last().Bounds.Width; } }
-        public int TopMostBound { get { return Screens.OrderBy(x => x.Bounds.Y).First().Bounds.Y; } }
-        public int BottomMostBound { get { return Screens.OrderBy(x => x.Bounds.Y).Last().Bounds.Y + Screens.OrderBy(x => x.Bounds.Y).Last().Bounds.Height; } }
-        public int LeftMostWorkArea { get { return Screens.OrderBy(x => x.WorkingArea.X).First().WorkingArea.X; } }
-        public int RightMostWorkArea { get { return Screens.OrderBy(x => x.WorkingArea.X).Last().WorkingArea.X + Screens.OrderBy(x => x.WorkingArea.X).Last().WorkingArea.Width; } }
-        public int TopMostWorkArea { get { return Screens.OrderBy(x => x.WorkingArea.Y).First().WorkingArea.Y; } }
-        public int BottomMostWorkArea { get { return Screens.OrderBy(x => x.WorkingArea.Height).Last().WorkingArea.Y + Screens.OrderBy(x => x.WorkingArea.Y).Last().WorkingArea.Height; } }
+        public List<Display> Displays { get; set; } = new List<Display>();
+        public int LeftMostBound {  get { return Displays.OrderBy(x => x.Bounds.X).First().Bounds.X; } }
+        public int RightMostBound { get { return Displays.OrderBy(x => x.Bounds.X).Last().Bounds.X + Displays.OrderBy(x => x.Bounds.X).Last().Bounds.Width; } }
+        public int TopMostBound { get { return Displays.OrderBy(x => x.Bounds.Y).First().Bounds.Y; } }
+        public int BottomMostBound { get { return Displays.OrderBy(x => x.Bounds.Y).Last().Bounds.Y + Displays.OrderBy(x => x.Bounds.Y).Last().Bounds.Height; } }
+        public int LeftMostWorkArea { get { return Displays.OrderBy(x => x.WorkingArea.X).First().WorkingArea.X; } }
+        public int RightMostWorkArea { get { return Displays.OrderBy(x => x.WorkingArea.X).Last().WorkingArea.X + Displays.OrderBy(x => x.WorkingArea.X).Last().WorkingArea.Width; } }
+        public int TopMostWorkArea { get { return Displays.OrderBy(x => x.WorkingArea.Y).First().WorkingArea.Y; } }
+        public int BottomMostWorkArea { get { return Displays.OrderBy(x => x.WorkingArea.Height).Last().WorkingArea.Y + Displays.OrderBy(x => x.WorkingArea.Y).Last().WorkingArea.Height; } }
         public System.Drawing.Rectangle TotalBounds { get { return new System.Drawing.Rectangle() { X = LeftMostBound, Width = RightMostBound - LeftMostBound, Y = TopMostBound, Height = BottomMostBound - TopMostBound, Location = new System.Drawing.Point(LeftMostBound, TopMostBound), Size = new System.Drawing.Size(RightMostBound - LeftMostBound, BottomMostBound - TopMostBound) }; } }
         public System.Drawing.Rectangle TotalWorkArea { get { return new System.Drawing.Rectangle() { X = LeftMostWorkArea, Width = RightMostWorkArea - LeftMostWorkArea, Y = TopMostWorkArea, Height = BottomMostWorkArea - TopMostWorkArea, Location = new System.Drawing.Point(LeftMostWorkArea, TopMostWorkArea), Size = new System.Drawing.Size(RightMostWorkArea - LeftMostWorkArea, BottomMostWorkArea - TopMostWorkArea) }; } }
+    }
+    public class DisplayProfile
+    {
+        public WindowProfile LinkedWindowProfile { get; set; }
+        public CurrentDisplay DisplayArea { get; set; }
+        public Display PreferredDisplay { get; set; }
+        public static bool DoDisplaysMatch(CurrentDisplay display1, CurrentDisplay display2)
+        { 
+            bool isAMatch = true;
+            if (display1.Displays.Count != display2.Displays.Count)
+                isAMatch = false;
+            if (display1.LeftMostBound != display2.LeftMostBound)
+                isAMatch = false;
+            if (display1.RightMostBound != display2.RightMostBound)
+                isAMatch = false;
+            if (display1.TopMostBound != display2.TopMostBound)
+                isAMatch = false;
+            if (display1.BottomMostBound != display2.BottomMostBound)
+                isAMatch = false;
+            if (display1.LeftMostWorkArea != display2.LeftMostWorkArea)
+                isAMatch = false;
+            if (display1.RightMostWorkArea != display2.RightMostWorkArea)
+                isAMatch = false;
+            if (display1.TopMostWorkArea != display2.TopMostWorkArea)
+                isAMatch = false;
+            if (display1.BottomMostWorkArea != display2.BottomMostWorkArea)
+                isAMatch = false;
+            if (display1.TotalBounds != display2.TotalBounds)
+                isAMatch = false;
+            if (display1.TotalWorkArea != display2.TotalWorkArea)
+                isAMatch = false;
+            return isAMatch;
+        }
+    }
+    public class DisplayProfileLibrary
+    {
+        public List<DisplayProfile> DisplayProfiles { get; set; } = new List<DisplayProfile>();
+        public DisplayProfile CurrentDisplayProfile { get; set; }
+        public static bool IsCurrentDisplayCorrect()
+        {
+            return false;
+        }
     }
     public class PopoutPreferences
     {

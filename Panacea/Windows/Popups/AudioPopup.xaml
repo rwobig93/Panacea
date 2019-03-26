@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Panacea.Windows"
         xmlns:src="clr-namespace:Panacea.Classes"
         mc:Ignorable="d" Topmost="True" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" Loaded="WinAudioMain_Loaded" SizeChanged="WinAudioMain_SizeChanged"
-        Title="AudioPopup" Height="335" MinHeight="250" Width="551" MinWidth="400" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
+        Title="AudioPopup" Height="351" MinHeight="250" Width="551" MinWidth="400" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
     <Window.Resources>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus25Converter x:Key="Minus25Converter"/>
@@ -31,24 +31,24 @@
         <ScrollViewer x:Name="scrlAudioTop" Grid.Row="0" Background="#02010101">
             <Grid x:Name="grdAudioTop">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="163*"/>
-                    <RowDefinition Height="120*"/>
+                    <RowDefinition Height="112*"/>
+                    <RowDefinition Height="55*"/>
                 </Grid.RowDefinitions>
                 <Button x:Name="btnRefreshAudio" Style="{StaticResource BaseButton}" Click="BtnRefreshAudio_Click" Content="Refresh" HorizontalAlignment="Left" VerticalAlignment="Top" Width="56" Foreground="#FF8D8D8D" Margin="10,2,0,0" Height="27" Grid.Row="0" Background="{x:Null}"/>
                 <Button x:Name="btnReset" Click="BtnReset_Click" Content="🔗" Visibility="Hidden" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,81,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
                 <Button x:Name="btnMinimize" Click="BtnMinimize_Click" Content="_" Visibility="Hidden" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,54,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
                 <Button x:Name="btnPopInOut" Click="BtnPopInOut_Click" Content="🢅" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,27,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
                 <Button x:Name="btnClose" Click="BtnClose_Click" Content="X" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,0,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
-                <Label x:Name="lblPlaybackDevices" HorizontalContentAlignment="Center" Content="Windows Playback Devices" MouseDown="LblAudioDevices_MouseDown" VerticalAlignment="Top" Foreground="#FF8D8D8D" Margin="10,2,0,0" Grid.Row="0" Height="26" Panel.ZIndex="-1" d:IsLocked="True"/>
-                <ListBox x:Name="lbPlaybackDevices" SelectionChanged="LbPlaybackDevices_SelectionChanged" SelectionMode="Single" Margin="10,30,0,0" Grid.Row="0">
+                <Label x:Name="lblPlaybackDevices" HorizontalContentAlignment="Center" Content="Windows Playback Devices" MouseDown="LblAudioDevices_MouseDown" VerticalAlignment="Top" Foreground="#FF8D8D8D" Margin="10,2,0,0" Grid.Row="0" Height="26" Panel.ZIndex="-1"/>
+                <ListBox x:Name="lbPlaybackDevices" SelectionChanged="LbPlaybackDevices_SelectionChanged" SelectionMode="Single" Margin="10,30,0,10" Grid.Row="0">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding FriendlyName}"/>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-                <Label x:Name="lblRecordingDevices" HorizontalContentAlignment="Center" Content="Windows Recording Devices" MouseDown="LblAudioDevices_MouseDown" VerticalAlignment="Top" Foreground="#FF8D8D8D" Margin="10,2,0,0" Grid.Row="1" Height="26" Panel.ZIndex="-1" d:IsLocked="True"/>
-                <ListBox x:Name="lbRecordingDevices" SelectionChanged="LbRecordingDevices_SelectionChanged" SelectionMode="Single" Margin="10,30,0,10" Grid.Row="1">
+                <Label x:Name="lblRecordingDevices" HorizontalContentAlignment="Center" Content="Windows Recording Devices" MouseDown="LblAudioDevices_MouseDown" VerticalAlignment="Top" Foreground="#FF8D8D8D" Margin="10,3,0,0" Height="29" Panel.ZIndex="-1" Grid.Row="1"/>
+                <ListBox x:Name="lbRecordingDevices" SelectionChanged="LbRecordingDevices_SelectionChanged" SelectionMode="Single" Margin="10,32,0,10" Grid.Row="1">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding FriendlyName}"/>

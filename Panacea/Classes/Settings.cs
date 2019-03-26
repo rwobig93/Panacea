@@ -62,6 +62,7 @@ namespace Panacea.Classes
         private DTFormat _dateTimeFormat { get; set; } = DTFormat.Sec;
         private Emotes _currentEmote { get; set; } = Emotes.Shrug;
         private List<PopoutPreferences> _popoutPreferencesList { get; set; } = new List<PopoutPreferences>();
+        private DisplayProfileLibrary _displayProfileLibrary { get; set; } = new DisplayProfileLibrary();
 
         #endregion
 
@@ -436,6 +437,15 @@ namespace Panacea.Classes
             {
                 _popoutPreferencesList = value;
                 OnPropertyChanged("PopoutPreferencesList");
+            }
+        }
+        public DisplayProfileLibrary DisplayProfileLibrary
+        {
+            get { return _displayProfileLibrary; }
+            set
+            {
+                _displayProfileLibrary = value;
+                OnPropertyChanged("DisplayProfileLibrary");
             }
         }
 

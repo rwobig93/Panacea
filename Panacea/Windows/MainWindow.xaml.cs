@@ -74,6 +74,7 @@ namespace Panacea
         private bool startingUp = false;
         private bool upstallerUpdateInProg = false;
         private bool downloadInProgress = false;
+        public static Hardcodet.Wpf.TaskbarNotification.TaskbarIcon taskIcon = null;
 
         #endregion
 
@@ -122,6 +123,7 @@ namespace Panacea
 
         private void winMain_Closed(object sender, EventArgs e)
         {
+            TearDownBackgroundNotificationIcon();
             var p = Process.GetCurrentProcess();
             p.Kill();
         }
@@ -277,9 +279,7 @@ namespace Panacea
 
         private void BtnTest_Click(object sender, RoutedEventArgs e)
         {
-            //TestWifi();
-            //RefreshDisplaySizes();
-            OpenUtilityBar();
+            TearDownBackgroundNotificationIcon();
         }
 
         private void lblTitle_MouseDown(object sender, MouseButtonEventArgs e)
@@ -943,6 +943,7 @@ namespace Panacea
             DeSerializeSettings();
             SetDefaultSettings();
             SetWindowLocation();
+            InitializeBackgroundNotificationIcon();
             SetupAudioDeviceList();
             tStartTimedActions();
             tDisplayWatcher();
@@ -1454,10 +1455,10 @@ namespace Panacea
                     currentDisplay = new CurrentDisplay();
                     uDebugLogAdd("Current display was null, created new current display");
                 }
-                currentDisplay.Screens.Clear();
+                currentDisplay.Displays.Clear();
                 foreach (var screen in System.Windows.Forms.Screen.AllScreens)
                 {
-                    currentDisplay.Screens.Add(screen);
+                    currentDisplay.Displays.Add(Display.ConvertFromScreen(screen));
                 }
             }
             catch (Exception ex)
@@ -1490,10 +1491,22 @@ namespace Panacea
             try
             {
                 uDebugLogAdd("Initializing Background Notification Icon");
-                Hardcodet.Wpf.TaskbarNotification.TaskbarIcon taskIcon = new Hardcodet.Wpf.TaskbarNotification.TaskbarIcon { Icon = new System.Drawing.Icon(Assembly.GetExecutingAssembly().GetManifestResourceStream("Panacea.Dependencies.Panacea_Icon.ico")) };
+                taskIcon = new Hardcodet.Wpf.TaskbarNotification.TaskbarIcon { Icon = new System.Drawing.Icon(Assembly.GetExecutingAssembly().GetManifestResourceStream("Panacea.Dependencies.Panacea_Icon.ico")) };
                 taskIcon.LeftClickCommand = new CommandShowPanacea();
                 taskIcon.ContextMenu = this.FindResource("cmNotificationIcon") as ContextMenu;
                 uDebugLogAdd("Background Notification Icon successfully initialized");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void TearDownBackgroundNotificationIcon()
+        {
+            try
+            {
+                taskIcon.Dispose();
             }
             catch (Exception ex)
             {
@@ -2222,7 +2235,6 @@ namespace Panacea
                 {
                     uDebugLogAdd($"SettingsACT: Show Util on Startup is: {Toolbox.settings.ShowUtilBarOnStartup} | Showing utility bar");
                     OpenUtilityBar();
-                    InitializeBackgroundNotificationIcon();
                 }
                 if (Toolbox.settings.StartMinimized)
                 {

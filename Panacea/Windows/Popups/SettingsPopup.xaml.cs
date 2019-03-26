@@ -61,7 +61,7 @@ namespace Panacea.Windows.Popups
         {
             try
             {
-                UtilityBar.UtilBarMain.MoveUtilBarToOtherScreen(Key.Left);
+                UtilityBar.UtilBarMain.MoveUtilBarToOtherDisplay(Key.Left);
             }
             catch (Exception ex)
             {
@@ -73,7 +73,7 @@ namespace Panacea.Windows.Popups
         {
             try
             {
-                UtilityBar.UtilBarMain.MoveUtilBarToOtherScreen(Key.Right);
+                UtilityBar.UtilBarMain.MoveUtilBarToOtherDisplay(Key.Right);
             }
             catch (Exception ex)
             {

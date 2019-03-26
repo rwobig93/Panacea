@@ -113,11 +113,12 @@ namespace Panacea.Windows
         private bool _bssidChanged = true;
         private bool _closing = false;
         private bool _notificationPlaying = false;
+        private bool _startingUp = true;
         private int _totalNotificationsRun = 0;
         private List<string> notifications = new List<string>();
         private NetworkInterface _currentEthIf;
         private CurrentDisplay currentDisplay;
-        private System.Windows.Forms.Screen dockedScreen;
+        private Display dockedDisplay;
         private NetConnectionType currentConnType = NetConnectionType.Unknown;
         private WifiFrequency currentFrequency = WifiFrequency.None;
         private WifiPHYProto currentPHYProto = WifiPHYProto.None;
@@ -148,6 +149,7 @@ namespace Panacea.Windows
 
         private void WinMain_Loaded(object sender, RoutedEventArgs e)
         {
+            tLocationWatcher();
             InitializeGlobalHotkey();
         }
 
@@ -204,33 +206,6 @@ namespace Panacea.Windows
             ToggleMenuPopup(PopupMenu.Audio);
         }
 
-        private void TxtNetMain_KeyDown(object sender, KeyEventArgs e)
-        {
-            try
-            {
-                if (e.Key == Key.Enter)
-                {
-                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
-                    {
-                        NetToggleEnterAction();
-                    }
-                    else
-                        NetEnterAction();
-                }
-                else if (e.Key == Key.Left || e.Key == Key.Right)
-                {
-                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
-                    {
-                        MoveUtilBarToOtherScreen(e.Key);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
         private void TxtNetMain_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             try
@@ -246,9 +221,9 @@ namespace Panacea.Windows
                 }
                 else if (e.Key == Key.Left || e.Key == Key.Right)
                 {
-                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
                     {
-                        MoveUtilBarToOtherScreen(e.Key);
+                        MoveUtilBarToOtherDisplay(e.Key);
                     }
                 }
             }
@@ -321,14 +296,39 @@ namespace Panacea.Windows
             UtilityBar.UtilBarMain = this;
             this.Top = -32000;
             this.Left = -32000;
-            tLocationWatcher();
         }
 
         private void Startup()
         {
+            SubscribeToEvents();
             tNetworkConnectivityMonitor();
             NetToggleEnterAction(currentEnterAction);
             UpdateCurrentWindowProfile();
+            _startingUp = false;
+        }
+
+        private void SubscribeToEvents()
+        {
+            try
+            {
+                Events.UtilBarMoveTrigger += Events_UtilBarMoveTrigger;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void Events_UtilBarMoveTrigger(UtilMoveArgs args)
+        {
+            try
+            {
+                uDebugLogAdd($"Utilbar was moved to: [x]{args.X} [y]{args.Y}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void InitializeGlobalHotkey()
@@ -498,18 +498,18 @@ namespace Panacea.Windows
             {
                 if (currentDisplay != null)
                 {
-                    System.Windows.Forms.Screen chosenScreen = null;
-                    if (dockedScreen == null)
+                    Display chosenDisplay = null;
+                    if (dockedDisplay == null)
                     {
-                        chosenScreen = currentDisplay.Screens.Find(x => x.Primary == true);
-                        dockedScreen = chosenScreen;
+                        chosenDisplay = currentDisplay.Displays.Find(x => x.PrimaryDisplay == true);
+                        dockedDisplay = chosenDisplay;
                     }
-                    //else if (this.Left != Convert.ToInt32((dockedScreen.WorkingArea.Width / 2) - (grdMain.ActualWidth / 2)) || this.Top != chosenScreen.WorkingArea.Height - Convert.ToInt32(rectBackground.ActualHeight) + 1)
-                    //    chosenScreen = dockedScreen;
+                    //else if (this.Left != Convert.ToInt32((dockedDisplay.WorkingArea.Width / 2) - (grdMain.ActualWidth / 2)) || this.Top != chosenDisplay.WorkingArea.Height - Convert.ToInt32(rectBackground.ActualHeight) + 1)
+                    //    chosenDisplay = dockedDisplay;
                     else
-                        chosenScreen = dockedScreen;
+                        chosenDisplay = dockedDisplay;
 
-                    MoveUtilBar(chosenScreen);
+                    MoveUtilBar(chosenDisplay);
                 }
                 else
                     uDebugLogAdd("Current display is null when verifying utility bar location", DebugType.FAILURE);
@@ -520,16 +520,16 @@ namespace Panacea.Windows
             }
         }
 
-        private void MoveUtilBar(System.Windows.Forms.Screen chosenScreen)
+        private void MoveUtilBar(Display chosenDisplay)
         {
             try
             {
                 System.Drawing.Rectangle desiredLocation = new System.Drawing.Rectangle
                 {
-                    //desiredLocation.X = primeScreen.WorkingArea.X + Convert.ToInt32(primeScreen.WorkingArea.Width * 0.10);
-                    X = Convert.ToInt32(((chosenScreen.WorkingArea.Width / 2) + chosenScreen.WorkingArea.X) - (grdMain.ActualWidth / 2)),
-                    //desiredLocation.Width = primeScreen.WorkingArea.Width - Convert.ToInt32(primeScreen.WorkingArea.Width * 0.20);
-                    Y = chosenScreen.WorkingArea.Height - Convert.ToInt32(rectBackground.ActualHeight) + 1
+                    //desiredLocation.X = primeDisplay.WorkingArea.X + Convert.ToInt32(primeDisplay.WorkingArea.Width * 0.10);
+                    X = Convert.ToInt32(((chosenDisplay.WorkingArea.Width / 2) + chosenDisplay.WorkingArea.X) - (grdMain.ActualWidth / 2)),
+                    //desiredLocation.Width = primeDisplay.WorkingArea.Width - Convert.ToInt32(primeDisplay.WorkingArea.Width * 0.20);
+                    Y = chosenDisplay.WorkingArea.Height - Convert.ToInt32(rectBackground.ActualHeight) + 1
                 };
                 if ((this.Left != desiredLocation.X) || (this.Top != desiredLocation.Y))
                 {
@@ -555,12 +555,91 @@ namespace Panacea.Windows
                     currentDisplay = new CurrentDisplay();
                     uDebugLogAdd("Current display was null, created new current display");
                 }
-                currentDisplay.Screens.Clear();
-                foreach (var screen in System.Windows.Forms.Screen.AllScreens)
+                currentDisplay.Displays.Clear();
+                foreach (var display in System.Windows.Forms.Screen.AllScreens)
                 {
-                    currentDisplay.Screens.Add(screen);
+                    currentDisplay.Displays.Add(Display.ConvertFromScreen(display));
                 }
-                currentDisplay.Screens = currentDisplay.Screens.OrderBy(x => x.Bounds.X).ToList();
+                currentDisplay.Displays = currentDisplay.Displays.OrderBy(x => x.Bounds.X).ToList();
+                VerifyDisplayProfileMatch();
+                if (_startingUp)
+                    MoveUtilBarToPreferredDisplay();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void MoveUtilBarToPreferredDisplay()
+        {
+            try
+            {
+                uDebugLogAdd("Starting util bar move to preferred display");
+                var prefDisplay = Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile.PreferredDisplay;
+                if (prefDisplay != null)
+                {
+                    uDebugLogAdd("Preferred display isn't null for current display profile, moving to preferred display");
+                    MoveUtilBar(prefDisplay);
+                }
+                else
+                    uDebugLogAdd("Preferred display is null for current display profile, skipping");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void VerifyDisplayProfileMatch()
+        {
+            try
+            {
+                if (Toolbox.settings.DisplayProfileLibrary == null)
+                {
+                    uDebugLogAdd("DisplayProfileLibrary was null, instantiating a new one");
+                    Toolbox.settings.DisplayProfileLibrary = new DisplayProfileLibrary();
+                }
+                if (Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile == null || Toolbox.settings.DisplayProfileLibrary.DisplayProfiles.Count <= 0)
+                {
+                    AddDisplayProfileToLibrary(currentDisplay, true);
+                }
+                var displayMatch = DisplayProfile.DoDisplaysMatch(currentDisplay, Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile.DisplayArea);
+                if (!displayMatch)
+                {
+                    uDebugLogAdd($"Current Display Profile returned {displayMatch} for matching the existing Current Display Profile");
+                    AddDisplayProfileToLibrary(currentDisplay);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void AddDisplayProfileToLibrary(CurrentDisplay display, bool setAsCurrentDisplayProfile = false)
+        {
+            try
+            {
+                uDebugLogAdd("Starting Display Profile addition to Library");
+                var foundDisplay = Toolbox.settings.DisplayProfileLibrary.DisplayProfiles.Find(x => x.DisplayArea == display);
+                if (foundDisplay == null)
+                {
+                    uDebugLogAdd("Was unable to find a matching display, adding new display to Library");
+                    DisplayProfile newDisplay = new DisplayProfile() { DisplayArea = display, PreferredDisplay = display.Displays.Find(x => x.PrimaryDisplay == true) };
+                    Toolbox.settings.DisplayProfileLibrary.DisplayProfiles.Add(newDisplay);
+                    uDebugLogAdd("New display added successfully");
+                    if (setAsCurrentDisplayProfile)
+                    {
+                        Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile = newDisplay;
+                        uDebugLogAdd($"SetAsCurrent is {setAsCurrentDisplayProfile}, Set new display as current");
+                    }
+                }
+                else
+                {
+                    uDebugLogAdd("Display additon already matches one in the library, cancelling Libary addition");
+                }
+                uDebugLogAdd("Finished Display Profile Library Addition");
             }
             catch (Exception ex)
             {
@@ -970,60 +1049,61 @@ namespace Panacea.Windows
             }
         }
 
-        public void MoveUtilBarToOtherScreen(Key key)
+        public void MoveUtilBarToOtherDisplay(Key key)
         {
             try
             {
                 uDebugLogAdd($"Invoking UtilityBar move | Key: {key.ToString()}");
-                if (currentDisplay.Screens.Count <= 1)
+                if (currentDisplay.Displays.Count <= 1)
                 {
-                    uDebugLogAdd($"Current screen count is {currentDisplay.Screens.Count}, unable to move to another screen, will default to primary screen");
-                    ShowNotification("Only 1 screen is visible, can't move util bar");
+                    uDebugLogAdd($"Current display count is {currentDisplay.Displays.Count}, unable to move to another display, will default to primary display");
+                    ShowNotification("Only 1 display is visible, can't move util bar");
                     return;
                 }
                 else
                 {
-                    uDebugLogAdd($"Current screen count is {currentDisplay.Screens.Count}, trudging on!");
+                    uDebugLogAdd($"Current display count is {currentDisplay.Displays.Count}, trudging on!");
                 }
                 if (key == Key.Left)
-                {
-                    var currScreenNum = currentDisplay.Screens.IndexOf(dockedScreen);
-                    if (currScreenNum - 1 >= 0)
+                { 
+                    var currDisplayNum = currentDisplay.Displays.FindIndex(x => x.DeviceName == dockedDisplay.DeviceName && x.Bounds == dockedDisplay.Bounds && x.WorkingArea == dockedDisplay.WorkingArea && x.PrimaryDisplay == dockedDisplay.PrimaryDisplay);
+                    if (currDisplayNum - 1 >= 0)
                     {
-                        uDebugLogAdd($"Going left array index is >= 0: {currScreenNum - 1}, going left");
-                        var chosenScreen = currentDisplay.Screens[currScreenNum - 1];
-                        uDebugLogAdd($"New docked screen chosen: {chosenScreen.DeviceName} | prev: {dockedScreen.DeviceName}");
-                        dockedScreen = chosenScreen;
+                        uDebugLogAdd($"Going left array index is >= 0: {currDisplayNum - 1}, going left");
+                        var chosenDisplay = currentDisplay.Displays[currDisplayNum - 1];
+                        uDebugLogAdd($"New docked display chosen: {chosenDisplay.DeviceName} | prev: {dockedDisplay.DeviceName}");
+                        dockedDisplay = chosenDisplay;
                     }
                     else
                     {
-                        uDebugLogAdd($"Going left array index is < 0: {currScreenNum - 1}, going furthest right");
-                        var newScreenNum = currentDisplay.Screens.IndexOf(currentDisplay.Screens.ToArray().Last());
-                        var chosenScreen = currentDisplay.Screens[newScreenNum];
-                        uDebugLogAdd($"New docked screen chosen: {chosenScreen.DeviceName} | prev: {dockedScreen.DeviceName}");
-                        dockedScreen = chosenScreen;
+                        uDebugLogAdd($"Going left array index is < 0: {currDisplayNum - 1}, going furthest right");
+                        var newDisplayNum = currentDisplay.Displays.IndexOf(currentDisplay.Displays.ToArray().Last());
+                        var chosenDisplay = currentDisplay.Displays[newDisplayNum];
+                        uDebugLogAdd($"New docked display chosen: {chosenDisplay.DeviceName} | prev: {dockedDisplay.DeviceName}");
+                        dockedDisplay = chosenDisplay;
                     }
                 }
                 else if (key == Key.Right)
                 {
-                    var currScreenNum = currentDisplay.Screens.IndexOf(dockedScreen);
-                    if (currScreenNum + 1 <= currentDisplay.Screens.Count - 1)
+                    var currDisplayNum = currentDisplay.Displays.FindIndex(x => x.DeviceName == dockedDisplay.DeviceName && x.Bounds == dockedDisplay.Bounds && x.WorkingArea == dockedDisplay.WorkingArea && x.PrimaryDisplay == dockedDisplay.PrimaryDisplay);
+                    if (currDisplayNum + 1 <= currentDisplay.Displays.Count - 1)
                     {
-                        uDebugLogAdd($"Going right array index is <= {currentDisplay.Screens.Count - 1}: {currScreenNum + 1}, going right");
-                        var chosenScreen = currentDisplay.Screens[currScreenNum + 1];
-                        uDebugLogAdd($"New docked screen chosen: {chosenScreen.DeviceName} | prev: {dockedScreen.DeviceName}");
-                        dockedScreen = chosenScreen;
+                        uDebugLogAdd($"Going right array index is <= {currentDisplay.Displays.Count - 1}: {currDisplayNum + 1}, going right");
+                        var chosenDisplay = currentDisplay.Displays[currDisplayNum + 1];
+                        uDebugLogAdd($"New docked display chosen: {chosenDisplay.DeviceName} | prev: {dockedDisplay.DeviceName}");
+                        dockedDisplay = chosenDisplay;
                     }
                     else
                     {
-                        uDebugLogAdd($"Going right array index is out of bounds: {currScreenNum + 1} | {currentDisplay.Screens.Count - 1}, going furthest left");
-                        var chosenScreen = currentDisplay.Screens[0];
-                        uDebugLogAdd($"New docked screen chosen: {chosenScreen.DeviceName} | prev: {dockedScreen.DeviceName}");
-                        dockedScreen = chosenScreen;
+                        uDebugLogAdd($"Going right array index is out of bounds: {currDisplayNum + 1} | {currentDisplay.Displays.Count - 1}, going furthest left");
+                        var chosenDisplay = currentDisplay.Displays[0];
+                        uDebugLogAdd($"New docked display chosen: {chosenDisplay.DeviceName} | prev: {dockedDisplay.DeviceName}");
+                        dockedDisplay = chosenDisplay;
                     }
                 }
-                MoveUtilBar(dockedScreen);
-                ShowNotification("Moved UtilityBar Location!");
+                Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile.PreferredDisplay = dockedDisplay;
+                MoveUtilBar(dockedDisplay);
+                //ShowNotification("Moved UtilityBar Location!");
             }
             catch (Exception ex)
             {
@@ -1907,7 +1987,7 @@ namespace Panacea.Windows
                 {
                     isMac = true;
                 }
-                else if ((!content.Contains('.')) && (!content.Contains('-')) && (!content.Contains(':')))
+                else if ((!content.Contains('.')) && (!content.Contains('-')) && (!content.Contains(':')) && (content.Any(char.IsDigit)))
                 {
                     isMac = true;
                 }
