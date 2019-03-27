@@ -92,8 +92,8 @@ namespace Panacea.Windows
         {
             try
             {
-                this.Top = UtilityBar.UtilBarMain.Top - 140;
-                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuWindows.Margin.Left;
+                this.Top = PopinTop;
+                this.Left = PopinLeft;
             }
             catch (Exception ex)
             {
@@ -173,7 +173,7 @@ namespace Panacea.Windows
         {
             try
             {
-                this.Top = UtilityBar.UtilBarMain.Top - 140;
+                this.Top = UtilityBar.UtilBarMain.Top - PopinHeight;
                 this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuWindows.Margin.Left;
                 this.Opacity = 0;
             }

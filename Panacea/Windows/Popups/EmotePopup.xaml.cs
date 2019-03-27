@@ -91,8 +91,8 @@ namespace Panacea.Windows.Popups
         {
             try
             {
-                this.Top = UtilityBar.UtilBarMain.Top - 60;
-                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuEmote.Margin.Left;
+                this.Top = PopinTop;
+                this.Left = PopinLeft;
             }
             catch (Exception ex)
             {
@@ -156,7 +156,7 @@ namespace Panacea.Windows.Popups
         {
             try
             {
-                this.Top = UtilityBar.UtilBarMain.Top - 60;
+                this.Top = UtilityBar.UtilBarMain.Top - PopinHeight;
                 this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuEmote.Margin.Left;
                 this.Opacity = 0;
             }

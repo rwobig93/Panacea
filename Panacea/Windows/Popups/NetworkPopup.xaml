@@ -35,7 +35,7 @@
                     <RowDefinition Height="100"/>
                 </Grid.RowDefinitions>
                 <Label x:Name="lblNetPingTitle" Margin="10,3,0,0" Padding="0" Content="Ping" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="28" Foreground="#FF8D8D8D" Grid.Row="0" Background="{x:Null}"/>
-                <Button x:Name="btnPopInOut" Click="BtnPopInOut_Click" Content="🢅" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,1,20,0" Height="22" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="21" Background="{x:Null}" Panel.ZIndex="200" />
+                <Button x:Name="btnPopInOut" Click="BtnPopInOut_Click" Content="🢅" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,1,21,0" Height="22" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="21" Background="{x:Null}" Panel.ZIndex="200" />
                 <ListBox x:Name="lbNetPing" Grid.Row="0" Margin="10,23,0,4" ItemContainerStyle="{StaticResource BaseListBoxItemNoBackColor}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -76,6 +76,6 @@
         <Polygon x:Name="plyNetVisualSlider" Points="28.9,.5,1.1,.5,15,16.1" Stroke="#FFA0A0A0" Grid.Row="1" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" Fill="#FFA0A0A0" />
         <Button x:Name="btnPingPauseAll" Click="BtnPingPauseAll_Click" Content="❚❚ All" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="39,1,0,0" Height="22" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="39" Background="{x:Null}" Panel.ZIndex="200" />
         <Button x:Name="btnPingRemoveAll" Click="BtnPingRemoveAll_Click" Content="✘ All" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="81,1,0,0" Height="22" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="39" Background="{x:Null}" Panel.ZIndex="200" />
-        <Button x:Name="btnClose" Click="BtnClose_Click" Content="X" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,1,16,0" Height="22" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="21" Background="{x:Null}" Panel.ZIndex="200" />
+        <Button x:Name="btnClose" Click="BtnClose_Click" Content="X" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,1,17,0" Height="22" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="21" Background="{x:Null}" Panel.ZIndex="200" />
     </Grid>
 </Window>

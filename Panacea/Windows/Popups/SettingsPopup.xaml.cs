@@ -40,8 +40,8 @@ namespace Panacea.Windows.Popups
         private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.2) };
         private double PopinLeft { get { return UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuSettings.Margin.Left; } }
         private double PopinTop { get { return UtilityBar.UtilBarMain.Top - this.ActualHeight; } }
-        private double PopinWidth { get { return 180; } }
-        private double PopinHeight { get { return 95; } }
+        private double PopinWidth { get { return 455; } }
+        private double PopinHeight { get { return 287; } }
         public bool PoppedOut { get; set; } = false;
 
         #endregion
@@ -53,15 +53,12 @@ namespace Panacea.Windows.Popups
 
         }
 
-        #endregion
-
-        #region Event Handlers
-
-        private void BtnArrowLeft_Click(object sender, RoutedEventArgs e)
+        private void Rectangle_MouseDown(object sender, MouseButtonEventArgs e)
         {
             try
             {
-                UtilityBar.UtilBarMain.MoveUtilBarToOtherDisplay(Key.Left);
+                if (e.ChangedButton == MouseButton.Left && PoppedOut)
+                    SettingsPopupMain.DragMove();
             }
             catch (Exception ex)
             {
@@ -69,16 +66,120 @@ namespace Panacea.Windows.Popups
             }
         }
 
-        private void BtnArrowRight_Click(object sender, RoutedEventArgs e)
+        private void SettingsPopupMain_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (!startingUp)
+                VerifyResetButtonRequirement();
+        }
+
+        #endregion
+
+        #region Event Handlers
+
+        private void BtnReset_Click(object sender, RoutedEventArgs e)
+        {
+            ResetPopupSizeAndLocation();
+        }
+
+        private void BtnMinimize_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                UtilityBar.UtilBarMain.MoveUtilBarToOtherDisplay(Key.Right);
+                this.WindowState = WindowState.Minimized;
             }
             catch (Exception ex)
             {
                 LogException(ex);
             }
+        }
+
+        private void BtnPopInOut_Click(object sender, RoutedEventArgs e)
+        {
+            TogglePopout();
+        }
+
+        private void BtnClose_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (PoppedOut)
+                    TogglePopout();
+                PopupHide();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ChkPopSetGenBeta_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ChkPopSetGenStartup_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnPopSetGenChangelog_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnPopSetGenSendDiag_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnPopSetGenConfigDefault_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ComboPopSetNetAction_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void TxtPopSetWinPro1_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void TxtPopSetWinPro2_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void TxtPopSetWinPro3_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void TxtPopSetWinPro4_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void TxtPopSetStartPro1_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void TxtPopSetStartPro2_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void TxtPopSetStartPro3_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void TxtPopSetStartPro4_KeyDown(object sender, KeyEventArgs e)
+        {
+
         }
 
         #endregion
@@ -88,6 +189,7 @@ namespace Panacea.Windows.Popups
         private void Startup()
         {
             PopupShow();
+            EnableWindowResizing();
             //HideTimerActivate();
             SubscribeToEvents();
             FinishStartup();
@@ -122,8 +224,8 @@ namespace Panacea.Windows.Popups
         {
             try
             {
-                this.Top = UtilityBar.UtilBarMain.Top - 95;
-                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuSettings.Margin.Left;
+                this.Top = PopinTop; //UtilityBar.UtilBarMain.Top - PopinHeight;
+                this.Left = PopinLeft; //UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuSettings.Margin.Left;
             }
             catch (Exception ex)
             {
@@ -201,7 +303,7 @@ namespace Panacea.Windows.Popups
         {
             try
             {
-                this.Top = UtilityBar.UtilBarMain.Top - 140;
+                this.Top = UtilityBar.UtilBarMain.Top - PopinHeight;
                 this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuSettings.Margin.Left;
                 this.Opacity = 0;
             }
@@ -238,6 +340,90 @@ namespace Panacea.Windows.Popups
             finally
             {
                 //HideTimerActivate();
+            }
+        }
+
+        private void VerifyResetButtonRequirement()
+        {
+            try
+            {
+                if ((this.Left != PopinLeft || this.Top != PopinTop || this.ActualWidth != PopinWidth || this.ActualHeight != PopinHeight) && btnReset.Visibility != Visibility.Visible)
+                {
+                    btnReset.Visibility = Visibility.Visible;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void TogglePopout(bool? forcePoppin = null)
+        {
+            try
+            {
+                if (forcePoppin != null)
+                {
+                    uDebugLogAdd($"Forcing poppin: {forcePoppin}");
+                    PoppedOut = (bool)forcePoppin;
+                }
+                if (PoppedOut)
+                {
+                    PoppedOut = false;
+                    this.Left = PopinLeft;
+                    this.Top = PopinTop;
+                    this.ResizeMode = ResizeMode.NoResize;
+                    this.ShowInTaskbar = false;
+                    plySettingsVisualSlider.Visibility = Visibility.Visible;
+                    btnMinimize.Visibility = Visibility.Hidden;
+                    btnPopInOut.Content = "🢅";
+                }
+                else if (!PoppedOut)
+                {
+                    PoppedOut = true;
+                    this.Left += 10;
+                    this.Top -= 10;
+                    this.ResizeMode = ResizeMode.CanResize;
+                    this.ShowInTaskbar = true;
+                    plySettingsVisualSlider.Visibility = Visibility.Hidden;
+                    btnMinimize.Visibility = Visibility.Visible;
+                    btnPopInOut.Content = "🢇";
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ResetPopupSizeAndLocation()
+        {
+            try
+            {
+                uDebugLogAdd("Resetting Audio Popup Size and Location to Default");
+                this.Left = PopinLeft;
+                this.Top = PopinTop;
+                this.Width = PopinWidth;
+                this.Height = PopinHeight;
+                btnReset.Visibility = Visibility.Hidden;
+                TogglePopout(true);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ShowNotification(string text)
+        {
+            try
+            {
+                uDebugLogAdd($"Calling ShowNotification from SettingsPopup: {text}");
+                UtilityBar.UtilBarMain.ShowNotification(text);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
             }
         }
 

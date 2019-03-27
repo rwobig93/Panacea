@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Panacea.Windows"
         xmlns:src="clr-namespace:Panacea.Classes"
         mc:Ignorable="d" Topmost="True" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" Loaded="WinAudioMain_Loaded" SizeChanged="WinAudioMain_SizeChanged"
-        Title="AudioPopup" Height="351" MinHeight="250" Width="551" MinWidth="400" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
+        Title="AudioPopup" Height="375" MinHeight="250" Width="551" MinWidth="400" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
     <Window.Resources>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus25Converter x:Key="Minus25Converter"/>
@@ -14,11 +14,12 @@
     </Window.Resources>
     <Grid x:Name="grdAudio" Background="#02010101">
         <Grid.RowDefinitions>
-            <RowDefinition Height="165*"/>
+            <RowDefinition Height="223*"/>
+            <RowDefinition Height="112*"/>
             <RowDefinition Height="17"/>
         </Grid.RowDefinitions>
-        <Polygon x:Name="plyAudioVisualSlider" Points="28.9,.5,1.1,.5,15,16.1" Stroke="#FFA0A0A0" Grid.Row="1" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" Fill="#FFA0A0A0" />
-        <Rectangle x:Name="rectAudioBackground" Stroke="#FFA0A0A0" Grid.Row="0">
+        <Polygon x:Name="plyAudioVisualSlider" Points="28.9,.5,1.1,.5,15,16.1" Stroke="#FFA0A0A0" Grid.Row="2" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" Fill="#FFA0A0A0" />
+        <Rectangle x:Name="rectAudioBackground" Stroke="#FFA0A0A0" Grid.Row="0" Grid.RowSpan="2">
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1B1B1B" Offset="0"/>
@@ -28,7 +29,7 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <ScrollViewer x:Name="scrlAudioTop" Grid.Row="0" Background="#02010101">
+        <ScrollViewer x:Name="scrlAudioTop" Grid.Row="0" Background="#02010101" Grid.RowSpan="2">
             <Grid x:Name="grdAudioTop">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="112*"/>
@@ -40,7 +41,7 @@
                 <Button x:Name="btnPopInOut" Click="BtnPopInOut_Click" Content="🢅" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,27,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
                 <Button x:Name="btnClose" Click="BtnClose_Click" Content="X" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,0,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
                 <Label x:Name="lblPlaybackDevices" HorizontalContentAlignment="Center" Content="Windows Playback Devices" MouseDown="LblAudioDevices_MouseDown" VerticalAlignment="Top" Foreground="#FF8D8D8D" Margin="10,2,0,0" Grid.Row="0" Height="26" Panel.ZIndex="-1"/>
-                <ListBox x:Name="lbPlaybackDevices" SelectionChanged="LbPlaybackDevices_SelectionChanged" SelectionMode="Single" Margin="10,30,0,10" Grid.Row="0">
+                <ListBox x:Name="lbPlaybackDevices" SelectionChanged="LbPlaybackDevices_SelectionChanged" SelectionMode="Single" Margin="10,30,0,2" Grid.Row="0">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding FriendlyName}"/>
@@ -48,7 +49,7 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
                 <Label x:Name="lblRecordingDevices" HorizontalContentAlignment="Center" Content="Windows Recording Devices" MouseDown="LblAudioDevices_MouseDown" VerticalAlignment="Top" Foreground="#FF8D8D8D" Margin="10,3,0,0" Height="29" Panel.ZIndex="-1" Grid.Row="1"/>
-                <ListBox x:Name="lbRecordingDevices" SelectionChanged="LbRecordingDevices_SelectionChanged" SelectionMode="Single" Margin="10,32,0,10" Grid.Row="1">
+                <ListBox x:Name="lbRecordingDevices" SelectionChanged="LbRecordingDevices_SelectionChanged" SelectionMode="Single" Margin="10,32,0,5" Grid.Row="1">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding FriendlyName}"/>

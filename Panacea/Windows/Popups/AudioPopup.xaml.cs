@@ -40,7 +40,7 @@ namespace Panacea.Windows
         private double PopinLeft { get { return UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuAudio.Margin.Left; } }
         private double PopinTop { get { return UtilityBar.UtilBarMain.Top - this.ActualHeight; } }
         private double PopinWidth { get { return 551; } }
-        private double PopinHeight { get { return 335; } }
+        private double PopinHeight { get { return 375; } }
         public bool PoppedOut { get; set; } = false;
         bool playbackDeviceRefreshing = false;
         bool recordingDeviceRefreshing = false;
@@ -103,8 +103,8 @@ namespace Panacea.Windows
         {
             try
             {
-                this.Top = UtilityBar.UtilBarMain.Top - 335;
-                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuAudio.Margin.Left;
+                this.Top = PopinTop; //UtilityBar.UtilBarMain.Top - PopinHeight;
+                this.Left = PopinLeft; //UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuAudio.Margin.Left;
             }
             catch (Exception ex)
             {
@@ -168,7 +168,7 @@ namespace Panacea.Windows
         {
             try
             {
-                this.Top = UtilityBar.UtilBarMain.Top - 335;
+                this.Top = UtilityBar.UtilBarMain.Top - PopinHeight;
                 this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuAudio.Margin.Left;
                 this.Opacity = 0;
             }
@@ -208,6 +208,9 @@ namespace Panacea.Windows
         {
             try
             {
+                var utilTop = UtilityBar.UtilBarMain.Top;
+                var actHeight = this.ActualHeight;
+                uDebugLogAdd($"{utilTop - actHeight}");
                 if ((this.Left != PopinLeft || this.Top != PopinTop || this.ActualWidth != PopinWidth || this.ActualHeight != PopinHeight) && btnReset.Visibility != Visibility.Visible)
                 {
                     btnReset.Visibility = Visibility.Visible;
@@ -326,10 +329,15 @@ namespace Panacea.Windows
             }
         }
 
-        private void TogglePopout()
+        private void TogglePopout(bool? forcePoppin = null)
         {
             try
             {
+                if (forcePoppin != null)
+                {
+                    uDebugLogAdd($"Forcing poppin: {forcePoppin}");
+                    PoppedOut = (bool)forcePoppin;
+                }
                 if (PoppedOut)
                 {
                     PoppedOut = false;
@@ -369,7 +377,7 @@ namespace Panacea.Windows
                 this.Width = PopinWidth;
                 this.Height = PopinHeight;
                 btnReset.Visibility = Visibility.Hidden;
-                TogglePopout();
+                TogglePopout(true);
             }
             catch (Exception ex)
             {

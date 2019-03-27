@@ -246,8 +246,8 @@ namespace Panacea.Windows
         {
             try
             {
-                this.Top = UtilityBar.UtilBarMain.Top - 300;
-                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuNetwork.Margin.Left;
+                this.Top = PopinTop;
+                this.Left = PopinLeft;
             }
             catch (Exception ex)
             {
@@ -259,7 +259,7 @@ namespace Panacea.Windows
         {
             try
             {
-                this.Top = UtilityBar.UtilBarMain.Top - 300;
+                this.Top = UtilityBar.UtilBarMain.Top - PopinHeight;
                 this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuNetwork.Margin.Left;
                 this.Opacity = 0;
             }
@@ -506,10 +506,15 @@ namespace Panacea.Windows
             worker.RunWorkerAsync();
         }
 
-        private void TogglePopout()
+        private void TogglePopout(bool? forcePoppin = null)
         {
             try
             {
+                if (forcePoppin != null)
+                {
+                    uDebugLogAdd($"Forcing poppin: {forcePoppin}");
+                    PoppedOut = (bool)forcePoppin;
+                }
                 if (PoppedOut)
                 {
                     PoppedOut = false;
