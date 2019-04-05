@@ -30,6 +30,10 @@ namespace Panacea.Classes
         private string _windowProfileName2 { get; set; } = "Profile 2";
         private string _windowProfileName3 { get; set; } = "Profile 3";
         private string _windowProfileName4 { get; set; } = "Profile 4";
+        private string _startupProfileName1 { get; set; } = "Start 1";
+        private string _startupProfileName2 { get; set; } = "Start 2";
+        private string _startupProfileName3 { get; set; } = "Start 3";
+        private string _startupProfileName4 { get; set; } = "Start 4";
         private List<WindowItem> _windowProfile1 { get; set; } = new List<WindowItem>();
         private List<WindowItem> _windowProfile2 { get; set; } = new List<WindowItem>();
         private List<WindowItem> _windowProfile3 { get; set; } = new List<WindowItem>();
@@ -120,6 +124,42 @@ namespace Panacea.Classes
             {
                 _windowProfileName4 = value;
                 OnPropertyChanged("WindowProfileName4");
+            }
+        }
+        public string StartProfileName1
+        {
+            get { return _startupProfileName1; }
+            set
+            {
+                _startupProfileName1 = value;
+                OnPropertyChanged("StartProfileName1");
+            }
+        }
+        public string StartProfileName2
+        {
+            get { return _startupProfileName2; }
+            set
+            {
+                _startupProfileName2 = value;
+                OnPropertyChanged("StartProfileName1");
+            }
+        }
+        public string StartProfileName3
+        {
+            get { return _startupProfileName3; }
+            set
+            {
+                _startupProfileName3 = value;
+                OnPropertyChanged("StartProfileName1");
+            }
+        }
+        public string StartProfileName4
+        {
+            get { return _startupProfileName4; }
+            set
+            {
+                _startupProfileName4 = value;
+                OnPropertyChanged("StartProfileName1");
             }
         }
         public List<WindowItem> WindowProfile1

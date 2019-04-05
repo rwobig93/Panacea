@@ -139,9 +139,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Classes\Actions.cs" />
     <Compile Include="Classes\IPInterop.cs" />
     <Compile Include="Classes\WlanApi.cs" />
     <Compile Include="Classes\WlanInterop.cs" />
+    <Compile Include="Windows\Director.xaml.cs">
+      <DependentUpon>Director.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\Popups\AudioPopup.xaml.cs">
       <DependentUpon>AudioPopup.xaml</DependentUpon>
     </Compile>
@@ -179,6 +183,10 @@
     <Page Include="Resources\IconsNonShared.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Windows\Director.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\Popups\AudioPopup.xaml">
       <SubType>Designer</SubType>

@@ -15,6 +15,37 @@ using static Panacea.Windows.UtilityBar;
 
 namespace Panacea.Classes
 {
+
+    #region Enums
+
+    public enum DebugType
+    {
+        EXCEPTION,
+        STATUS,
+        INFO,
+        FAILURE
+    }
+
+    public enum AppUpdate
+    {
+        Panacea,
+        Upstaller
+    }
+
+    public enum Direction
+    {
+        Up,
+        Down
+    }
+
+    public enum WindowProfile
+    {
+        Profile1,
+        Profile2,
+        Profile3,
+        Profile4
+    }
+
     #region General
 
     public class DetailedProcess
@@ -187,20 +218,6 @@ namespace Panacea.Classes
         }
     }
 
-    public enum Direction
-    {
-        Up,
-        Down
-    }
-
-    public enum WindowProfile
-    {
-        Profile1,
-        Profile2,
-        Profile3,
-        Profile4
-    }
-
     #endregion
 
     #region Events
@@ -260,6 +277,8 @@ namespace Panacea.Classes
         public int X { get; }
         public int Y { get; }
     }
+
+    #endregion
 
     #endregion
 

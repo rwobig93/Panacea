@@ -41,7 +41,10 @@
                 <Rectangle x:Name="rectPopSetNetBorder" Height="35" Margin="10,96,7,0" Stroke="#FF918C8C" VerticalAlignment="Top"/>
                 <Rectangle x:Name="rectPopSetNetTitle" HorizontalAlignment="Left" Height="16" Margin="10,96,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="53"/>
                 <TextBlock x:Name="lblPopSetNetTitle" HorizontalAlignment="Left" Margin="14,95,0,0" TextWrapping="Wrap" Text="Network" VerticalAlignment="Top" Foreground="#FF1DD8D0" Width="46"/>
-                <ComboBox x:Name="ComboPopSetNetAction" SelectionChanged="ComboPopSetNetAction_SelectionChanged" HorizontalAlignment="Left" Margin="235,102,0,0" VerticalAlignment="Top" Width="120" Text="DNSLookup"/>
+                <ComboBox x:Name="ComboPopSetNetAction" SelectionChanged="ComboPopSetNetAction_SelectionChanged" HorizontalAlignment="Left" Margin="235,102,0,0" VerticalAlignment="Top" Width="120" Text="DNSLookup">
+                    <ComboBoxItem Content="DNSLookup"/>
+                    <ComboBoxItem Content="Ping"/>
+                </ComboBox>
                 <TextBlock x:Name="LblPopSetNetAction" HorizontalAlignment="Left" Margin="103,105,0,0" TextWrapping="Wrap" Text="Default Network Action:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
                 <Rectangle x:Name="rectPopSetWinBorder" Margin="10,137,7,11" Stroke="#FF918C8C"/>
                 <Rectangle x:Name="rectPopSetWinTitle" HorizontalAlignment="Left" Height="16" Margin="10,137,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="57"/>

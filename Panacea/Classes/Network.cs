@@ -506,7 +506,7 @@ namespace Panacea.Classes
             }
             catch (Exception ex)
             {
-                Toolbox.uAddDebugLog($"Error occured while destroying pingentry: {ex.Message}", MainWindow.DebugType.FAILURE);
+                Toolbox.uAddDebugLog($"Error occured while destroying pingentry: {ex.Message}", DebugType.FAILURE);
             }
         }
 
@@ -688,7 +688,7 @@ namespace Panacea.Classes
             }
             catch (Exception ex)
             {
-                Toolbox.uAddDebugLog($"Error occured while destroying basicpingentry: {ex.Message}", MainWindow.DebugType.FAILURE);
+                Toolbox.uAddDebugLog($"Error occured while destroying basicpingentry: {ex.Message}", DebugType.FAILURE);
             }
         }
 
@@ -715,7 +715,7 @@ namespace Panacea.Classes
             }
             catch (Exception ex)
             {
-                Toolbox.uAddDebugLog($"Unable to get ping failure: [{ex.GetType().ToString()}]{ex.Message}", MainWindow.DebugType.FAILURE);
+                Toolbox.uAddDebugLog($"Unable to get ping failure: [{ex.GetType().ToString()}]{ex.Message}", DebugType.FAILURE);
             }
         }
 
@@ -748,7 +748,7 @@ namespace Panacea.Classes
             }
             catch (Exception ex)
             {
-                Toolbox.uAddDebugLog($"Unable to get ping success: [{ex.GetType().ToString()}]{ex.Message}", MainWindow.DebugType.FAILURE);
+                Toolbox.uAddDebugLog($"Unable to get ping success: [{ex.GetType().ToString()}]{ex.Message}", DebugType.FAILURE);
             }
         }
 

@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.IO.Compression;
+using System.Net.Mail;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 using static Panacea.MainWindow;
 
 namespace Panacea.Classes
