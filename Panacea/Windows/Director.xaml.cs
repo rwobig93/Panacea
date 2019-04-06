@@ -28,20 +28,22 @@ namespace Panacea.Windows
     /// </summary>
     public partial class Director : Window
     {
+        #region Constructor
         public Director()
         {
             InitializeComponent();
+            VerifyDebugMode();
             Startup();
-            //InitializeMasterThread();
+            InitializeMasterThread();
         }
 
         private void InitializeMasterThread()
         {
             try
             {
-                _mainWorker = new BackgroundWorker();
-                _mainWorker.ProgressChanged += MasterThreadHandoff;
+                _mainWorker = new BackgroundWorker() { WorkerReportsProgress = true };
                 _mainWorker.DoWork += MasterThreadWork;
+                _mainWorker.ProgressChanged += MasterThreadHandoff;
                 _mainWorker.RunWorkerAsync();
             }
             catch (Exception ex)
@@ -56,7 +58,7 @@ namespace Panacea.Windows
             {
                 while (!_stopApplication)
                 {
-
+                    Thread.Sleep(500);
                 }
                 _mainWorker.ReportProgress(99);
             }
@@ -84,40 +86,123 @@ namespace Panacea.Windows
             {
                 LogException(ex);
             }
-        }
+        } 
+        #endregion
 
+        #region Globals
+        // Public Globals
+        public string LogDirectory { get; } = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\";
+        public string ConfigDirectory { get; } = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Config\";
+        public string ExceptionDirectory { get; } = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\Exceptions\";
+        public string CurrentDirectory { get; } = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        public static Director Main;
+        public MainWindow DesktopWindow;
+        public UtilityBar UtilBar;
+        public bool UpdateAvailable { get; private set; } = false;
+        public bool DebugMode { get; private set; } = false;
+
+        // Private Globals
         private BackgroundWorker _mainWorker;
         private bool _stopApplication = false;
         private bool upstallerUpdateInProg = false;
         private bool downloadInProgress = false;
         private Hardcodet.Wpf.TaskbarNotification.TaskbarIcon taskIcon = null;
         private Octokit.GitHubClient gitClient = null;
-        public static Director Main;
-        public MainWindow DesktopWindow;
-        public UtilityBar UtilBar;
-        public string LogDirectory { get; } = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\";
-        public string ConfigDirectory { get; } = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Config\";
-        public string ExceptionDirectory { get; } = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\Exceptions\";
-        public string CurrentDirectory { get; } = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        #endregion
+
+        #region Event Handlers
+        private void ItemQuit_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            try
+            {
+                var response = Prompt.YesNo("Are you sure you want to Anihilate the Panacea process completely?");
+                if (response == Prompt.PromptResponse.Yes)
+                    ToggleApplicationStop();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ItemUtilBar_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            ShowUtilityBar();
+        }
+
+        private void ItemDesktop_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            ShowDesktopWindow();
+        }
+        #endregion
+
+        #region Methods
+        public void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO, [CallerMemberName] string caller = "")
+        {
+            try
+            {
+                Toolbox.uAddDebugLog($"DIRECTR: {_log}", _type, caller);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void LogException(Exception ex, [CallerLineNumber] int lineNum = 0, [CallerMemberName] string caller = "", [CallerFilePath] string path = "")
+        {
+            try
+            {
+                Toolbox.LogException(ex, lineNum, caller, path);
+                uDebugLogAdd(string.Format("{0} at line {1} with type {2}", caller, lineNum, ex.GetType().Name), DebugType.EXCEPTION);
+            }
+            catch (Exception)
+            {
+                Random rand = new Random();
+                Toolbox.LogException(ex, lineNum, caller, path, rand.Next(816456489).ToString());
+                uDebugLogAdd(string.Format("{0} at line {1} with type {2}", caller, lineNum, ex.GetType().Name), DebugType.EXCEPTION);
+            }
+        }
+
+        private void VerifyDebugMode()
+        {
+#if DEBUG
+            DebugMode = true;
+#endif
+        }
 
         private void Startup()
         {
-            uDebugLogAdd(string.Format("{0}###################################### Application Start ######################################{0}", Environment.NewLine));
             Main = this;
-            SetupAppFiles();
-            DeSerializeSettings();
             SubscribeToEvents();
+            SetupAppFiles();
+            uDebugLogAdd(string.Format("{0}###################################### Application Start ######################################{0}", Environment.NewLine));
+            DeSerializeSettings();
             InitializeBackgroundNotificationIcon();
             InitializeDesktopWindow();
             InitializeUtilBar();
             ShowPreferredWindow();
+            tStartTimedActions();
+            this.Hide();
+        }
+
+        private void FullApplicationClose()
+        {
+            UtilBar.TearDownGlobalHotkey();
+            TearDownBackgroundNotificationIcon();
+            DesktopWindow.Close();
+            UtilBar.Close();
+            SaveSettings();
+            uDebugLogAdd(string.Format("{0}##################################### Application Closing #####################################{0}", Environment.NewLine));
+            DumpDebugLog();
+            this.Close();
         }
 
         private void ShowPreferredWindow()
         {
             try
             {
-                UtilBar.Show();
+                ShowUtilityBar();
             }
             catch (Exception ex)
             {
@@ -152,6 +237,7 @@ namespace Panacea.Windows
             {
                 uDebugLogAdd("Initializing UtilityBar");
                 UtilBar = new UtilityBar();
+                UtilBar.HideUtilBarInBackground();
                 uDebugLogAdd("Finished Initializing UtilityBar");
             }
             catch (Exception ex)
@@ -166,6 +252,7 @@ namespace Panacea.Windows
             {
                 uDebugLogAdd("Initializing Desktop Window");
                 DesktopWindow = new MainWindow();
+                DesktopWindow.HideWinMainInBackground();
                 uDebugLogAdd("Finished Initializing Desktop Window");
             }
             catch (Exception ex)
@@ -184,44 +271,6 @@ namespace Panacea.Windows
             catch (Exception ex)
             {
                 LogException(ex);
-            }
-        }
-
-        private void FullApplicationClose()
-        {
-            TearDownBackgroundNotificationIcon();
-            DesktopWindow.Close();
-            UtilBar.Close();
-            SaveSettings();
-            uDebugLogAdd(string.Format("{0}##################################### Application Closing #####################################{0}", Environment.NewLine));
-            DumpDebugLog();
-            this.Close();
-        }
-
-        public void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO, [CallerMemberName] string caller = "")
-        {
-            try
-            {
-                Toolbox.uAddDebugLog(_log, _type, caller);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        public void LogException(Exception ex, [CallerLineNumber] int lineNum = 0, [CallerMemberName] string caller = "", [CallerFilePath] string path = "")
-        {
-            try
-            {
-                Toolbox.LogException(ex, lineNum, caller, path);
-                uDebugLogAdd(string.Format("{0} at line {1} with type {2}", caller, lineNum, ex.GetType().Name), DebugType.EXCEPTION);
-            }
-            catch (Exception)
-            {
-                Random rand = new Random();
-                Toolbox.LogException(ex, lineNum, caller, path, rand.Next(816456489).ToString());
-                uDebugLogAdd(string.Format("{0} at line {1} with type {2}", caller, lineNum, ex.GetType().Name), DebugType.EXCEPTION);
             }
         }
 
@@ -370,7 +419,7 @@ namespace Panacea.Windows
             try
             {
                 uDebugLogAdd("Initializing Background Notification Icon");
-                MenuItem ItemDesktop = new MenuItem() { Name = "IShowDesktopWindow", Header = "Show Panacea" };
+                MenuItem ItemDesktop = new MenuItem() { Name = "IShowDesktopWindow", Header = "Show Desktop Window" };
                 ItemDesktop.Click += ItemDesktop_Click;
                 MenuItem ItemUtilBar = new MenuItem() { Name = "IShowUtilBar", Header = "Show UtilityBar" };
                 ItemUtilBar.Click += ItemUtilBar_Click;
@@ -383,18 +432,17 @@ namespace Panacea.Windows
                     {
                         GradientStops = new GradientStopCollection()
                           {
-                              new GradientStop(Color.FromArgb(100,28,28,28), 0),
-                              new GradientStop(Color.FromArgb(100,0,0,0), 1)
+                              new GradientStop(Toolbox.ColorFromHex("#FF1C1C1C"), 0),
+                              new GradientStop(Colors.Black, 1)
                           }
                     },
-                    Foreground = new SolidColorBrush(Color.FromArgb(100, 141, 141, 141))
+                    Foreground = Toolbox.SolidBrushFromHex("#FF8D8D8D")
                 };
                 NotificationMenu.Items.Add(ItemDesktop);
                 NotificationMenu.Items.Add(ItemUtilBar);
                 NotificationMenu.Items.Add(ItemSeperator);
                 NotificationMenu.Items.Add(ItemQuit);
                 taskIcon = new Hardcodet.Wpf.TaskbarNotification.TaskbarIcon { Icon = new System.Drawing.Icon(Assembly.GetExecutingAssembly().GetManifestResourceStream("Panacea.Dependencies.Panacea_Icon.ico")) };
-                taskIcon.LeftClickCommand = new CommandShowPanacea();
                 taskIcon.ContextMenu = NotificationMenu;
                 uDebugLogAdd("Background Notification Icon successfully initialized");
             }
@@ -404,47 +452,22 @@ namespace Panacea.Windows
             }
         }
 
-        private void ItemQuit_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            try
-            {
-                var response = Prompt.YesNo("Are you sure you want to Anihilate the Panacea process completely?");
-                if (response == Prompt.PromptResponse.Yes)
-                    ToggleApplicationStop();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void ItemUtilBar_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            ShowUtilityBar();
-        }
-
         private void ShowUtilityBar()
         {
             try
             {
-                UtilBar.Show();
+                UtilBar.BringUtilBarBackFromTheVoid();
             }
             catch (Exception ex)
             {
                 LogException(ex);
             }
-        }
-
-        private void ItemDesktop_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            ShowDesktopWindow();
         }
 
         private void ShowDesktopWindow()
         {
             try
             {
-                DesktopWindow.Show();
                 DesktopWindow.BringWinMainBackFromTheVoid();
             }
             catch (Exception ex)
@@ -603,13 +626,14 @@ namespace Panacea.Windows
                                 if (Toolbox.settings.ShowChangelog)
                                 {
                                     Toolbox.settings.ShowChangelog = false;
-                                    ShowChangelog();
+                                    Actions.ShowChangelog();
                                 }
                             }
                             if (Toolbox.changeLogs.Find(x => x.Version == Toolbox.settings.CurrentVersion.ToString()) != null)
                             {
                                 uDebugLogAdd("Found changelog item for current running version, verifying if beta release");
-                                ToggleBetaVersion();
+                                if (Toolbox.changeLogs.Find(x => x.Version == Toolbox.settings.CurrentVersion.ToString()).BetaRelease == Visibility.Visible)
+                                    TriggerBetaVersion();
                             }
                             SaveSettings();
                         }
@@ -657,83 +681,27 @@ namespace Panacea.Windows
             }
         }
 
-        private void ToggleBetaVersion()
+        private void TriggerBetaVersion()
         {
-            throw new NotImplementedException();
+            uDebugLogAdd("Current version is verified as Beta Release, triggering Beta UI Elements");
+            DesktopWindow.TriggerBetaReleaseUI();
+            UtilBar.TriggerBetaRelease();
         }
 
-        public void ShowChangelog()
+        private void TriggerUpdateAvailable()
         {
             try
             {
-                Changelog changelog = new Changelog();
-                changelog.ShowDialog();
-                //uDebugLogAdd("Showing Changelog Window");
-                //Prompt.OK($"Changelog for v{Toolbox.settings.CurrentVersion}:{Environment.NewLine}{Toolbox.settings.LatestChangelog}", TextAlignment.Left);
-                //uDebugLogAdd("Closed changelog window");
+                uDebugLogAdd("Triggering update available on windows");
+                UpdateAvailable = true;
+                DesktopWindow.TriggerUpdateAvailable();
+                UtilBar.TriggerUpdateAvailable();
+                uDebugLogAdd("Finished update availablility trigger on all windows");
             }
             catch (Exception ex)
             {
                 LogException(ex);
             }
-        }
-
-        private void SendDiagnostics()
-        {
-            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
-            worker.DoWork += (sender, e) =>
-            {
-                try
-                {
-                    uDebugLogAdd("Attempting to send diagnostic info...");
-                    var diagDir = $@"{CurrentDirectory}\Diag";
-                    if (!Directory.Exists(diagDir))
-                    {
-                        uDebugLogAdd($"Diag directory not found, creating: {diagDir}");
-                        Directory.CreateDirectory(diagDir);
-                        uDebugLogAdd("Created diagDir");
-                    }
-                    var zipName = $"Panacea_Diag_{ DateTime.Today.ToString("MM_dd_yy")}";
-                    var zipPath = $@"{diagDir}\{zipName}.zip";
-                    uDebugLogAdd($"zipPath: {zipPath}");
-                    if (File.Exists(zipPath))
-                    {
-                        zipPath = $@"{diagDir}\{zipName}{Toolbox.GenerateRandomNumber(0, 1000)}.zip";
-                        uDebugLogAdd($"Diag zip file for today already exists, added random string: {zipPath}");
-                    }
-                    DumpDebugLog();
-                    ZipFile.CreateFromDirectory(LogDirectory, zipPath);
-                    using (SmtpClient smtp = new SmtpClient("mail.wobigtech.net"))
-                    {
-                        uDebugLogAdd("Generating mail");
-                        MailMessage message = new MailMessage();
-                        MailAddress from = new MailAddress("PanaceaLogs@WobigTech.net");
-                        smtp.UseDefaultCredentials = true;
-                        smtp.Timeout = TimeSpan.FromMinutes(5.0).Seconds;
-
-                        message.From = from;
-                        message.Subject = $"Panacea Diag {DateTime.Today.ToString("MM-dd-yy_hh:mm_tt")}";
-                        message.IsBodyHtml = false;
-                        message.Body = "Panacea Diag Attached";
-                        message.To.Add("rick@wobigtech.net");
-                        message.Attachments.Add(new Attachment(zipPath) { Name = $"{zipName}.zip" });
-                        uDebugLogAdd("Attempting to send mail");
-                        smtp.Send(message);
-                        uDebugLogAdd("Mail sent");
-                    }
-                    ShowNotification("Diagnostic info sent to the developer, Thank You!");
-                }
-                catch (Exception ex)
-                {
-                    LogException(ex);
-                }
-            };
-            worker.RunWorkerAsync();
-        }
-
-        private void TriggerUpdateAvailable()
-        {
-            throw new NotImplementedException();
         }
 
         public async Task GetUpdate(AppUpdate appUpdate)
@@ -811,10 +779,34 @@ namespace Panacea.Windows
             }
         }
 
-        private void uStatusUpdate(string v)
+        public void uStatusUpdate(string v)
         {
-            throw new NotImplementedException();
+            try
+            {
+                uDebugLogAdd(v, DebugType.STATUS);
+                DesktopWindow.uStatusUpdate(v);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
+
+        public void UpdateWindowsSettingsUI()
+        {
+            try
+            {
+                uDebugLogAdd("Starting settings UI update");
+                DesktopWindow.UpdateSettingsUI();
+                UtilBar.UpdateSettingsUI();
+                uDebugLogAdd("Finished settings UI update");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+        #endregion
 
         #region Install/Update
 
@@ -823,7 +815,7 @@ namespace Panacea.Windows
             return Assembly.GetExecutingAssembly().GetName().Version;
         }
 
-        private void UpdateApplication()
+        public void UpdateApplication()
         {
             try
             {

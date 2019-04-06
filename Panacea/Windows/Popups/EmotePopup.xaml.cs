@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,6 +16,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Shell;
+using System.Windows.Threading;
 using static Panacea.MainWindow;
 
 namespace Panacea.Windows.Popups
@@ -172,6 +174,7 @@ namespace Panacea.Windows.Popups
             {
                 if (this.Opacity == 1.0)
                     this.BeginAnimation(Window.OpacityProperty, outAnimation);
+                Task.Delay(2000).ContinueWith(x => Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { this.Hide(); } catch (Exception ex) { LogException(ex); } }));
             }
             catch (Exception ex)
             {
@@ -183,6 +186,7 @@ namespace Panacea.Windows.Popups
         {
             try
             {
+                this.Show();
                 if (this.Opacity == 0)
                     this.BeginAnimation(Window.OpacityProperty, inAnimation);
             }

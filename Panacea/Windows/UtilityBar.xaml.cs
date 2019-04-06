@@ -91,7 +91,8 @@ namespace Panacea.Windows
             Settings,
             Audio,
             Windows,
-            Emotes
+            Emotes,
+            None
         }
 
         public enum Emotes
@@ -114,6 +115,9 @@ namespace Panacea.Windows
         private bool _closing = false;
         private bool _notificationPlaying = false;
         private bool _startingUp = true;
+        private bool _betaVersion = false;
+        private bool _firstShow = true;
+        private bool _imHiding = false;
         private int _totalNotificationsRun = 0;
         private List<string> notifications = new List<string>();
         private NetworkInterface _currentEthIf;
@@ -133,7 +137,6 @@ namespace Panacea.Windows
         private EmotePopup popupEmote;
         private SettingsPopup popupSettings;
         private INTER.HwndSource _source;
-
         public WlanClient.WlanInterface CurrentWifiInterface { get; private set; }
 
         #endregion
@@ -144,19 +147,19 @@ namespace Panacea.Windows
 
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
-            CloseUtilBar();
+            //CloseUtilBar();
+            HideUtilBarInBackground();
         }
 
         private void WinMain_Loaded(object sender, RoutedEventArgs e)
         {
             tLocationWatcher();
-            InitializeGlobalHotkey();
         }
 
         private void WinMain_Closing(object sender, CancelEventArgs e)
         {
             SavePopoutPreferences();
-            CloseUtilBar();
+            //CloseUtilBar();
         }
 
         private void BtnMenuNetwork_Click(object sender, RoutedEventArgs e)
@@ -268,7 +271,7 @@ namespace Panacea.Windows
         {
             try
             {
-                Toolbox.uAddDebugLog(_log, _type, caller);
+                Toolbox.uAddDebugLog($"UTILBAR: {_log}", _type, caller);
             }
             catch (Exception ex)
             {
@@ -294,6 +297,11 @@ namespace Panacea.Windows
         private void PreInitializeStartup()
         {
             UtilityBar.UtilBarMain = this;
+            MoveUtilBarOffScreen();
+        }
+
+        private void MoveUtilBarOffScreen()
+        {
             this.Top = -32000;
             this.Left = -32000;
         }
@@ -331,89 +339,7 @@ namespace Panacea.Windows
             }
         }
 
-        private void InitializeGlobalHotkey()
-        {
-            try
-            {
-                var helper = new INTER.WindowInteropHelper(this);
-                _source = INTER.HwndSource.FromHwnd(helper.Handle);
-                _source.AddHook(HwndHook);
-                RegisterHotKey();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void TearDownGlobalHotkey()
-        {
-            try
-            {
-                _source.RemoveHook(HwndHook);
-                _source = null;
-                UnregisterHotKey();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            const int WM_HOTKEY = 0x0312;
-            switch (msg)
-            {
-                case WM_HOTKEY:
-                    switch (wParam.ToInt32())
-                    {
-                        case WinAPIWrapper.HOTKEY_ID:
-                            OnHotKeyPressed();
-                            handled = true;
-                            break;
-                    }
-                    break;
-            }
-            return IntPtr.Zero;
-        }
-
-        private void RegisterHotKey()
-        {
-            try
-            {
-                var helper = new INTER.WindowInteropHelper(this);
-                const uint VK_RETURN = 0x0D;
-                const uint MOD_CTRL = 0x0002;
-                if (!WinAPIWrapper.RegisterHotKey(helper.Handle, WinAPIWrapper.HOTKEY_ID, MOD_CTRL, VK_RETURN))
-                {
-                    uDebugLogAdd("Failure registering global hotkey", DebugType.FAILURE);
-                    ShowNotification("Couldn't register Ctrl+Enter Globally");
-                }
-                else
-                    uDebugLogAdd("Registered Global Hotkey: Ctrl+Enter");
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void UnregisterHotKey()
-        {
-            try
-            {
-                var helper = new INTER.WindowInteropHelper(this);
-                WinAPIWrapper.UnregisterHotKey(helper.Handle, WinAPIWrapper.HOTKEY_ID);
-                uDebugLogAdd("Unregistered Global Hotkey: Ctrl+Enter");
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void OnHotKeyPressed()
+        public void OnHotKeyPressed()
         {
             try
             {
@@ -433,7 +359,6 @@ namespace Panacea.Windows
                 return;
             try
             {
-                TearDownGlobalHotkey();
 
                 _closing = true;
                 if (popupNetwork != null)
@@ -442,6 +367,44 @@ namespace Panacea.Windows
                     popupNetwork = null;
                 }
                 this.Close();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void HideUtilBarInBackground()
+        {
+            try
+            {
+                HideSecondaryMenuPopups();
+                _imHiding = true;
+                this.Hide();
+                //this.WindowState = WindowState.Minimized;
+                this.ShowInTaskbar = false;
+                uDebugLogAdd("UtilBar has been hidden in the background");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void BringUtilBarBackFromTheVoid()
+        {
+            try
+            {
+                this.WindowState = WindowState.Normal;
+                _imHiding = false;
+                this.Show();
+                VerifyBarLocation();
+                if (_firstShow)
+                {
+                    _firstShow = false;
+                    InitializeGlobalHotkey();
+                }
+                uDebugLogAdd("UtilBar has been brought back from the void");
             }
             catch (Exception ex)
             {
@@ -496,6 +459,8 @@ namespace Panacea.Windows
         {
             try
             {
+                if (_imHiding)
+                    return;
                 if (currentDisplay != null)
                 {
                     Display chosenDisplay = null;
@@ -537,7 +502,6 @@ namespace Panacea.Windows
                     //this.Width = desiredLocation.Width;
                     this.Top = desiredLocation.Y;
                     Events.TriggerUtilBarMove(desiredLocation.X, desiredLocation.Y);
-                    uDebugLogAdd($"Moved utility bar to new location [x]{this.Left} [y]{this.Top} [dx]{desiredLocation.X} [dy]{desiredLocation.Y}");
                 }
             }
             catch (Exception ex)
@@ -770,6 +734,10 @@ namespace Panacea.Windows
                         break;
                     case PopupMenu.Settings:
                         popupSettings = new SettingsPopup();
+                        if (Director.Main.UpdateAvailable)
+                            popupSettings.TriggerUpdateAvailable();
+                        if (_betaVersion)
+                            popupSettings.TriggerBetaReleaseUI();
                         popupSettings.Show();
                         uDebugLogAdd("Initialized new Settings Popup");
                         break;
@@ -796,7 +764,7 @@ namespace Panacea.Windows
             }
         }
 
-        private void HideSecondaryMenuPopups(PopupMenu primary)
+        private void HideSecondaryMenuPopups(PopupMenu primary = PopupMenu.None)
         {
             try
             {
@@ -857,6 +825,18 @@ namespace Panacea.Windows
                             popupEmote.PopupHide();
                         if (!networkPopped)
                             popupNetwork.PopupHide();
+                        break;
+                    case PopupMenu.None:
+                        if (!settingsPopped)
+                            popupSettings.PopupHide();
+                        if (!audioPopped)
+                            popupAudio.PopupHide();
+                        if (!emotePopped)
+                            popupEmote.PopupHide();
+                        if (!networkPopped)
+                            popupNetwork.PopupHide();
+                        if (!windowsPopped)
+                            popupWindows.PopupHide();
                         break;
                 }
             }
@@ -1026,15 +1006,21 @@ namespace Panacea.Windows
                         poppedOut = popupNetwork.PoppedOut;
                         break;
                     case PopupMenu.Settings:
-                        throw new NotImplementedException();
+                        winToUpdate = popupSettings;
+                        poppedOut = popupSettings.PoppedOut;
+                        break;
                     case PopupMenu.Audio:
                         winToUpdate = popupAudio;
                         poppedOut = popupAudio.PoppedOut;
                         break;
                     case PopupMenu.Emotes:
-                        throw new NotImplementedException();
+                        winToUpdate = popupEmote;
+                        poppedOut = popupEmote.PoppedOut;
+                        break;
                     case PopupMenu.Windows:
-                        throw new NotImplementedException();
+                        winToUpdate = popupWindows;
+                        poppedOut = popupWindows.PoppedOut;
+                        break;
                 }
                 uDebugLogAdd($"Secured winToUpdate: {winToUpdate.Name}");
                 var prefToUpdate = Toolbox.settings.PopoutPreferencesList.Find(x => x.PopupType == menu);
@@ -1053,7 +1039,6 @@ namespace Panacea.Windows
         {
             try
             {
-                uDebugLogAdd($"Invoking UtilityBar move | Key: {key.ToString()}");
                 if (currentDisplay.Displays.Count <= 1)
                 {
                     uDebugLogAdd($"Current display count is {currentDisplay.Displays.Count}, unable to move to another display, will default to primary display");
@@ -1062,24 +1047,20 @@ namespace Panacea.Windows
                 }
                 else
                 {
-                    uDebugLogAdd($"Current display count is {currentDisplay.Displays.Count}, trudging on!");
+                    uDebugLogAdd($"Starting UtilBar move: [Disp#] {currentDisplay.Displays.Count} [Key] {key.ToString()}");
                 }
                 if (key == Key.Left)
                 { 
                     var currDisplayNum = currentDisplay.Displays.FindIndex(x => x.DeviceName == dockedDisplay.DeviceName && x.Bounds == dockedDisplay.Bounds && x.WorkingArea == dockedDisplay.WorkingArea && x.PrimaryDisplay == dockedDisplay.PrimaryDisplay);
                     if (currDisplayNum - 1 >= 0)
                     {
-                        uDebugLogAdd($"Going left array index is >= 0: {currDisplayNum - 1}, going left");
                         var chosenDisplay = currentDisplay.Displays[currDisplayNum - 1];
-                        uDebugLogAdd($"New docked display chosen: {chosenDisplay.DeviceName} | prev: {dockedDisplay.DeviceName}");
                         dockedDisplay = chosenDisplay;
                     }
                     else
                     {
-                        uDebugLogAdd($"Going left array index is < 0: {currDisplayNum - 1}, going furthest right");
                         var newDisplayNum = currentDisplay.Displays.IndexOf(currentDisplay.Displays.ToArray().Last());
                         var chosenDisplay = currentDisplay.Displays[newDisplayNum];
-                        uDebugLogAdd($"New docked display chosen: {chosenDisplay.DeviceName} | prev: {dockedDisplay.DeviceName}");
                         dockedDisplay = chosenDisplay;
                     }
                 }
@@ -1088,22 +1069,145 @@ namespace Panacea.Windows
                     var currDisplayNum = currentDisplay.Displays.FindIndex(x => x.DeviceName == dockedDisplay.DeviceName && x.Bounds == dockedDisplay.Bounds && x.WorkingArea == dockedDisplay.WorkingArea && x.PrimaryDisplay == dockedDisplay.PrimaryDisplay);
                     if (currDisplayNum + 1 <= currentDisplay.Displays.Count - 1)
                     {
-                        uDebugLogAdd($"Going right array index is <= {currentDisplay.Displays.Count - 1}: {currDisplayNum + 1}, going right");
                         var chosenDisplay = currentDisplay.Displays[currDisplayNum + 1];
-                        uDebugLogAdd($"New docked display chosen: {chosenDisplay.DeviceName} | prev: {dockedDisplay.DeviceName}");
                         dockedDisplay = chosenDisplay;
                     }
                     else
                     {
-                        uDebugLogAdd($"Going right array index is out of bounds: {currDisplayNum + 1} | {currentDisplay.Displays.Count - 1}, going furthest left");
                         var chosenDisplay = currentDisplay.Displays[0];
-                        uDebugLogAdd($"New docked display chosen: {chosenDisplay.DeviceName} | prev: {dockedDisplay.DeviceName}");
                         dockedDisplay = chosenDisplay;
                     }
                 }
                 Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile.PreferredDisplay = dockedDisplay;
                 MoveUtilBar(dockedDisplay);
                 //ShowNotification("Moved UtilityBar Location!");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void TriggerUpdateAvailable()
+        {
+            try
+            {
+                btnMenuSettings.Foreground = Toolbox.SolidBrushFromHex("#FF00CD00");
+                if (popupSettings != null)
+                    popupSettings.TriggerUpdateAvailable();
+                ShowNotification("Update Available!");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void TriggerBetaRelease()
+        {
+            try
+            {
+                _betaVersion = true;
+                if (popupSettings != null)
+                    popupSettings.TriggerBetaReleaseUI();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void UpdateSettingsUI()
+        {
+            try
+            {
+                if (popupSettings != null)
+                {
+                    uDebugLogAdd("Settings popup exists, triggering settings Ui update");
+                    popupSettings.UpdateUISettings();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void InitializeGlobalHotkey()
+        {
+            try
+            {
+                var helper = new INTER.WindowInteropHelper(this);
+                _source = INTER.HwndSource.FromHwnd(helper.Handle);
+                _source.AddHook(HwndHook);
+                RegisterHotKey();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void TearDownGlobalHotkey()
+        {
+            try
+            {
+                _source.RemoveHook(HwndHook);
+                _source = null;
+                UnregisterHotKey();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            const int WM_HOTKEY = 0x0312;
+            switch (msg)
+            {
+                case WM_HOTKEY:
+                    switch (wParam.ToInt32())
+                    {
+                        case WinAPIWrapper.HOTKEY_ID:
+                            OnHotKeyPressed();
+                            handled = true;
+                            break;
+                    }
+                    break;
+            }
+            return IntPtr.Zero;
+        }
+
+        private void RegisterHotKey()
+        {
+            try
+            {
+                var helper = new INTER.WindowInteropHelper(this);
+                const uint VK_RETURN = 0x0D;
+                const uint MOD_CTRL = 0x0002;
+                if (!WinAPIWrapper.RegisterHotKey(helper.Handle, WinAPIWrapper.HOTKEY_ID, MOD_CTRL, VK_RETURN))
+                {
+                    uDebugLogAdd("Failure registering global hotkey", DebugType.FAILURE);
+                    ShowNotification("Couldn't register Ctrl+Enter Globally");
+                }
+                else
+                    uDebugLogAdd("Registered Global Hotkey: Ctrl+Enter");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void UnregisterHotKey()
+        {
+            try
+            {
+                var helper = new INTER.WindowInteropHelper(this);
+                WinAPIWrapper.UnregisterHotKey(helper.Handle, WinAPIWrapper.HOTKEY_ID);
+                uDebugLogAdd("Unregistered Global Hotkey: Ctrl+Enter");
             }
             catch (Exception ex)
             {

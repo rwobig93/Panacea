@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Panacea.Windows.Popups"
         xmlns:src="clr-namespace:Panacea.Classes"
         mc:Ignorable="d" Topmost="True" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" Loaded="SettingsPopupMain_Loaded" SizeChanged="SettingsPopupMain_SizeChanged"
-        Title="SettingsPopup" Height="287" MinHeight="287" Width="455" MinWidth="455" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
+        Title="SettingsPopup" Height="332" MinHeight="287" Width="455" MinWidth="455" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
     <Window.Resources>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus25Converter x:Key="Minus25Converter"/>
@@ -30,7 +30,7 @@
         </Rectangle>
         <ScrollViewer x:Name="scrlSettingsTop" Grid.Row="0" Background="#02010101">
             <Grid x:Name="grdSettingsSubTop">
-                <Rectangle x:Name="rectPopSetGenBorder" Height="60" Margin="10,30,7,0" Stroke="#FF918C8C" VerticalAlignment="Top"/>
+                <Rectangle x:Name="rectPopSetGenBorder" Height="104" Margin="10,30,7,0" Stroke="#FF918C8C" VerticalAlignment="Top"/>
                 <Rectangle x:Name="rectPopSetGenTitle" HorizontalAlignment="Left" Height="16" Margin="10,30,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="50"/>
                 <TextBlock x:Name="lblSettingsGenTitle" HorizontalAlignment="Left" Margin="14,29,0,0" TextWrapping="Wrap" Text="General" VerticalAlignment="Top" Foreground="#FF1DD8D0" Width="41"/>
                 <CheckBox x:Name="ChkPopSetGenBeta" Click="ChkPopSetGenBeta_Click" Content="Update to Beta Versions" HorizontalAlignment="Left" Margin="65,33,0,0" VerticalAlignment="Top" Foreground="#FF918C8C"/>
@@ -38,38 +38,41 @@
                 <Button x:Name="BtnPopSetGenChangelog" Click="BtnPopSetGenChangelog_Click" Content="View Changelog" HorizontalAlignment="Left" Style="{StaticResource BaseButton}" Margin="32,54,0,0" VerticalAlignment="Top" Width="107"/>
                 <Button x:Name="BtnPopSetGenSendDiag" Click="BtnPopSetGenSendDiag_Click" Content="Send Diagnostic Logs" HorizontalAlignment="Left" Style="{StaticResource BaseButton}" Margin="144,54,0,0" VerticalAlignment="Top" Width="124"/>
                 <Button x:Name="BtnPopSetGenConfigDefault" Click="BtnPopSetGenConfigDefault_Click" Content="Reset Config to Default" HorizontalAlignment="Left" Style="{StaticResource BaseButton}" Margin="273,54,0,0" VerticalAlignment="Top" Width="138"/>
-                <Rectangle x:Name="rectPopSetNetBorder" Height="35" Margin="10,96,7,0" Stroke="#FF918C8C" VerticalAlignment="Top"/>
-                <Rectangle x:Name="rectPopSetNetTitle" HorizontalAlignment="Left" Height="16" Margin="10,96,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="53"/>
-                <TextBlock x:Name="lblPopSetNetTitle" HorizontalAlignment="Left" Margin="14,95,0,0" TextWrapping="Wrap" Text="Network" VerticalAlignment="Top" Foreground="#FF1DD8D0" Width="46"/>
-                <ComboBox x:Name="ComboPopSetNetAction" SelectionChanged="ComboPopSetNetAction_SelectionChanged" HorizontalAlignment="Left" Margin="235,102,0,0" VerticalAlignment="Top" Width="120" Text="DNSLookup">
+                <Rectangle x:Name="rectPopSetNetBorder" Height="35" Margin="10,141,7,0" Stroke="#FF918C8C" VerticalAlignment="Top"/>
+                <Rectangle x:Name="rectPopSetNetTitle" HorizontalAlignment="Left" Height="16" Margin="10,141,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="53"/>
+                <TextBlock x:Name="lblPopSetNetTitle" HorizontalAlignment="Left" Margin="14,140,0,0" TextWrapping="Wrap" Text="Network" VerticalAlignment="Top" Foreground="#FF1DD8D0" Width="46"/>
+                <ComboBox x:Name="ComboPopSetNetAction" SelectionChanged="ComboPopSetNetAction_SelectionChanged" HorizontalAlignment="Left" Margin="235,147,0,0" VerticalAlignment="Top" Width="120" Text="DNSLookup">
                     <ComboBoxItem Content="DNSLookup"/>
                     <ComboBoxItem Content="Ping"/>
                 </ComboBox>
-                <TextBlock x:Name="LblPopSetNetAction" HorizontalAlignment="Left" Margin="103,105,0,0" TextWrapping="Wrap" Text="Default Network Action:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-                <Rectangle x:Name="rectPopSetWinBorder" Margin="10,137,7,11" Stroke="#FF918C8C"/>
-                <Rectangle x:Name="rectPopSetWinTitle" HorizontalAlignment="Left" Height="16" Margin="10,137,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="57"/>
-                <TextBlock x:Name="lblPopSetWinTitle" HorizontalAlignment="Left" Margin="14,136,0,0" TextWrapping="Wrap" Text="Windows" VerticalAlignment="Top" Foreground="#FF1DD8D0" Width="49"/>
-                <TextBlock x:Name="LblPopSetWinPro1" HorizontalAlignment="Left" Margin="14,158,0,0" TextWrapping="Wrap" Text="Window Profile 1 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-                <TextBox x:Name="TxtPopSetWinPro1" KeyDown="TxtPopSetWinPro1_KeyDown" HorizontalAlignment="Left" Height="20" Margin="147,157,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
-                <TextBlock x:Name="LblPopSetWinPro2" HorizontalAlignment="Left" Margin="14,183,0,0" TextWrapping="Wrap" Text="Window Profile 2 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-                <TextBox x:Name="TxtPopSetWinPro2" KeyDown="TxtPopSetWinPro2_KeyDown" HorizontalAlignment="Left" Height="20" Margin="147,182,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
-                <TextBlock x:Name="LblPopSetWinPro3" HorizontalAlignment="Left" Margin="14,208,0,0" TextWrapping="Wrap" Text="Window Profile 3 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-                <TextBox x:Name="TxtPopSetWinPro3" KeyDown="TxtPopSetWinPro3_KeyDown" HorizontalAlignment="Left" Height="20" Margin="147,207,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
-                <TextBlock x:Name="LblPopSetWinPro4" HorizontalAlignment="Left" Margin="14,233,0,0" TextWrapping="Wrap" Text="Window Profile 4 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-                <TextBox x:Name="TxtPopSetWinPro4" KeyDown="TxtPopSetWinPro4_KeyDown" HorizontalAlignment="Left" Height="20" Margin="147,232,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
-                <TextBlock x:Name="LblPopSetStartPro1" HorizontalAlignment="Left" Margin="208,158,0,0" TextWrapping="Wrap" Text="Startup Profile 1 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-                <TextBox x:Name="TxtPopSetStartPro1" KeyDown="TxtPopSetStartPro1_KeyDown" HorizontalAlignment="Left" Height="20" Margin="336,157,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
-                <TextBlock x:Name="LblPopSetStartPro2" HorizontalAlignment="Left" Margin="208,183,0,0" TextWrapping="Wrap" Text="Startup Profile 2 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-                <TextBox x:Name="TxtPopSetStartPro2" KeyDown="TxtPopSetStartPro2_KeyDown" HorizontalAlignment="Left" Height="20" Margin="336,182,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
-                <TextBlock x:Name="LblPopSetStartPro3" HorizontalAlignment="Left" Margin="208,208,0,0" TextWrapping="Wrap" Text="Startup Profile 3 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-                <TextBox x:Name="TxtPopSetStartPro3" KeyDown="TxtPopSetStartPro3_KeyDown" HorizontalAlignment="Left" Height="20" Margin="336,207,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
-                <TextBlock x:Name="LblPopSetStartPro4" HorizontalAlignment="Left" Margin="208,233,0,0" TextWrapping="Wrap" Text="Startup Profile 4 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-                <TextBox x:Name="TxtPopSetStartPro4" KeyDown="TxtPopSetStartPro4_KeyDown" HorizontalAlignment="Left" Height="20" Margin="336,232,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
+                <TextBlock x:Name="LblPopSetNetAction" HorizontalAlignment="Left" Margin="103,150,0,0" TextWrapping="Wrap" Text="Default Network Action:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+                <Rectangle x:Name="rectPopSetWinBorder" Margin="10,183,7,11" Stroke="#FF918C8C"/>
+                <Rectangle x:Name="rectPopSetWinTitle" HorizontalAlignment="Left" Height="16" Margin="10,183,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="58"/>
+                <TextBlock x:Name="lblPopSetWinTitle" HorizontalAlignment="Left" Margin="14,182,0,0" TextWrapping="Wrap" Text="Windows" VerticalAlignment="Top" Foreground="#FF1DD8D0" Width="50"/>
+                <TextBlock x:Name="LblPopSetWinPro1" HorizontalAlignment="Left" Margin="14,204,0,0" TextWrapping="Wrap" Text="Window Profile 1 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+                <TextBox x:Name="TxtPopSetWinPro1" KeyDown="TxtPopSetWinPro1_KeyDown" HorizontalAlignment="Left" Height="20" Margin="148,203,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
+                <TextBlock x:Name="LblPopSetWinPro2" HorizontalAlignment="Left" Margin="14,229,0,0" TextWrapping="Wrap" Text="Window Profile 2 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+                <TextBox x:Name="TxtPopSetWinPro2" KeyDown="TxtPopSetWinPro2_KeyDown" HorizontalAlignment="Left" Height="20" Margin="148,228,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
+                <TextBlock x:Name="LblPopSetWinPro3" HorizontalAlignment="Left" Margin="14,254,0,0" TextWrapping="Wrap" Text="Window Profile 3 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+                <TextBox x:Name="TxtPopSetWinPro3" KeyDown="TxtPopSetWinPro3_KeyDown" HorizontalAlignment="Left" Height="20" Margin="148,253,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
+                <TextBlock x:Name="LblPopSetWinPro4" HorizontalAlignment="Left" Margin="14,279,0,0" TextWrapping="Wrap" Text="Window Profile 4 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+                <TextBox x:Name="TxtPopSetWinPro4" KeyDown="TxtPopSetWinPro4_KeyDown" HorizontalAlignment="Left" Height="20" Margin="148,278,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
+                <TextBlock x:Name="LblPopSetStartPro1" HorizontalAlignment="Left" Margin="208,204,0,0" TextWrapping="Wrap" Text="Startup Profile 1 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+                <TextBox x:Name="TxtPopSetStartPro1" KeyDown="TxtPopSetStartPro1_KeyDown" HorizontalAlignment="Left" Height="20" Margin="336,203,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
+                <TextBlock x:Name="LblPopSetStartPro2" HorizontalAlignment="Left" Margin="208,229,0,0" TextWrapping="Wrap" Text="Startup Profile 2 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+                <TextBox x:Name="TxtPopSetStartPro2" KeyDown="TxtPopSetStartPro2_KeyDown" HorizontalAlignment="Left" Height="20" Margin="336,228,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
+                <TextBlock x:Name="LblPopSetStartPro3" HorizontalAlignment="Left" Margin="208,254,0,0" TextWrapping="Wrap" Text="Startup Profile 3 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+                <TextBox x:Name="TxtPopSetStartPro3" KeyDown="TxtPopSetStartPro3_KeyDown" HorizontalAlignment="Left" Height="20" Margin="336,253,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
+                <TextBlock x:Name="LblPopSetStartPro4" HorizontalAlignment="Left" Margin="208,279,0,0" TextWrapping="Wrap" Text="Startup Profile 4 Name:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+                <TextBox x:Name="TxtPopSetStartPro4" KeyDown="TxtPopSetStartPro4_KeyDown" HorizontalAlignment="Left" Height="20" Margin="336,278,0,0" Style="{StaticResource ResourceKey=TextboxNoReaction}" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Top" Width="48"/>
                 <Button x:Name="btnReset" Click="BtnReset_Click" Content="🔗" Visibility="Hidden" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,88,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
                 <Button x:Name="btnMinimize" Click="BtnMinimize_Click" Content="_" Visibility="Hidden" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,61,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
                 <Button x:Name="btnPopInOut" Click="BtnPopInOut_Click" Content="🢅" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,34,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
                 <Button x:Name="btnClose" Click="BtnClose_Click" Content="X" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,7,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" HorizontalAlignment="Right" Width="27" />
                 <Rectangle Fill="#02010102" MouseDown="Rectangle_MouseDown" Height="27" Margin="2,2,66,0" VerticalAlignment="Top"/>
+                <TextBox x:Name="TxtPopSetGenBetaLabel" Visibility="Hidden" HorizontalAlignment="Center" Style="{StaticResource TextboxNoReaction}" Height="20" Margin="353,110,10,0" TextWrapping="Wrap" Text="Beta Release" VerticalAlignment="Top" Width="75" Panel.ZIndex="100" Focusable="False" AllowDrop="False" IsReadOnly="True" IsTabStop="False" Foreground="#FFBD0101" BorderBrush="#FFBD0101"/>
+                <Label x:Name="LblPopSetGenCurrentVer" MouseDown="LblPopSetGenCurrentVer_MouseDown" Content="Current Version: " HorizontalAlignment="Left" Margin="14,111,0,0" VerticalAlignment="Top" Height="19" Padding="0" Width="336" Foreground="#FF8D8D8D" />
+                <Button x:Name="BtnPopSetGenUpdate" Visibility="Hidden" Click="BtnPopSetGenUpdate_Click" Content="Update Panacea" HorizontalAlignment="Left" Style="{StaticResource BaseButton}" Margin="32,81,0,0" VerticalAlignment="Top" Width="107"/>
             </Grid>
         </ScrollViewer>
     </Grid>

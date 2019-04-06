@@ -242,8 +242,10 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
+            <!--#endregion-->
+            <!--#region Button Curves-->
             <Style x:Name="ButtonCurves" x:Key="ButtonCurves" TargetType="{x:Type Button}">
-                <Setter Property="Foreground" Value="#FF8D8D8D" />
+                <Setter Property="Foreground" Value="#FF8D8D8D"/>
                 <Setter Property="Background">
                     <Setter.Value>
                         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -252,19 +254,20 @@
                         </LinearGradientBrush>
                     </Setter.Value>
                 </Setter>
+                <Setter Property="BorderBrush">
+                    <Setter.Value>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#FF4B4A4A"/>
+                            <GradientStop Color="#FF303030" Offset="0.497"/>
+                            <GradientStop Color="#FF4B4A4A" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Setter.Value>
+                </Setter>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
-                            <Border Name="border"
-                         BorderThickness="1"
-                         Padding="4,2"
-                         BorderBrush="{TemplateBinding BorderBrush}"
-                         CornerRadius="3"
-                         Background="{TemplateBinding Background}">
-                                <ContentPresenter HorizontalAlignment="Center"
-                              VerticalAlignment="Center" Name="defaultFore"
-                              Style="{StaticResource Basefore}">
-                                </ContentPresenter>
+                            <Border Name="border" BorderThickness="1" Padding="4,2" BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="3" Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Name="defaultFore" Style="{StaticResource Basefore}"/>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
@@ -289,15 +292,6 @@
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="BorderBrush">
-                    <Setter.Value>
-                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                            <GradientStop Color="#FF4B4A4A"/>
-                            <GradientStop Color="#FF303030" Offset="0.497"/>
-                            <GradientStop Color="#FF4B4A4A" Offset="1"/>
-                        </LinearGradientBrush>
                     </Setter.Value>
                 </Setter>
                 <Style.Triggers>

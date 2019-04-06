@@ -8,28 +8,28 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Microsoft.Win32;
+using Panacea.Windows;
 using static Panacea.MainWindow;
 
 namespace Panacea.Classes
 {
     public static class Toolbox
     {
+        private static string ExceptionDirectory { get; } = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\Exceptions\";
         public static StringBuilder debugLog = new StringBuilder();
         public static Settings settings = new Settings();
         public static List<ChangeLogItem> changeLogs = new List<ChangeLogItem>();
-        private static string logDir = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\";
-        private static string exDir = $@"{System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\Logs\Exceptions\";
         private static Random random = new Random((int)(DateTime.Now.Ticks & 0x7FFFFFFF));
-        public static MainWindow MainWindow = null;
         
         public static void LogException(Exception ex, [CallerLineNumber] int lineNum = 0, [CallerMemberName] string caller = "", [CallerFilePath] string path = "")
         {
             var timeStamp = string.Format("{0}--{1}", DateTime.Now.ToLocalTime().ToString("MM-dd-yy"), DateTime.Now.ToLocalTime().ToLongTimeString());
             string exString = string.Format("Timestamp: {0}{1}Caller: {2} at line {3}{1}ExType: {4}{1}HR: {5}{1}Message: {6}{1}StackTrace:{1} {7}{1}Path: {8}{1}", timeStamp, Environment.NewLine, caller, lineNum, ex.GetType().Name, ex.HResult, ex.Message, ex.StackTrace, path);
-            using (StreamWriter sw = File.AppendText(string.Format(@"{0}\Exception_{1}.log", exDir, DateTime.Now.ToLocalTime().ToString("MM-dd-yy"))))
+            using (StreamWriter sw = File.AppendText(string.Format(@"{0}\Exception_{1}.log", ExceptionDirectory, DateTime.Now.ToLocalTime().ToString("MM-dd-yy"))))
                 sw.WriteLine(exString);
         }
 
@@ -37,7 +37,7 @@ namespace Panacea.Classes
         {
             var timeStamp = string.Format("{0}--{1}", DateTime.Now.ToLocalTime().ToString("MM-dd-yy"), DateTime.Now.ToLocalTime().ToLongTimeString());
             string exString = string.Format("Timestamp: {0}{1}Caller: {2} at line {3}{1}ExType: {4}{1}HR: {5}{1}Message: {6}{1}StackTrace:{1} {7}{1}Path: {8}{1}", timeStamp, Environment.NewLine, caller, lineNum, ex.GetType().Name, ex.HResult, ex.Message, ex.StackTrace, path);
-            using (StreamWriter sw = File.AppendText(string.Format(@"{0}\Exception_{1}_{2}.log", exDir, DateTime.Now.ToLocalTime().ToString("MM-dd-yy"), dupe)))
+            using (StreamWriter sw = File.AppendText(string.Format(@"{0}\Exception_{1}_{2}.log", ExceptionDirectory, DateTime.Now.ToLocalTime().ToString("MM-dd-yy"), dupe)))
                 sw.WriteLine(exString);
         }
 
@@ -139,6 +139,16 @@ namespace Panacea.Classes
                 desiredStream = resourceStream;
             }
             return desiredStream;
+        }
+
+        public static Color ColorFromHex(string colorHex)
+        {
+            return (Color)ColorConverter.ConvertFromString(colorHex);
+        }
+
+        public static SolidColorBrush SolidBrushFromHex(string colorHex)
+        {
+            return new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex));
         }
     }
 }

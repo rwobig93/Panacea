@@ -53,9 +53,7 @@ namespace Panacea
         private HandleDisplay windowHandleDisplay = null;
         private Point mouseStartPoint = new Point(0, 0);
         private CurrentDisplay currentDisplay = null;
-        private UtilityBar utilityBar = null;
         private bool audioRefreshing = false;
-        private bool debugMode = false;
         private bool notificationPlaying = false;
         private bool aboutPlaying = false;
         private bool glblPinging = true;
@@ -115,21 +113,6 @@ namespace Panacea
             {
                 LogException(ex);
             }
-        }
-
-        private void HDShowPanacea_Click(object sender, RoutedEventArgs e)
-        {
-            BringWinMainBackFromTheVoid();
-        }
-
-        private void HDShowUtilBar_Click(object sender, RoutedEventArgs e)
-        {
-            OpenUtilityBar();
-        }
-
-        private void HDQuit_Click(object sender, RoutedEventArgs e)
-        {
-
         }
 
         #endregion
@@ -218,19 +201,14 @@ namespace Panacea
 
         private void btnMenuUpdate_Click(object sender, RoutedEventArgs e)
         {
-            UpdateApplication();
-        }
-
-        private void UpdateApplication()
-        {
-            throw new NotImplementedException();
+            Director.Main.UpdateApplication();
         }
 
         private void Events_UpdateDebugStatus(DebugUpdateArgs args)
         {
             try
             {
-                if (debugMode) Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { txtStatus.AppendText($"{Environment.NewLine}{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {args.DebugType.ToString()}: {args.LogUpdate}"); } catch (Exception ex) { LogException(ex); } });
+                if (Director.Main.DebugMode) Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { txtStatus.AppendText($"{Environment.NewLine}{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {args.DebugType.ToString()}: {args.LogUpdate}"); } catch (Exception ex) { LogException(ex); } });
             }
             catch (Exception ex)
             {
@@ -248,7 +226,7 @@ namespace Panacea
             try
             {
                 string verNum = Director.Main.GetVersionNumber().ToString();
-                CopyToClipboard(verNum, $"Copied version to clipboard: {verNum}");
+                Actions.CopyToClipboard(verNum, $"Copied version to clipboard: {verNum}");
             }
             catch (Exception ex)
             {
@@ -261,17 +239,12 @@ namespace Panacea
             try
             {
                 string clip = @"¯\_(ツ)_/¯";
-                CopyToClipboard(clip, "You now have the almighty shrug on your clipboard!");
+                Actions.CopyToClipboard(clip, "You now have the almighty shrug on your clipboard!");
             }
             catch (Exception ex)
             {
                 LogException(ex);
             }
-        }
-
-        private void BtnUtilBar_Click(object sender, RoutedEventArgs e)
-        {
-            OpenUtilityBar();
         }
 
         #endregion
@@ -723,7 +696,7 @@ namespace Panacea
                     if (e.ChangedButton == MouseButton.Left)
                     {
                         var textBlock = (TextBlock)e.OriginalSource;
-                        CopyToClipboard(textBlock.Text);
+                        Actions.CopyToClipboard(textBlock.Text);
                     }
                     break;
                 }
@@ -748,7 +721,7 @@ namespace Panacea
                     if (e.ChangedButton == MouseButton.Left)
                     {
                         var dnsEntry = (HostEntry)e.OriginalSource.GetType().GetProperty("DataContext").GetValue(e.OriginalSource, null);
-                        CopyToClipboard($"{dnsEntry.IPAddress} = {dnsEntry.HostName}");
+                        Actions.CopyToClipboard($"{dnsEntry.IPAddress} = {dnsEntry.HostName}");
                     }
                     break;
                 }
@@ -810,30 +783,7 @@ namespace Panacea
 
         private void btnDefaultConfig_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                uDebugLogAdd("User clicked the Default Config button");
-                var response = Prompt.YesNo("Are you sure you want to default all of this applications configuration?");
-                uDebugLogAdd($"When prompted, the user hit: {response.ToString()}");
-                if (response == Prompt.PromptResponse.Yes)
-                {
-                    uDebugLogAdd("Resetting config to default");
-                    AddToWindowsStartup(false);
-                    Toolbox.settings = new Settings();
-                    Director.Main.SaveSettings();
-                    SetDefaultSettings();
-                }
-                else
-                {
-                    uDebugLogAdd("We ended up not resetting all of our config.... maybe next time", DebugType.FAILURE);
-                    ShowNotification("An error occured when trying to default the config and didn't finish");
-                    Director.Main.SaveSettings();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
+            Actions.ResetConfigToDefault();
         }
 
         private void btnSendDiag_Click(object sender, RoutedEventArgs e)
@@ -881,15 +831,12 @@ namespace Panacea
 
         private void Startup()
         {
-#if DEBUG
-            debugMode = true;
-            BtnTest.Visibility = Visibility.Visible;
-#endif
+            if (Director.Main.DebugMode)
+                BtnTest.Visibility = Visibility.Visible;
             DataContext = this;
-            Toolbox.MainWindow = this;
             startingUp = true;
             SubscribeToEvents();
-            SetDefaultSettings();
+            UpdateSettingsUI();
             SetWindowLocation();
             SetupAudioDeviceList();
             tDisplayWatcher();
@@ -977,12 +924,11 @@ namespace Panacea
             }
         }
 
-        private void uStatusUpdate(string _status)
+        public void uStatusUpdate(string _status)
         {
             try
             {
-                if (!debugMode) Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { txtStatus.AppendText($"{Environment.NewLine}{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {_status}"); } catch (Exception ex) { LogException(ex); } });
-                uDebugLogAdd(_status, DebugType.STATUS);
+                if (!Director.Main.DebugMode) Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { txtStatus.AppendText($"{Environment.NewLine}{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {_status}"); } catch (Exception ex) { LogException(ex); } });
             }
             catch (Exception ex)
             {
@@ -1038,7 +984,7 @@ namespace Panacea
         {
             try
             {
-                Toolbox.uAddDebugLog(_log, _type, caller);
+                Toolbox.uAddDebugLog($"DESKWIN: {_log}", _type, caller);
             }
             catch (Exception ex)
             {
@@ -1242,23 +1188,6 @@ namespace Panacea
             }
         }
 
-        private void CopyToClipboard(string clip, string optionalMessage = null)
-        {
-            try
-            {
-                Clipboard.SetText(clip);
-                if (optionalMessage == null)
-                    uStatusUpdate($"Set Clipboard: {clip}");
-                else
-                    uStatusUpdate(optionalMessage);
-            }
-            catch (Exception ex)
-            {
-                uDebugLogAdd($"Error occured when setting clipboard: {clip} | {ex.Message}", DebugType.FAILURE);
-                uStatusUpdate($"Error occured when setting clipboard: {clip}");
-            }
-        }
-
         private void AddToWindowsStartup(bool startup = true)
         {
             try
@@ -1347,31 +1276,12 @@ namespace Panacea
             }
         }
 
-        public void OpenUtilityBar()
+        public void HideWinMainInBackground()
         {
             try
             {
-                if (utilityBar == null)
-                {
-                    utilityBar = new UtilityBar();
-                    utilityBar.Show();
-                    utilityBar.Closed += (s, e) => { utilityBar = null; };
-                }
-                else
-                    ShowNotification("A Utility Bar is Already Open");
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void HideWinMainInBackground()
-        {
-            try
-            {
-                this.WindowState = WindowState.Minimized;
                 this.ShowInTaskbar = false;
+                this.Hide();
                 uDebugLogAdd("MainWindow has been hidden in the background");
             }
             catch (Exception ex)
@@ -1386,7 +1296,34 @@ namespace Panacea
             {
                 this.WindowState = WindowState.Normal;
                 this.ShowInTaskbar = true;
+                this.Show();
                 uDebugLogAdd("MainWindow has been brought back from the void");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void TriggerUpdateAvailable()
+        {
+            try
+            {
+                btnWinUpdateManual.Visibility = Visibility.Visible;
+                ShowNotification("Update Available!");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void TriggerBetaReleaseUI()
+        {
+            try
+            {
+                uDebugLogAdd("Triggering beta release UI label");
+                txtBetaLabel.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
             {
@@ -1604,11 +1541,11 @@ namespace Panacea
 
         #region Settings
 
-        private void SetDefaultSettings()
+        public void UpdateSettingsUI()
         {
             try
             {
-                uDebugLogAdd("Setting default settings");
+                uDebugLogAdd("Starting settings UI update");
                 uDebugLogAdd("SettingsNET: working on ping settings");
                 txtSetNetPingCount.Text = Toolbox.settings.PingChartLength.ToString();
                 chkNetBasicPing.IsChecked = Toolbox.settings.BasicPing;
@@ -1663,19 +1600,17 @@ namespace Panacea
                 uDebugLogAdd("SettingsGEN: working on general settings");
                 chkSettingsBeta.IsChecked = Toolbox.settings.BetaUpdate;
                 chkSettingsStartup.IsChecked = Toolbox.settings.WindowsStartup;
-                chkSettingsStartMinimized.IsChecked = Toolbox.settings.StartMinimized;
-                chkSetGenUtilBar.IsChecked = Toolbox.settings.ShowUtilBarOnStartup;
-                if (Toolbox.settings.ShowUtilBarOnStartup)
-                {
-                    uDebugLogAdd($"SettingsACT: Show Util on Startup is: {Toolbox.settings.ShowUtilBarOnStartup} | Showing utility bar");
-                    OpenUtilityBar();
-                }
-                if (Toolbox.settings.StartMinimized)
-                {
-                    uDebugLogAdd($"SettingsACT: Start minimized is: {Toolbox.settings.StartMinimized} | Minimizing window");
-                    this.WindowState = WindowState.Minimized;
-                }
-                uDebugLogAdd("Default settings set");
+                //if (Toolbox.settings.ShowUtilBarOnStartup)
+                //{
+                //    uDebugLogAdd($"SettingsACT: Show Util on Startup is: {Toolbox.settings.ShowUtilBarOnStartup} | Showing utility bar");
+                //    OpenUtilityBar();
+                //}
+                //if (Toolbox.settings.StartMinimized)
+                //{
+                //    uDebugLogAdd($"SettingsACT: Start minimized is: {Toolbox.settings.StartMinimized} | Minimizing window");
+                //    this.WindowState = WindowState.Minimized;
+                //}
+                uDebugLogAdd("Finished settings UI update");
             }
             catch (Exception ex)
             {
@@ -2877,18 +2812,6 @@ namespace Panacea
                                 AddToWindowsStartup(false);
                                 Toolbox.settings.WindowsStartup = false;
                             }
-                            // Set startup minimized
-                            uDebugLogAdd("SETUPDATE: Start minimized");
-                            if (chkSettingsStartMinimized.IsChecked == true)
-                                Toolbox.settings.StartMinimized = true;
-                            else
-                                Toolbox.settings.StartMinimized = false;
-                            // Set util bar
-                            uDebugLogAdd("SETUPDATE: Util bar");
-                            if (chkSetGenUtilBar.IsChecked == true)
-                                Toolbox.settings.ShowUtilBarOnStartup = true;
-                            else
-                                Toolbox.settings.ShowUtilBarOnStartup = false;
                             break;
                         case 99:
                             ShowNotification("Incorrect format entered");

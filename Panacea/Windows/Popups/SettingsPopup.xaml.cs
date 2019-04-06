@@ -45,7 +45,7 @@ namespace Panacea.Windows.Popups
         private double PopinLeft { get { return UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuSettings.Margin.Left; } }
         private double PopinTop { get { return UtilityBar.UtilBarMain.Top - this.ActualHeight; } }
         private double PopinWidth { get { return 455; } }
-        private double PopinHeight { get { return 287; } }
+        private double PopinHeight { get { return 332; } }
         private int settingsTimer = 5;
         public bool PoppedOut { get; set; } = false;
 
@@ -129,17 +129,17 @@ namespace Panacea.Windows.Popups
 
         private void BtnPopSetGenChangelog_Click(object sender, RoutedEventArgs e)
         {
-            
+            Actions.ShowChangelog();
         }
 
         private void BtnPopSetGenSendDiag_Click(object sender, RoutedEventArgs e)
         {
-
+            Actions.SendDiagnostics();
         }
 
         private void BtnPopSetGenConfigDefault_Click(object sender, RoutedEventArgs e)
         {
-
+            Actions.ResetConfigToDefault();
         }
 
         private void ComboPopSetNetAction_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -187,6 +187,16 @@ namespace Panacea.Windows.Popups
             StartSettingsUpdate(SettingsUpdate.ProfileName);
         }
 
+        private void BtnPopSetGenUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            Director.Main.UpdateApplication();
+        }
+
+        private void LblPopSetGenCurrentVer_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            Actions.CopyToClipboard($"{Director.Main.GetVersionNumber()}");
+        }
+
         #endregion
 
         #region Methods
@@ -196,12 +206,11 @@ namespace Panacea.Windows.Popups
             PopupShow();
             EnableWindowResizing();
             UpdateUISettings();
-            //HideTimerActivate();
             SubscribeToEvents();
             FinishStartup();
         }
 
-        private void UpdateUISettings()
+        public void UpdateUISettings()
         {
             try
             {
@@ -212,16 +221,16 @@ namespace Panacea.Windows.Popups
                 // General Settings
                 ChkPopSetGenBeta.IsChecked = Toolbox.settings.BetaUpdate;
                 ChkPopSetGenStartup.IsChecked = Actions.CheckWinStartupRegKeyExistance();
-
+                LblPopSetGenCurrentVer.Content = $"Current Version: {Director.Main.GetVersionNumber()}";
                 uDebugLogAdd("SETUI: Network");
                 // Network Settings
                 switch (Toolbox.settings.UtilBarEnterAction)
                 {
                     case EnterAction.DNSLookup:
-                        ComboPopSetNetAction.SelectedItem = ComboPopSetNetAction.Items[ComboPopSetNetAction.Items.IndexOf("DNSLookup")];
+                        ComboPopSetNetAction.Text = "DNSLookup";
                         break;
                     case EnterAction.Ping:
-                        ComboPopSetNetAction.SelectedItem = ComboPopSetNetAction.Items[ComboPopSetNetAction.Items.IndexOf("Ping")];
+                        ComboPopSetNetAction.Text = "Ping";
                         break;
                     default:
                         ComboPopSetNetAction.Text = "???";
@@ -372,6 +381,7 @@ namespace Panacea.Windows.Popups
             {
                 if (this.Opacity == 1.0)
                     this.BeginAnimation(Window.OpacityProperty, outAnimation);
+                this.Hide();
             }
             catch (Exception ex)
             {
@@ -383,6 +393,7 @@ namespace Panacea.Windows.Popups
         {
             try
             {
+                this.Show();
                 if (this.Opacity == 0)
                     this.BeginAnimation(Window.OpacityProperty, inAnimation);
             }
@@ -628,6 +639,31 @@ namespace Panacea.Windows.Popups
                 }
             };
             worker.RunWorkerAsync();
+        }
+
+        public void TriggerUpdateAvailable()
+        {
+            try
+            {
+                BtnPopSetGenUpdate.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void TriggerBetaReleaseUI()
+        {
+            try
+            {
+                uDebugLogAdd("Triggering beta release UI label");
+                TxtPopSetGenBetaLabel.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion

@@ -10,6 +10,7 @@ using System.Net.Mail;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Panacea.Classes
 {
@@ -17,7 +18,7 @@ namespace Panacea.Classes
     {
         private static void LogException(Exception ex, [CallerLineNumber] int lineNum = 0, [CallerMemberName] string caller = "", [CallerFilePath] string path = "")
         {
-            Director.Main.LogException(ex, lineNum, caller, path);
+            Toolbox.LogException(ex, lineNum, caller, path);
         }
 
         private static void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO, [CallerMemberName] string caller = "")
@@ -127,6 +128,64 @@ namespace Panacea.Classes
         {
             RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
             return key.GetValue("Panacea") == null ? false : true;
+        }
+
+        public static void ShowChangelog()
+        {
+            try
+            {
+                Changelog changelog = new Changelog();
+                changelog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public static void CopyToClipboard(string clip, string optionalMessage = null)
+        {
+            try
+            {
+                Clipboard.SetText(clip);
+                if (optionalMessage == null)
+                    Director.Main.uStatusUpdate($"Set Clipboard: {clip}");
+                else
+                    Director.Main.uStatusUpdate(optionalMessage);
+            }
+            catch (Exception ex)
+            {
+                uDebugLogAdd($"Error occured when setting clipboard: {clip} | {ex.Message}", DebugType.FAILURE);
+                Director.Main.uStatusUpdate($"Error occured when setting clipboard: {clip}");
+            }
+        }
+
+        public static void ResetConfigToDefault()
+        {
+            try
+            {
+                uDebugLogAdd("User clicked the Default Config button");
+                var response = Prompt.YesNo("Are you sure you want to default all of this applications configuration?");
+                uDebugLogAdd($"When prompted, the user hit: {response.ToString()}");
+                if (response == Prompt.PromptResponse.Yes)
+                {
+                    uDebugLogAdd("Resetting config to default");
+                    AddToWindowsStartup(false);
+                    Toolbox.settings = new Settings();
+                    Director.Main.SaveSettings();
+                    Director.Main.UpdateWindowsSettingsUI();
+                }
+                else
+                {
+                    uDebugLogAdd("We ended up not resetting all of our config.... maybe next time", DebugType.FAILURE);
+                    Director.Main.ShowNotification("An error occured when trying to default the config and didn't finish");
+                    Director.Main.SaveSettings();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
     }
 }

@@ -20,6 +20,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Shell;
+using System.Windows.Threading;
 using static Panacea.MainWindow;
 
 namespace Panacea.Windows
@@ -339,6 +340,7 @@ namespace Panacea.Windows
             {
                 if (this.Opacity == 1.0)
                     this.BeginAnimation(Window.OpacityProperty, outAnimation);
+                Task.Delay(2000).ContinueWith(x => Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { this.Hide(); } catch (Exception ex) { LogException(ex); } }));
             }
             catch (Exception ex)
             {
@@ -350,6 +352,7 @@ namespace Panacea.Windows
         {
             try
             {
+                this.Show();
                 if (this.Opacity == 0)
                     this.BeginAnimation(Window.OpacityProperty, inAnimation);
             }

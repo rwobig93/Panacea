@@ -61,15 +61,7 @@
         </Rectangle>
         <Label x:Name="lblLinkType" Content="Wireless (2.4ax)" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,3,247,3" Foreground="#FF8D8D8D" FontSize="16" RenderTransformOrigin="0.5,0.5" Width="117"/>
         <Label x:Name="lblLinkSpeed" Content="866.7 Mbps" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,3,111,3" Foreground="#FF8D8D8D" FontSize="16" Width="131"/>
-        <Button x:Name="btnExit" Click="btnExit_Click" Style="{DynamicResource ButtonCurves}" Content="❌" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" FontSize="16" Margin="30,1,0,0">
-            <Button.BorderBrush>
-                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
-                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
-                    <GradientStop Color="#FF232323" Offset="0.267"/>
-                    <GradientStop Color="#FF191919" Offset="0.84"/>
-                </LinearGradientBrush>
-            </Button.BorderBrush>
+        <Button x:Name="btnExit" Click="btnExit_Click" Style="{DynamicResource BaseButton}" Content="❌" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" FontSize="16" Margin="30,1,0,0" BorderBrush="#FF575757">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF3C3C3C" Offset="0"/>
@@ -79,15 +71,7 @@
         </Button>
         <Label x:Name="lblWlanRSSI" Content="-127dBm" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,3,30,3" Foreground="#FF8D8D8D" FontSize="16" Width="76"/>
         <Label x:Name="lblConnectivityStatus" Content="Internet" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,3,369,3" Foreground="#FF8D8D8D" FontSize="16" RenderTransformOrigin="0.5,0.5" Width="117" Background="{x:Null}"/>
-        <Button x:Name="btnMenuNetwork" Click="BtnMenuNetwork_Click" Style="{DynamicResource ButtonCurves}" Content="💻" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" FontSize="16" Margin="64,1,0,0">
-            <Button.BorderBrush>
-                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
-                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
-                    <GradientStop Color="#FF232323" Offset="0.267"/>
-                    <GradientStop Color="#FF191919" Offset="0.84"/>
-                </LinearGradientBrush>
-            </Button.BorderBrush>
+        <Button x:Name="btnMenuNetwork" Click="BtnMenuNetwork_Click" Style="{DynamicResource BaseButton}" Content="🌎" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" FontSize="16" Margin="64,1,0,0" BorderBrush="#FF575757">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF3C3C3C" Offset="0"/>
@@ -100,15 +84,7 @@
                 <src:DoubleClickBehavior/>
             </i:Interaction.Behaviors>
         </TextBox>
-        <Button x:Name="btnMenuAudio" Click="BtnMenuAudio_Click" Style="{DynamicResource ButtonCurves}" Content="🎧" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" FontSize="16" Margin="98,1,0,0">
-            <Button.BorderBrush>
-                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
-                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
-                    <GradientStop Color="#FF232323" Offset="0.267"/>
-                    <GradientStop Color="#FF191919" Offset="0.84"/>
-                </LinearGradientBrush>
-            </Button.BorderBrush>
+        <Button x:Name="btnMenuAudio" Click="BtnMenuAudio_Click" Style="{DynamicResource BaseButton}" Content="🎧" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" FontSize="16" Margin="98,1,0,0" BorderBrush="#FF575757">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF3C3C3C" Offset="0"/>
@@ -116,15 +92,7 @@
                 </LinearGradientBrush>
             </Button.Background>
         </Button>
-        <Button x:Name="btnMenuSettings" Click="BtnMenuSettings_Click" Style="{DynamicResource ButtonCurves}" Content="💾" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" FontSize="16" Margin="132,1,0,0">
-            <Button.BorderBrush>
-                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
-                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
-                    <GradientStop Color="#FF232323" Offset="0.267"/>
-                    <GradientStop Color="#FF191919" Offset="0.84"/>
-                </LinearGradientBrush>
-            </Button.BorderBrush>
+        <Button x:Name="btnMenuSettings" Click="BtnMenuSettings_Click" Style="{DynamicResource BaseButton}" Content="⚙" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" FontSize="16" Margin="132,1,0,0" BorderBrush="#FF575757">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF3C3C3C" Offset="0"/>
@@ -132,15 +100,7 @@
                 </LinearGradientBrush>
             </Button.Background>
         </Button>
-        <Button x:Name="btnMenuEmote" Click="BtnMenuEmote_Click" MouseDown="BtnMenuEmote_MouseDown" MouseDoubleClick="BtnMenuEmote_MouseDoubleClick" Style="{DynamicResource ButtonCurves}" Content="¯\_(ツ)_/¯" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="75" FontSize="16" Margin="226,1,0,0">
-            <Button.BorderBrush>
-                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
-                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
-                    <GradientStop Color="#FF232323" Offset="0.267"/>
-                    <GradientStop Color="#FF191919" Offset="0.84"/>
-                </LinearGradientBrush>
-            </Button.BorderBrush>
+        <Button x:Name="btnMenuEmote" Click="BtnMenuEmote_Click" MouseDown="BtnMenuEmote_MouseDown" MouseDoubleClick="BtnMenuEmote_MouseDoubleClick" Style="{DynamicResource BaseButton}" Content="¯\_(ツ)_/¯" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="75" FontSize="16" Margin="226,1,0,0" BorderBrush="#FF575757">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF3C3C3C" Offset="0"/>
@@ -182,15 +142,7 @@
             </Ellipse.Fill>
         </Ellipse>
         <Label x:Name="lblNetType" Content="Ping" MouseDown="LblNetType_MouseDown" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,3,491,3" Foreground="#FF8D8D8D" FontSize="16" RenderTransformOrigin="0.5,0.5" Width="81" Background="{x:Null}"/>
-        <Button x:Name="btnMenuWindows" Click="BtnMenuWindows_Click" MouseDown="BtnMenuWindows_MouseDown" MouseDoubleClick="BtnMenuWindows_MouseDoubleClick" Style="{DynamicResource ButtonCurves}" Content="Profile 1" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="54" Margin="167,1,0,0">
-            <Button.BorderBrush>
-                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
-                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
-                    <GradientStop Color="#FF232323" Offset="0.267"/>
-                    <GradientStop Color="#FF191919" Offset="0.84"/>
-                </LinearGradientBrush>
-            </Button.BorderBrush>
+        <Button x:Name="btnMenuWindows" Click="BtnMenuWindows_Click" MouseDown="BtnMenuWindows_MouseDown" MouseDoubleClick="BtnMenuWindows_MouseDoubleClick" Style="{DynamicResource BaseButton}" Content="Profile 1" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="54" Margin="167,1,0,0" BorderBrush="#FF575757">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF3C3C3C" Offset="0"/>

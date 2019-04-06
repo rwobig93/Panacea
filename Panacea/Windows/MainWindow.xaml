@@ -16,18 +16,6 @@
         </Style>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus204Converter x:Key="Minus204Converter"/>
-        <ContextMenu x:Key="cmNotificationIcon" Foreground="#FF8D8D8D" >
-            <ContextMenu.Background>
-                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                    <GradientStop Color="#FF1C1C1C" Offset="0"/>
-                    <GradientStop Color="Black" Offset="1"/>
-                </LinearGradientBrush>
-            </ContextMenu.Background>
-            <MenuItem x:Name="HDShowPanacea" Header="Show Panacea" Click="HDShowPanacea_Click" />
-            <MenuItem x:Name="HDShowUtilBar" Header="Show UtilityBar" Click="HDShowUtilBar_Click" />
-            <Separator />
-            <MenuItem x:Name="HDQuit" Header="Quit" Click="HDQuit_Click" />
-        </ContextMenu>
     </Window.Resources>
     <Grid x:Name="grdMain" Focusable="True">
         <Grid.Background>
@@ -87,7 +75,6 @@
             <Button x:Name="btnMenuWindows" Style="{StaticResource BaseButton}" Content="Windows" Click="btnMenuWindows_Click" Margin="-1,0,1,0"/>
             <Button x:Name="btnMenuNetwork" Style="{StaticResource BaseButton}" Content="Network" Click="btnMenuNetwork_Click" Margin="-1,0,1,0"/>
             <Button x:Name="btnMenuSettings" Style="{StaticResource BaseButton}" Content="Settings" Click="btnMenuSettings_Click" Margin="-1,0,1,0"/>
-            <Button x:Name="BtnUtilBar" Style="{StaticResource BaseButton}" Content="Util Bar" Click="BtnUtilBar_Click" Margin="-1,0,1,0" Visibility="Visible"/>
             <Button x:Name="btnShrug" Style="{StaticResource BaseButton}" Content="¯\_(ツ)_/¯" Click="btnShrug_Click" Margin="-1,0,1,0"/>
             <Button x:Name="btnMenuUpdate" Style="{StaticResource BaseButton}" Content="Update" Click="btnMenuUpdate_Click" Margin="-1,0,1,0" IsEnabled="False" Visibility="Hidden"/>
             <Button x:Name="BtnTest" Style="{StaticResource BaseButton}" Content="Test" Click="BtnTest_Click" Margin="-1,0,1,0" Visibility="Hidden"/>
@@ -270,9 +257,9 @@
                 <Rectangle x:Name="rectSettingsGenTitle" HorizontalAlignment="Left" Height="16" Margin="10,10,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="50"/>
                 <TextBlock x:Name="lblSettingsBeta" HorizontalAlignment="Left" Margin="65,13,0,0" TextWrapping="Wrap" Text="Upgrade to Beta/Test Clients:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="155" Height="16"/>
                 <CheckBox x:Name="chkSettingsBeta" Click="chkSettingsBeta_Click" Content="" HorizontalAlignment="Left" Margin="220,15,0,0" VerticalAlignment="Top" Width="18" Background="#FF767575" BorderBrush="#FF918C8C" Foreground="{x:Null}" Height="17"/>
-                <Button x:Name="btnDefaultConfig" Style="{StaticResource BaseButton}" Click="btnDefaultConfig_Click" Content="Reset Config to Default" HorizontalAlignment="Left" Margin="260,52,0,0" VerticalAlignment="Top" Width="133" Height="22"/>
-                <Button x:Name="btnViewChangeLog" Style="{StaticResource BaseButton}" Click="btnViewChangeLog_Click" Content="View Changelog" HorizontalAlignment="Left" Margin="15,52,0,0" VerticalAlignment="Top" Width="102"/>
-                <Button x:Name="btnSendDiag" Style="{StaticResource BaseButton}" Click="btnSendDiag_Click" Content="Send Diagnostic Logs" HorizontalAlignment="Left" Margin="122,52,0,0" VerticalAlignment="Top" Width="133"/>
+                <Button x:Name="btnDefaultConfig" Style="{StaticResource BaseButton}" Click="btnDefaultConfig_Click" Content="Reset Config to Default" HorizontalAlignment="Left" Margin="260,38,0,0" VerticalAlignment="Top" Width="133" Height="22"/>
+                <Button x:Name="btnViewChangeLog" Style="{StaticResource BaseButton}" Click="btnViewChangeLog_Click" Content="View Changelog" HorizontalAlignment="Left" Margin="15,38,0,0" VerticalAlignment="Top" Width="102"/>
+                <Button x:Name="btnSendDiag" Style="{StaticResource BaseButton}" Click="btnSendDiag_Click" Content="Send Diagnostic Logs" HorizontalAlignment="Left" Margin="122,38,0,0" VerticalAlignment="Top" Width="133"/>
                 <Rectangle x:Name="rectSettingsWindowsBorder" HorizontalAlignment="Left" Height="124" Margin="10,168,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="392"/>
                 <Rectangle x:Name="rectSettingsWindowsTitle" HorizontalAlignment="Left" Height="16" Margin="10,168,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="56"/>
                 <TextBlock x:Name="lblSettingsWindowsTitle" HorizontalAlignment="Left" Margin="14,168,0,0" TextWrapping="Wrap" Text="Windows" VerticalAlignment="Top" Foreground="#FF1DD8D0" Width="52"/>
@@ -290,13 +277,9 @@
                 <TextBox x:Name="txtStartProfileName2" Style="{StaticResource TextboxNoReaction}" KeyDown="txtStartProfileName_KeyDown" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="22" Width="54" Margin="321,210,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Hidden"/>
                 <TextBlock x:Name="lblSettingsStartup" HorizontalAlignment="Left" Margin="238,13,0,0" TextWrapping="Wrap" Text="Start on Windows Startup:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="141" Height="16"/>
                 <CheckBox x:Name="chkSettingsStartup" Click="chkSettingsStartup_Click" Content="" HorizontalAlignment="Left" Margin="377,15,0,0" VerticalAlignment="Top" Width="18" Background="#FF767575" BorderBrush="#FF918C8C" Foreground="{x:Null}" Height="17"/>
-                <TextBlock x:Name="lblSetGenUtilBar" HorizontalAlignment="Left" Margin="86,31,0,0" TextWrapping="Wrap" Text="Show Util Bar on Startup:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="134" Height="16"/>
-                <CheckBox x:Name="chkSetGenUtilBar" Click="chkSetGenUtilBar_Click" Content="" HorizontalAlignment="Left" Margin="220,33,0,0" VerticalAlignment="Top" Width="18" Background="#FF767575" BorderBrush="#FF918C8C" Foreground="{x:Null}" Height="17"/>
-                <TextBlock x:Name="lblSettingsStartMinimized" HorizontalAlignment="Left" Margin="290,31,0,0" TextWrapping="Wrap" Text="Start Minimized:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="89" Height="16"/>
-                <CheckBox x:Name="chkSettingsStartMinimized" Click="ChkSettingsStartMinimized_Click" Content="" HorizontalAlignment="Left" Margin="377,33,0,0" VerticalAlignment="Top" Width="18" Background="#FF767575" BorderBrush="#FF918C8C" Foreground="{x:Null}" Height="17"/>
             </Grid>
         </ScrollViewer>
         <Button x:Name="btnMinimize" Click="btnMinimize_Click" Style="{StaticResource ExitButton}" Content="_" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" FontSize="18" Margin="0,0,29,0"/>
-        <TextBox x:Name="txtBetaLabel" HorizontalAlignment="Center" Style="{StaticResource TextboxNoReaction}" Height="20" Visibility="Hidden" Margin="354,6,241,0" TextWrapping="Wrap" Text="Beta" VerticalAlignment="Top" Width="30" Panel.ZIndex="100" Focusable="False" AllowDrop="False" IsReadOnly="True" IsTabStop="False" Foreground="Red" BorderBrush="Red"/>
+        <TextBox x:Name="txtBetaLabel" HorizontalAlignment="Center" Style="{StaticResource TextboxNoReaction}" Height="20" Margin="354,6,241,0" TextWrapping="Wrap" Text="Beta" VerticalAlignment="Top" Width="30" Panel.ZIndex="100" Focusable="False" AllowDrop="False" IsReadOnly="True" IsTabStop="False" Foreground="#FFBD0101" BorderBrush="#FFBD0101" Visibility="Hidden"/>
     </Grid>
 </Window>
