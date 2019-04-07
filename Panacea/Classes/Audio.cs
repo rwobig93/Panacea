@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using NAudio.CoreAudioApi;
 using NAudio.Utils;
+using Panacea.Windows;
 
 namespace Panacea.Classes
 {
@@ -17,6 +21,7 @@ namespace Panacea.Classes
 
     public class Audio : INotifyPropertyChanged
     {
+        public bool FirstRefresh = true;
         private static List<MMDevice> _endpointAudioDevices = new List<MMDevice>();
         public List<MMDevice> EndpointAudioDeviceList
         {
@@ -68,6 +73,12 @@ namespace Panacea.Classes
                 audioList.Add(wasapi);
             }
             return audioList;
+        }
+
+        public static void UpdateAudioAllEndpointLists(DeviceState deviceState = DeviceState.Active)
+        {
+            Director.Main.UpdatePlaybackEndpointList(deviceState, true);
+            Director.Main.UpdateRecordingEndpointList(deviceState, true);
         }
 
         public static List<MMDevice> GetAudioPlaybackDevices(DeviceState deviceState = DeviceState.Active)

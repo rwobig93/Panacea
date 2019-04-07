@@ -299,7 +299,7 @@ namespace Panacea.Windows
         {
             try
             {
-                Toolbox.uAddDebugLog(_log, _type, caller);
+                Toolbox.uAddDebugLog($"POPNET: {_log}", _type, caller);
             }
             catch (Exception ex)
             {
@@ -340,7 +340,6 @@ namespace Panacea.Windows
             {
                 if (this.Opacity == 1.0)
                     this.BeginAnimation(Window.OpacityProperty, outAnimation);
-                Task.Delay(2000).ContinueWith(x => Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { this.Hide(); } catch (Exception ex) { LogException(ex); } }));
             }
             catch (Exception ex)
             {
@@ -352,7 +351,6 @@ namespace Panacea.Windows
         {
             try
             {
-                this.Show();
                 if (this.Opacity == 0)
                     this.BeginAnimation(Window.OpacityProperty, inAnimation);
             }

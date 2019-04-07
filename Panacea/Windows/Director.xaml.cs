@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using NAudio.CoreAudioApi;
+using Newtonsoft.Json;
 using Octokit;
 using Panacea.Classes;
 using Panacea.Windows;
@@ -20,6 +21,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Panacea.Windows
 {
@@ -98,8 +100,10 @@ namespace Panacea.Windows
         public static Director Main;
         public MainWindow DesktopWindow;
         public UtilityBar UtilBar;
+        private HandleDisplay WindowHandleDisplay;
         public bool UpdateAvailable { get; private set; } = false;
         public bool DebugMode { get; private set; } = false;
+        public CurrentDisplay CurrentDisplay { get; private set; } = new CurrentDisplay();
 
         // Private Globals
         private BackgroundWorker _mainWorker;
@@ -181,8 +185,10 @@ namespace Panacea.Windows
             InitializeBackgroundNotificationIcon();
             InitializeDesktopWindow();
             InitializeUtilBar();
+            RefreshDisplaySizes();
             ShowPreferredWindow();
             tStartTimedActions();
+            CleanupOldFiles();
             this.Hide();
         }
 
@@ -213,6 +219,21 @@ namespace Panacea.Windows
         private void SubscribeToEvents()
         {
             Events.UpdateDebugStatus += Events_UpdateDebugStatus;
+            Events.AudioEndpointListUpdated += Events_AudioEndpointListUpdated;
+            Events.WinInfoChanged += Events_WinInfoChanged;
+        }
+
+        private void Events_WinInfoChanged(WindowInfoArgs args)
+        {
+            UpdateWindowsSettingsUI();
+        }
+
+        private void Events_AudioEndpointListUpdated(AudioEndpointListArgs args)
+        {
+            if (!Interfaces.AudioMain.FirstRefresh)
+                ShowNotification("Audio Devices Updated!");
+            else
+                Interfaces.AudioMain.FirstRefresh = false;
         }
 
         private void Events_UpdateDebugStatus(DebugUpdateArgs args)
@@ -500,13 +521,17 @@ namespace Panacea.Windows
                 {
                     try
                     {
-                        if (e.ProgressPercentage == 1)
+                        switch (e.ProgressPercentage)
                         {
-                            SaveSettings();
-                        }
-                        if (e.ProgressPercentage == 2)
-                        {
-                            tCheckForUpdates();
+                            case 1:
+                                RefreshDisplaySizes();
+                                break;
+                            case 2:
+                                SaveSettings();
+                                break;
+                            case 3:
+                                tCheckForUpdates();
+                                break;
                         }
                     }
                     catch (Exception ex)
@@ -521,13 +546,20 @@ namespace Panacea.Windows
                         var updateCounter = 0;
                         while (true)
                         {
-                            Thread.Sleep(TimeSpan.FromMinutes(5));
-                            uDebugLogAdd("5min passed, now running timed actions");
-                            worker.ReportProgress(1);
-                            if (updateCounter >= 12)
+                            Thread.Sleep(1000);
+                            if (updateCounter > 2 && updateCounter % 2 == 0)
+                            {
+                                worker.ReportProgress(1);
+                            }
+                            if (updateCounter > 300 && updateCounter % 300 == 0)
+                            {
+                                uDebugLogAdd("5min passed, now running timed actions");
+                                worker.ReportProgress(2);
+                            }
+                            if (updateCounter > 3600 && updateCounter % 3600 == 0)
                             {
                                 uDebugLogAdd("60min passed, now running update timed action");
-                                worker.ReportProgress(2);
+                                worker.ReportProgress(3);
                                 updateCounter = -1;
                             }
                             updateCounter++;
@@ -800,6 +832,248 @@ namespace Panacea.Windows
                 DesktopWindow.UpdateSettingsUI();
                 UtilBar.UpdateSettingsUI();
                 uDebugLogAdd("Finished settings UI update");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void CleanupOldFiles()
+        {
+            try
+            {
+                uDebugLogAdd("Starting old file cleanup");
+                uDebugLogAdd($"Cleaning up Director.Main.LogDirectory: {Director.Main.LogDirectory}");
+                var logDirRemoves = 0;
+                foreach (var file in Directory.EnumerateFiles(Director.Main.LogDirectory))
+                {
+                    FileInfo fileInfo = new FileInfo(file);
+                    string fileNaem = fileInfo.Name;
+                    if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
+                    {
+                        try
+                        {
+                            fileInfo.Delete();
+                            uStatusUpdate($"Deleted old log file: {fileNaem}");
+                            logDirRemoves++;
+                        }
+                        catch (IOException io)
+                        {
+                            uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            LogException(ex);
+                        }
+                    }
+                }
+                uDebugLogAdd($"Removed {logDirRemoves} old log(s)");
+                uDebugLogAdd($"Cleaning up Director.Main.ExceptionDirectory: {Director.Main.ExceptionDirectory}");
+                var exDirRemoves = 0;
+                foreach (var file in Directory.EnumerateFiles(Director.Main.ExceptionDirectory))
+                {
+                    FileInfo fileInfo = new FileInfo(file);
+                    string fileNaem = fileInfo.Name;
+                    if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
+                    {
+                        try
+                        {
+                            fileInfo.Delete();
+                            uStatusUpdate($"Deleted old exception file: {fileNaem}");
+                            exDirRemoves++;
+                        }
+                        catch (IOException io)
+                        {
+                            uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            LogException(ex);
+                        }
+                    }
+                }
+                uDebugLogAdd($"Removed {exDirRemoves} old exception log(s)");
+                var diagRemoves = 0;
+                if (Directory.Exists($@"{Director.Main.CurrentDirectory}\Diag"))
+                {
+                    uDebugLogAdd($"Cleaning up diagDir: {$@"{Director.Main.CurrentDirectory}\Diag"}");
+                    foreach (var file in Directory.EnumerateFiles($@"{Director.Main.CurrentDirectory}\Diag"))
+                    {
+                        FileInfo fileInfo = new FileInfo(file);
+                        string fileNaem = fileInfo.Name;
+                        if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
+                        {
+                            try
+                            {
+                                fileInfo.Delete();
+                                uStatusUpdate($"Deleted old diag zip file: {fileNaem}");
+                                diagRemoves++;
+                            }
+                            catch (IOException io)
+                            {
+                                uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
+                            }
+                            catch (Exception ex)
+                            {
+                                LogException(ex);
+                            }
+                        }
+                    }
+                    uDebugLogAdd($"Removed {diagRemoves} diag zip(s)");
+                }
+                uDebugLogAdd($"Finished old file cleanup, removed {diagRemoves + exDirRemoves + logDirRemoves} file(s)");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void RefreshDisplaySizes()
+        {
+            try
+            {
+                if (CurrentDisplay == null)
+                {
+                    CurrentDisplay = new CurrentDisplay();
+                    uDebugLogAdd("Current display was null, created new current display");
+                }
+                CurrentDisplay.Displays.Clear();
+                foreach (var display in System.Windows.Forms.Screen.AllScreens)
+                {
+                    CurrentDisplay.Displays.Add(Display.ConvertFromScreen(display));
+                }
+                CurrentDisplay.Displays = CurrentDisplay.Displays.OrderBy(x => x.Bounds.X).ToList();
+                VerifyDisplayProfileMatch();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void VerifyDisplayProfileMatch()
+        {
+            try
+            {
+                if (Toolbox.settings.DisplayProfileLibrary == null)
+                {
+                    uDebugLogAdd("DisplayProfileLibrary was null, instantiating a new one");
+                    Toolbox.settings.DisplayProfileLibrary = new DisplayProfileLibrary();
+                }
+                if (Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile == null || Toolbox.settings.DisplayProfileLibrary.DisplayProfiles.Count <= 0)
+                {
+                    AddDisplayProfileToLibrary(CurrentDisplay, true);
+                }
+                var displayMatch = DisplayProfile.DoDisplaysMatch(CurrentDisplay, Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile.DisplayArea);
+                if (!displayMatch)
+                {
+                    uDebugLogAdd($"Current Display Profile returned {displayMatch} for matching the existing Current Display Profile");
+                    AddDisplayProfileToLibrary(CurrentDisplay);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void AddDisplayProfileToLibrary(CurrentDisplay display, bool setAsCurrentDisplayProfile = false)
+        {
+            try
+            {
+                uDebugLogAdd("Starting Display Profile addition to Library");
+                var foundDisplay = Toolbox.settings.DisplayProfileLibrary.DisplayProfiles.Find(x => x.DisplayArea == display);
+                if (foundDisplay == null)
+                {
+                    uDebugLogAdd("Was unable to find a matching display, adding new display to Library");
+                    DisplayProfile newDisplay = new DisplayProfile() { DisplayArea = display, PreferredDisplay = display.Displays.Find(x => x.PrimaryDisplay == true) };
+                    Toolbox.settings.DisplayProfileLibrary.DisplayProfiles.Add(newDisplay);
+                    uDebugLogAdd("New display added successfully");
+                    if (setAsCurrentDisplayProfile)
+                    {
+                        Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile = newDisplay;
+                        uDebugLogAdd($"SetAsCurrent is {setAsCurrentDisplayProfile}, Set new display as current");
+                    }
+                }
+                else
+                {
+                    uDebugLogAdd("Display additon already matches one in the library, cancelling Libary addition");
+                }
+                uDebugLogAdd("Finished Display Profile Library Addition");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void UpdateRecordingEndpointList(DeviceState deviceState = DeviceState.Active, bool allLists = false)
+        {
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += (ws, we) =>
+            {
+                try
+                {
+                    var audioList = new List<MMDevice>();
+                    foreach (var wasapi in new MMDeviceEnumerator().EnumerateAudioEndPoints(DataFlow.Capture, deviceState))
+                    {
+                        audioList.Add(wasapi);
+                    }
+                    Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { Interfaces.AudioMain.EndpointAudioRecordingDeviceList = audioList; } catch (Exception ex) { LogException(ex); } });
+                    if (!allLists)
+                        Events.TriggerAudioEndpointListUpdate(DataFlow.Capture);
+                    else
+                        Events.TriggerAudioEndpointListUpdate(DataFlow.All);
+                }
+                catch (Exception ex)
+                {
+                    Toolbox.LogException(ex);
+                }
+            };
+            worker.RunWorkerAsync();
+        }
+
+        public void UpdatePlaybackEndpointList(DeviceState deviceState = DeviceState.Active, bool allLists = false)
+        {
+
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += (ws, we) =>
+            {
+                try
+                {
+                    var audioList = new List<MMDevice>();
+                    foreach (var wasapi in new MMDeviceEnumerator().EnumerateAudioEndPoints(DataFlow.Render, deviceState))
+                    {
+                        audioList.Add(wasapi);
+                    }
+                    Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { Interfaces.AudioMain.EndpointAudioPlaybackDeviceList = audioList; } catch (Exception ex) { LogException(ex); } });
+                    if (!allLists)
+                        Events.TriggerAudioEndpointListUpdate(DataFlow.Render);
+                }
+                catch (Exception ex)
+                {
+                    Toolbox.LogException(ex);
+                }
+            };
+            worker.RunWorkerAsync();
+        }
+
+        public void OpenWindowHandleFinder()
+        {
+            try
+            {
+                uDebugLogAdd($"Opening window handler info window");
+                WindowHandleDisplay = new HandleDisplay
+                {
+                    Topmost = true,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen
+                };
+                uDebugLogAdd($"Window handler info window constructed");
+                WindowHandleDisplay.Show();
+                WindowHandleDisplay.Closed += (s,e) => { Events.TriggerWindowInfoChange(true); };
+                uDebugLogAdd($"Window handler info window shown");
             }
             catch (Exception ex)
             {

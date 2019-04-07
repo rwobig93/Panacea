@@ -40,8 +40,8 @@ namespace Panacea.Windows
         private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.2) };
         private double PopinLeft { get { return UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuWindows.Margin.Left; } }
         private double PopinTop { get { return UtilityBar.UtilBarMain.Top - this.ActualHeight; } }
-        private double PopinWidth { get { return 95; } }
-        private double PopinHeight { get { return 140; } }
+        private double PopinWidth { get { return 545; } }
+        private double PopinHeight { get { return 579; } }
         public bool PoppedOut { get; set; } = false;
 
         #endregion
@@ -50,9 +50,62 @@ namespace Panacea.Windows
 
         private void WinPopupMain_Loaded(object sender, RoutedEventArgs e)
         {
-            //EnableWindowResizing();
+            EnableWindowResizing();
         }
 
+        #endregion
+
+        #region Event Handlers
+        private void BtnWinProfile1_Click(object sender, RoutedEventArgs e)
+        {
+            ChangeWindowProfile(WindowProfile.Profile1);
+        }
+
+        private void BtnWinProfile2_Click(object sender, RoutedEventArgs e)
+        {
+            ChangeWindowProfile(WindowProfile.Profile2);
+        }
+
+        private void BtnWinProfile3_Click(object sender, RoutedEventArgs e)
+        {
+            ChangeWindowProfile(WindowProfile.Profile3);
+        }
+
+        private void BtnWinProfile4_Click(object sender, RoutedEventArgs e)
+        {
+            ChangeWindowProfile(WindowProfile.Profile4);
+        }
+
+        private void BtnStartProfile1_Click(object sender, RoutedEventArgs e)
+        {
+            Actions.StartProcess(@"C:\Users\Rick\AppData\Local\Discord\app-0.0.305\Discord.exe");
+            Director.Main.ShowNotification("Started Discord");
+        }
+
+        private void BtnStartProfile2_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnStartProfile3_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnStartProfile4_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnMenuWindows_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleMenuGrid(GrdWinWindows);
+        }
+
+        private void BtnMenuStartProc_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleMenuGrid(GrdWinStartProc);
+        } 
         #endregion
 
         #region Methods
@@ -62,6 +115,7 @@ namespace Panacea.Windows
             UpdateWindowProfileButtons();
             PopupShow();
             SubscribeToEvents();
+            ToggleMenuGrid(GrdWinWindows);
             FinishStartup();
         }
 
@@ -150,7 +204,7 @@ namespace Panacea.Windows
         {
             try
             {
-                Toolbox.uAddDebugLog(_log, _type, caller);
+                Toolbox.uAddDebugLog($"POPWIN: {_log}", _type, caller);
             }
             catch (Exception ex)
             {
@@ -191,7 +245,6 @@ namespace Panacea.Windows
             {
                 if (this.Opacity == 1.0)
                     this.BeginAnimation(Window.OpacityProperty, outAnimation);
-                Task.Delay(2000).ContinueWith(x => Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { this.Hide(); } catch (Exception ex) { LogException(ex); } }));
             }
             catch (Exception ex)
             {
@@ -204,7 +257,6 @@ namespace Panacea.Windows
             try
             {
                 UpdateWindowProfileButtons();
-                this.Show();
                 if (this.Opacity == 0)
                     this.BeginAnimation(Window.OpacityProperty, inAnimation);
             }
@@ -247,24 +299,98 @@ namespace Panacea.Windows
             }
         }
 
-        private void BtnWinProfile1_Click(object sender, RoutedEventArgs e)
+        private Thickness GetWindowDisplayArea()
         {
-            ChangeWindowProfile(WindowProfile.Profile1);
+            Thickness displayArea = new Thickness();
+            try
+            {
+                uDebugLogAdd("Getting window display area");
+                displayArea = grdWindows.Margin; // 95+17 from bottom of grid | +1 for border
+                uDebugLogAdd($"displayArea <Before>: [T]{displayArea.Top} [L]{displayArea.Left} [B]{displayArea.Bottom} [R]{displayArea.Right}");
+                displayArea.Top = 1;
+                displayArea.Right = 1;
+                displayArea.Bottom = 95;
+                displayArea.Left = 1;
+                uDebugLogAdd($"displayArea <After>: [T]{displayArea.Top} [L]{displayArea.Left} [B]{displayArea.Bottom} [R]{displayArea.Right}");
+                return displayArea;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+            return displayArea;
         }
 
-        private void BtnWinProfile2_Click(object sender, RoutedEventArgs e)
+        private void ToggleMenuGrid(Grid grid)
         {
-            ChangeWindowProfile(WindowProfile.Profile2);
+            try
+            {
+                uDebugLogAdd($"Call ToggleMenuGrid({grid.Name})");
+                //if (grid.Margin != Defaults.MainGridIn)
+                var displayArea = GetWindowDisplayArea();
+                if (grid.Margin != displayArea)
+                {
+                    grid.Visibility = Visibility.Visible;
+                    Toolbox.AnimateGrid(grid, displayArea);
+                }
+                else
+                {
+                    Toolbox.AnimateGrid(grid, GetWindowHiddenArea());
+                    grid.Visibility = Visibility.Hidden;
+                }
+                HideUnusedMenuGrids(grid);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
-        private void BtnWinProfile3_Click(object sender, RoutedEventArgs e)
+        private Thickness GetWindowHiddenArea()
         {
-            ChangeWindowProfile(WindowProfile.Profile3);
+            Thickness hiddenArea = new Thickness();
+            try
+            {
+                uDebugLogAdd("Getting window hidden area");
+                hiddenArea = grdWindows.Margin;
+                uDebugLogAdd($"hiddenArea <Before>: [T]{hiddenArea.Top} [L]{hiddenArea.Left} [B]{hiddenArea.Bottom} [R]{hiddenArea.Right}");
+                hiddenArea.Left = 250;
+                //hiddenArea.Top = 60;
+                //hiddenArea.Bottom = 60;
+                hiddenArea.Right = 300; // 60
+                uDebugLogAdd($"hiddenArea <After>: [T]{hiddenArea.Top} [L]{hiddenArea.Left} [B]{hiddenArea.Bottom} [R]{hiddenArea.Right}");
+                return hiddenArea;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+            return hiddenArea;
         }
 
-        private void BtnWinProfile4_Click(object sender, RoutedEventArgs e)
+        private void HideUnusedMenuGrids(Grid grid = null)
         {
-            ChangeWindowProfile(WindowProfile.Profile4);
+            try
+            {
+                if (grid == null)
+                    uDebugLogAdd($"Call HideUnusedMenuGrids(null)");
+                else
+                    uDebugLogAdd($"Call HideUnusedMenuGrids({grid.Name})");
+                if (grid != GrdWinStartProc)
+                {
+                    GrdWinStartProc.Visibility = Visibility.Hidden;
+                    Toolbox.AnimateGrid(GrdWinStartProc, GetWindowHiddenArea());
+                }
+                if (grid != GrdWinWindows)
+                {
+                    GrdWinWindows.Visibility = Visibility.Hidden;
+                    Toolbox.AnimateGrid(GrdWinWindows, GetWindowHiddenArea());
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion

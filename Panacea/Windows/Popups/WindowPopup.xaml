@@ -6,11 +6,12 @@
         xmlns:local="clr-namespace:Panacea.Windows"
         xmlns:src="clr-namespace:Panacea.Classes"
         mc:Ignorable="d" Topmost="True" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" Loaded="WinPopupMain_Loaded"
-        Title="WindowPopup" Height="140" MinHeight="140" MaxHeight="140" Width="95" MinWidth="95" MaxWidth="95" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
+        Title="WindowPopup" Height="579" Width="545" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
     <Window.Resources>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus25Converter x:Key="Minus25Converter"/>
         <src:Minus204Converter x:Key="Minus204Converter"/>
+        <BorderGapMaskConverter x:Key="BorderGapMaskConverter"/>
     </Window.Resources>
     <Grid x:Name="grdWindows" Background="#02010101">
         <Grid.RowDefinitions>
@@ -28,9 +29,43 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <Button x:Name="BtnWinProfile1" Click="BtnWinProfile1_Click" Content="Profile 1" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75"/>
-        <Button x:Name="BtnWinProfile2" Click="BtnWinProfile2_Click" Content="Profile 2" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top" Width="75"/>
-        <Button x:Name="BtnWinProfile3" Click="BtnWinProfile3_Click" Content="Profile 3" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="10,64,0,0" VerticalAlignment="Top" Width="75"/>
-        <Button x:Name="BtnWinProfile4" Click="BtnWinProfile4_Click" Content="Profile 4" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="10,91,0,0" VerticalAlignment="Top" Width="75"/>
+        <GroupBox x:Name="GrpWindows" HorizontalAlignment="Left" Height="86" Margin="3,0,0,4" VerticalAlignment="Bottom" Width="171" BorderThickness="2" Style="{StaticResource ResourceKey=GroupBoxBase}">
+            <GroupBox.BorderBrush>
+                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                    <GradientStop Color="#FF303030" Offset="0.55"/>
+                    <GradientStop Color="#FF787878" Offset="1"/>
+                    <GradientStop Color="#FF787878"/>
+                </LinearGradientBrush>
+            </GroupBox.BorderBrush>
+            <Label Content="Windows" HorizontalAlignment="Left" Margin="42,0,0,49" Foreground="#FF8D8D8D" FontSize="16" Height="30" VerticalAlignment="Bottom"/>
+        </GroupBox>
+        <GroupBox x:Name="GrpStartProc" HorizontalAlignment="Left" Height="86" Margin="179,0,0,4" VerticalAlignment="Bottom" Width="171" BorderThickness="2" Style="{StaticResource ResourceKey=GroupBoxBase}">
+            <GroupBox.BorderBrush>
+                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                    <GradientStop Color="#FF303030" Offset="0.55"/>
+                    <GradientStop Color="#FF787878" Offset="1"/>
+                    <GradientStop Color="#FF787878"/>
+                </LinearGradientBrush>
+            </GroupBox.BorderBrush>
+        </GroupBox>
+        <Button x:Name="BtnWinProfile1" Click="BtnWinProfile1_Click" Content="Profile 1" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="10,0,0,37" VerticalAlignment="Bottom" Width="75"/>
+        <Button x:Name="BtnWinProfile2" Click="BtnWinProfile2_Click" Content="Profile 2" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="10,0,0,10" Width="75" Height="22" VerticalAlignment="Bottom"/>
+        <Button x:Name="BtnWinProfile3" Click="BtnWinProfile3_Click" Content="Profile 3" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="90,0,0,37" VerticalAlignment="Bottom" Width="75"/>
+        <Button x:Name="BtnWinProfile4" Click="BtnWinProfile4_Click" Content="Profile 4" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="90,0,0,10" VerticalAlignment="Bottom" Width="75"/>
+        <Button x:Name="BtnStartProfile1" Click="BtnStartProfile1_Click" Content="Start 1" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="188,0,0,37" VerticalAlignment="Bottom" Width="74"/>
+        <Button x:Name="BtnStartProfile2" Click="BtnStartProfile2_Click" Content="Start 2" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="188,0,0,10" VerticalAlignment="Bottom" Width="74"/>
+        <Button x:Name="BtnStartProfile3" Click="BtnStartProfile3_Click" Content="Start 3" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="268,0,0,37" VerticalAlignment="Bottom" Width="74"/>
+        <Button x:Name="BtnStartProfile4" Click="BtnStartProfile4_Click" Content="Start 4" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="268,0,0,10" VerticalAlignment="Bottom" Width="74"/>
+        <Label Content="Start Process" HorizontalAlignment="Left" Margin="216,0,0,59" VerticalAlignment="Bottom" Foreground="#FF8D8D8D" FontSize="16"/>
+        <Grid x:Name="GrdWinWindows" Margin="-597,1,599,95">
+            <Label Content="Windows Menu" HorizontalAlignment="Left" Margin="217,71,0,0" VerticalAlignment="Top" Height="141" Width="151" Background="{x:Null}" Foreground="#FFF5EA00" FontSize="20"/>
+
+        </Grid>
+        <Grid x:Name="GrdWinStartProc" Margin="592,1,-590,95">
+            <Label Content="Start Process Menu" HorizontalAlignment="Left" Margin="178,71,0,0" VerticalAlignment="Top" Height="141" Width="190" Background="{x:Null}" Foreground="#FFF5EA00" FontSize="20"/>
+
+        </Grid>
+        <Button x:Name="BtnMenuWindows" Click="BtnMenuWindows_Click" Content="Windows Menu" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="374,0,0,51" VerticalAlignment="Bottom" Width="136" Height="32"/>
+        <Button x:Name="BtnMenuStartProc" Click="BtnMenuStartProc_Click" Content="Start Process Menu" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="374,0,0,14" VerticalAlignment="Bottom" Width="136" Height="32"/>
     </Grid>
 </Window>

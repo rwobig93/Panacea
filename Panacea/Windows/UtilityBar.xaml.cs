@@ -82,7 +82,10 @@ namespace Panacea.Windows
             Internet,
             Local,
             None,
-            DNSError
+            DNSError,
+            Layer3,
+            Layer4,
+            DHCPError
         }
 
         public enum PopupMenu
@@ -121,7 +124,6 @@ namespace Panacea.Windows
         private int _totalNotificationsRun = 0;
         private List<string> notifications = new List<string>();
         private NetworkInterface _currentEthIf;
-        private CurrentDisplay currentDisplay;
         private Display dockedDisplay;
         private NetConnectionType currentConnType = NetConnectionType.Unknown;
         private WifiFrequency currentFrequency = WifiFrequency.None;
@@ -320,11 +322,17 @@ namespace Panacea.Windows
             try
             {
                 Events.UtilBarMoveTrigger += Events_UtilBarMoveTrigger;
+                Events.WinInfoChanged += Events_WinInfoChanged;
             }
             catch (Exception ex)
             {
                 LogException(ex);
             }
+        }
+
+        private void Events_WinInfoChanged(WindowInfoArgs args)
+        {
+            UpdateCurrentWindowProfile();
         }
 
         private void Events_UtilBarMoveTrigger(UtilMoveArgs args)
@@ -438,7 +446,6 @@ namespace Panacea.Windows
                     {
                         try
                         {
-                            RefreshDisplaySizes();
                             VerifyBarLocation();
                         }
                         catch (Exception ex)
@@ -461,16 +468,16 @@ namespace Panacea.Windows
             {
                 if (_imHiding)
                     return;
-                if (currentDisplay != null)
+                if (Director.Main.CurrentDisplay != null)
                 {
                     Display chosenDisplay = null;
-                    if (dockedDisplay == null)
+                    if (_startingUp)
+                        MoveUtilBarToPreferredDisplay();
+                    else if (dockedDisplay == null)
                     {
-                        chosenDisplay = currentDisplay.Displays.Find(x => x.PrimaryDisplay == true);
+                        chosenDisplay = Director.Main.CurrentDisplay.Displays.Find(x => x.PrimaryDisplay == true);
                         dockedDisplay = chosenDisplay;
                     }
-                    //else if (this.Left != Convert.ToInt32((dockedDisplay.WorkingArea.Width / 2) - (grdMain.ActualWidth / 2)) || this.Top != chosenDisplay.WorkingArea.Height - Convert.ToInt32(rectBackground.ActualHeight) + 1)
-                    //    chosenDisplay = dockedDisplay;
                     else
                         chosenDisplay = dockedDisplay;
 
@@ -510,31 +517,6 @@ namespace Panacea.Windows
             }
         }
 
-        private void RefreshDisplaySizes()
-        {
-            try
-            {
-                if (currentDisplay == null)
-                {
-                    currentDisplay = new CurrentDisplay();
-                    uDebugLogAdd("Current display was null, created new current display");
-                }
-                currentDisplay.Displays.Clear();
-                foreach (var display in System.Windows.Forms.Screen.AllScreens)
-                {
-                    currentDisplay.Displays.Add(Display.ConvertFromScreen(display));
-                }
-                currentDisplay.Displays = currentDisplay.Displays.OrderBy(x => x.Bounds.X).ToList();
-                VerifyDisplayProfileMatch();
-                if (_startingUp)
-                    MoveUtilBarToPreferredDisplay();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
         private void MoveUtilBarToPreferredDisplay()
         {
             try
@@ -566,13 +548,13 @@ namespace Panacea.Windows
                 }
                 if (Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile == null || Toolbox.settings.DisplayProfileLibrary.DisplayProfiles.Count <= 0)
                 {
-                    AddDisplayProfileToLibrary(currentDisplay, true);
+                    AddDisplayProfileToLibrary(Director.Main.CurrentDisplay, true);
                 }
-                var displayMatch = DisplayProfile.DoDisplaysMatch(currentDisplay, Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile.DisplayArea);
+                var displayMatch = DisplayProfile.DoDisplaysMatch(Director.Main.CurrentDisplay, Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile.DisplayArea);
                 if (!displayMatch)
                 {
                     uDebugLogAdd($"Current Display Profile returned {displayMatch} for matching the existing Current Display Profile");
-                    AddDisplayProfileToLibrary(currentDisplay);
+                    AddDisplayProfileToLibrary(Director.Main.CurrentDisplay);
                 }
             }
             catch (Exception ex)
@@ -1039,42 +1021,42 @@ namespace Panacea.Windows
         {
             try
             {
-                if (currentDisplay.Displays.Count <= 1)
+                if (Director.Main.CurrentDisplay.Displays.Count <= 1)
                 {
-                    uDebugLogAdd($"Current display count is {currentDisplay.Displays.Count}, unable to move to another display, will default to primary display");
+                    uDebugLogAdd($"Current display count is {Director.Main.CurrentDisplay.Displays.Count}, unable to move to another display, will default to primary display");
                     ShowNotification("Only 1 display is visible, can't move util bar");
                     return;
                 }
                 else
                 {
-                    uDebugLogAdd($"Starting UtilBar move: [Disp#] {currentDisplay.Displays.Count} [Key] {key.ToString()}");
+                    uDebugLogAdd($"Starting UtilBar move: [Disp#] {Director.Main.CurrentDisplay.Displays.Count} [Key] {key.ToString()}");
                 }
                 if (key == Key.Left)
                 { 
-                    var currDisplayNum = currentDisplay.Displays.FindIndex(x => x.DeviceName == dockedDisplay.DeviceName && x.Bounds == dockedDisplay.Bounds && x.WorkingArea == dockedDisplay.WorkingArea && x.PrimaryDisplay == dockedDisplay.PrimaryDisplay);
+                    var currDisplayNum = Director.Main.CurrentDisplay.Displays.FindIndex(x => x.DeviceName == dockedDisplay.DeviceName && x.Bounds == dockedDisplay.Bounds && x.WorkingArea == dockedDisplay.WorkingArea && x.PrimaryDisplay == dockedDisplay.PrimaryDisplay);
                     if (currDisplayNum - 1 >= 0)
                     {
-                        var chosenDisplay = currentDisplay.Displays[currDisplayNum - 1];
+                        var chosenDisplay = Director.Main.CurrentDisplay.Displays[currDisplayNum - 1];
                         dockedDisplay = chosenDisplay;
                     }
                     else
                     {
-                        var newDisplayNum = currentDisplay.Displays.IndexOf(currentDisplay.Displays.ToArray().Last());
-                        var chosenDisplay = currentDisplay.Displays[newDisplayNum];
+                        var newDisplayNum = Director.Main.CurrentDisplay.Displays.IndexOf(Director.Main.CurrentDisplay.Displays.ToArray().Last());
+                        var chosenDisplay = Director.Main.CurrentDisplay.Displays[newDisplayNum];
                         dockedDisplay = chosenDisplay;
                     }
                 }
                 else if (key == Key.Right)
                 {
-                    var currDisplayNum = currentDisplay.Displays.FindIndex(x => x.DeviceName == dockedDisplay.DeviceName && x.Bounds == dockedDisplay.Bounds && x.WorkingArea == dockedDisplay.WorkingArea && x.PrimaryDisplay == dockedDisplay.PrimaryDisplay);
-                    if (currDisplayNum + 1 <= currentDisplay.Displays.Count - 1)
+                    var currDisplayNum = Director.Main.CurrentDisplay.Displays.FindIndex(x => x.DeviceName == dockedDisplay.DeviceName && x.Bounds == dockedDisplay.Bounds && x.WorkingArea == dockedDisplay.WorkingArea && x.PrimaryDisplay == dockedDisplay.PrimaryDisplay);
+                    if (currDisplayNum + 1 <= Director.Main.CurrentDisplay.Displays.Count - 1)
                     {
-                        var chosenDisplay = currentDisplay.Displays[currDisplayNum + 1];
+                        var chosenDisplay = Director.Main.CurrentDisplay.Displays[currDisplayNum + 1];
                         dockedDisplay = chosenDisplay;
                     }
                     else
                     {
-                        var chosenDisplay = currentDisplay.Displays[0];
+                        var chosenDisplay = Director.Main.CurrentDisplay.Displays[0];
                         dockedDisplay = chosenDisplay;
                     }
                 }
@@ -1459,6 +1441,14 @@ namespace Panacea.Windows
                     case ConnectivityStatus.Internet:
                         lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 39, 216, 0));
                         break;
+                    case ConnectivityStatus.Layer4:
+                        lblConnectivityStatus.Content = "Internet (L4)";
+                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 39, 216, 0));
+                        break;
+                    case ConnectivityStatus.Layer3:
+                        lblConnectivityStatus.Content = "Internet (L3)";
+                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 39, 216, 0));
+                        break;
                     case ConnectivityStatus.Local:
                         lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 207, 228, 0));
                         break;
@@ -1466,6 +1456,9 @@ namespace Panacea.Windows
                         lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 255, 0, 0));
                         break;
                     case ConnectivityStatus.DNSError:
+                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 223, 0, 224));
+                        break;
+                    case ConnectivityStatus.DHCPError:
                         lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 223, 0, 224));
                         break;
                 }
@@ -1490,22 +1483,86 @@ namespace Panacea.Windows
                     {
                         int successCounter = 0;
                         int failureCounter = 0;
-                        /// Internet connectivity verification
-                        // Google dns A
-                        try
+                        var timeout = TimeSpan.FromSeconds(1);
+
+                        /// Layer 4 connectivity verification
+                        // Google https
+                        if (successCounter <= 0)
                         {
-                            var googleA = p.Send("8.8.8.8", 100);
-                            if (googleA.Status == IPStatus.Success)
+                            try
                             {
-                                successCounter++;
-                                currentConnectivityStatus = ConnectivityStatus.Internet;
+                                var httpsGoogle = Network.IsPortOpen("google.com", 443, timeout);
+                                if (httpsGoogle)
+                                {
+                                    successCounter++;
+                                    currentConnectivityStatus = ConnectivityStatus.Internet;
+                                }
+                                else
+                                    failureCounter++;
                             }
-                            else
-                                failureCounter++;
+                            catch (Exception ex)
+                            {
+                                LogException(ex);
+                            }
                         }
-                        catch (Exception)
+                        // Microsoft https
+                        if (successCounter <= 0)
                         {
-                            failureCounter++;
+                            try
+                            {
+                                var httpsGoogle = Network.IsPortOpen("microsoft.com", 443, timeout);
+                                if (httpsGoogle)
+                                {
+                                    successCounter++;
+                                    currentConnectivityStatus = ConnectivityStatus.Internet;
+                                }
+                                else
+                                    failureCounter++;
+                            }
+                            catch (Exception ex)
+                            {
+                                LogException(ex);
+                            }
+                        }
+                        // Apple https
+                        if (successCounter <= 0)
+                        {
+                            try
+                            {
+                                var httpsGoogle = Network.IsPortOpen("apple.com", 443, timeout);
+                                if (httpsGoogle)
+                                {
+                                    successCounter++;
+                                    currentConnectivityStatus = ConnectivityStatus.Internet;
+                                }
+                                else
+                                    failureCounter++;
+                            }
+                            catch (Exception ex)
+                            {
+                                LogException(ex);
+                            }
+                        }
+
+                        /// Layer 3 connectivity verification
+                        // Google dns A
+                        if (successCounter <= 0)
+                        {
+                            try
+                            {
+                                var googleA = p.Send("8.8.8.8", 100);
+                                if (googleA.Status == IPStatus.Success)
+                                {
+                                    successCounter++;
+                                    currentConnectivityStatus = ConnectivityStatus.Layer3;
+                                }
+                                else
+                                    failureCounter++;
+                            }
+                            catch (Exception)
+                            {
+                                failureCounter++;
+                            }
                         }
                         // Google dns B
                         if (successCounter <= 0)
@@ -1516,7 +1573,7 @@ namespace Panacea.Windows
                                 if (googleB.Status == IPStatus.Success)
                                 {
                                     successCounter++;
-                                    currentConnectivityStatus = ConnectivityStatus.Internet;
+                                    currentConnectivityStatus = ConnectivityStatus.Layer3;
                                 }
                                 else
                                     failureCounter++;
@@ -1537,7 +1594,7 @@ namespace Panacea.Windows
                                     if (cloudFlare.Status == IPStatus.Success)
                                     {
                                         successCounter++;
-                                        currentConnectivityStatus = ConnectivityStatus.Internet;
+                                        currentConnectivityStatus = ConnectivityStatus.Layer3;
                                     }
                                     else
                                         failureCounter++;
@@ -1554,7 +1611,7 @@ namespace Panacea.Windows
                                 if (oDNS.Status == IPStatus.Success)
                                 {
                                     successCounter++;
-                                    currentConnectivityStatus = ConnectivityStatus.Internet;
+                                    currentConnectivityStatus = ConnectivityStatus.Layer3;
                                 }
                                 else
                                     failureCounter++;
@@ -1570,7 +1627,7 @@ namespace Panacea.Windows
                                 if (telstra.Status == IPStatus.Success)
                                 {
                                     successCounter++;
-                                    currentConnectivityStatus = ConnectivityStatus.Internet;
+                                    currentConnectivityStatus = ConnectivityStatus.Layer3;
                                 }
                                 else
                                     failureCounter++;

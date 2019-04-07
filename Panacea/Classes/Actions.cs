@@ -3,12 +3,14 @@ using Panacea.Windows;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Mail;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -149,14 +151,14 @@ namespace Panacea.Classes
             {
                 Clipboard.SetText(clip);
                 if (optionalMessage == null)
-                    Director.Main.uStatusUpdate($"Set Clipboard: {clip}");
+                    Director.Main.ShowNotification($"Set Clipboard: {clip}");
                 else
-                    Director.Main.uStatusUpdate(optionalMessage);
+                    Director.Main.ShowNotification(optionalMessage);
             }
             catch (Exception ex)
             {
                 uDebugLogAdd($"Error occured when setting clipboard: {clip} | {ex.Message}", DebugType.FAILURE);
-                Director.Main.uStatusUpdate($"Error occured when setting clipboard: {clip}");
+                Director.Main.ShowNotification($"Error occured when setting clipboard: {clip}");
             }
         }
 
@@ -174,6 +176,7 @@ namespace Panacea.Classes
                     Toolbox.settings = new Settings();
                     Director.Main.SaveSettings();
                     Director.Main.UpdateWindowsSettingsUI();
+                    Director.Main.ShowNotification("Config reset to Default");
                 }
                 else
                 {
@@ -186,6 +189,172 @@ namespace Panacea.Classes
             {
                 LogException(ex);
             }
+        }
+
+        public static void StartProcess(string path, string args = null)
+        {
+            try
+            {
+                Process proc = new Process() { StartInfo = new ProcessStartInfo() { FileName = path } };
+                if (args != null)
+                    proc.StartInfo.Arguments = args;
+                proc.Start();
+                ProcessWatcher(proc);
+            }
+            catch (Exception ex)
+            {
+                uDebugLogAdd($"Unable to start process [path] {path} | [args] {args} | [msg] {ex.Message}", DebugType.FAILURE);
+            }
+        }
+
+        private static void ProcessWatcher(Process proc)
+        {
+            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+            worker.DoWork += (sender, e) =>
+            {
+                try
+                {
+                    bool movedWindow = false;
+                    uDebugLogAdd($"Started process watcher for launched process [id] {proc.Id} [path] {proc.StartInfo.FileName}");
+                    DateTime timeToStop = DateTime.Now.AddMinutes(5);
+                    while (string.IsNullOrWhiteSpace(proc.ProcessName))
+                    {
+                        Thread.Sleep(1000);
+                        if (DateTime.Now > timeToStop)
+                        {
+                            uDebugLogAdd($"Time is up, stopping proc watch [path] {proc.StartInfo.FileName}");
+                            return;
+                        }
+                    }
+                    while (!movedWindow && DateTime.Now < timeToStop)
+                    {
+                        var existingWindow = Toolbox.settings.ActiveWindowList.Find(x => x.WindowInfo.Name.ToLower() == proc.ProcessName.ToLower());
+                        if (existingWindow != null)
+                        {
+                            uDebugLogAdd($"Found matching window item for process, initiating process window move [name] {proc.ProcessName} [path] {proc.StartInfo.FileName}");
+                            movedWindow = MoveProcessHandle(existingWindow, proc);
+                        }
+                        Thread.Sleep(1000);
+                    }
+                    if (!movedWindow)
+                    {
+                        uDebugLogAdd($"Wasn't able to find a matching process window within time limit, canceling | [id] {proc.Id} [path] {proc.StartInfo.FileName}");
+                    }
+                    else
+                    {
+                        uDebugLogAdd($"Successfully moved proc window | [id] {proc.Id} [path] {proc.StartInfo.FileName}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex);
+                }
+            };
+            worker.RunWorkerAsync();
+        }
+
+        public static bool MoveProcessHandle(WindowItem selectedWindow, Process process = null)
+        {
+            bool moveAll = false;
+            bool windowMoved = false;
+            try
+            {
+                /// Title is a wildcard, lets move ALL THE WINDOWS!!!
+                if (selectedWindow.WindowInfo.Title == "*")
+                {
+                    moveAll = true;
+                    uDebugLogAdd($"WindowInfo title for {selectedWindow.WindowInfo.Name} is {selectedWindow.WindowInfo.Title} so we will be MOVING ALL THE WINDOWS!!!!");
+                }
+                /// Title isn't a wildcard, lets only move the windows we want
+                else
+                    uDebugLogAdd($"WindowInfo title for {selectedWindow.WindowInfo.Name} is {selectedWindow.WindowInfo.Title} so I can only move matching handles... :(");
+
+                List<DetailedProcess> foundList = new List<DetailedProcess>();
+                if (process == null)
+                {
+                    foreach (var proc in Process.GetProcessesByName(selectedWindow.WindowInfo.Name))
+                    {
+                        foreach (var handle in WinAPIWrapper.EnumerateProcessWindowHandles(proc.Id))
+                        {
+                            try
+                            {
+                                var detProc = DetailedProcess.Create(proc, handle);
+                                foundList.Add(detProc);
+                                uDebugLogAdd($"Added to list | [{detProc.Handle}]{detProc.Name} :: {detProc.Title}");
+                            }
+                            catch (Exception ex)
+                            {
+                                uDebugLogAdd($"Unable to add handle to the list | [{handle}]{proc.ProcessName}: {ex.Message}");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var handle in WinAPIWrapper.EnumerateProcessWindowHandles(process.Id))
+                    {
+                        try
+                        {
+                            var detProc = DetailedProcess.Create(process, handle);
+                            foundList.Add(detProc);
+                            uDebugLogAdd($"Added to list | [{detProc.Handle}]{detProc.Name} :: {detProc.Title}");
+                        }
+                        catch (Exception ex)
+                        {
+                            uDebugLogAdd($"Unable to add handle to the list | [{handle}]{process.ProcessName}: {ex.Message}");
+                        }
+                    }
+                }
+                if (moveAll)
+                    foreach (var detProc in foundList)
+                    {
+                        try
+                        {
+                            if (Toolbox.settings.ActiveWindowList.Find(x =>
+                            x.WindowInfo.Name == detProc.Name &&
+                            x.WindowInfo.Title == detProc.Title
+                            ) == null)
+                            {
+                                uDebugLogAdd($"Moving handle | [{detProc.Handle}]{detProc.Name} :: {detProc.Title}");
+                                WinAPIWrapper.MoveWindow(detProc.Handle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                                windowMoved = true;
+                            }
+                            else
+                            {
+                                uDebugLogAdd($"Skipping handle window as it has another place to be | [{detProc.Handle}]{detProc.Name} {detProc.Title}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            uDebugLogAdd($"Unable to move handle window | [{detProc.Handle}]{detProc.Name} {detProc.Title}: {ex.Message}");
+                        }
+                    }
+                else
+                {
+                    foreach (var detProc in foundList)
+                    {
+                        try
+                        {
+                            if (detProc.Name == selectedWindow.WindowInfo.Name &&
+                                            detProc.Title == selectedWindow.WindowInfo.Title)
+                            {
+                                uDebugLogAdd($"Matched window & title, moving: [{detProc.Handle}]{detProc.Name} | {detProc.Title}");
+                                WinAPIWrapper.MoveWindow(detProc.Handle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
+                                windowMoved = true;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            uDebugLogAdd($"Unable to move handle window | [{detProc.Handle}]{detProc.Name} {detProc.Title}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+            return windowMoved;
         }
     }
 }

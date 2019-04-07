@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Windows.Media;
 using static Panacea.Windows.UtilityBar;
 
@@ -364,67 +365,6 @@ namespace Panacea.Classes
                 OnPropertyChanged("LatestChangelog");
             }
         }
-        public void AddWindow(WindowItem windowItem)
-        {
-            _windowList.Add(windowItem);
-            OnPropertyChanged("WindowList");
-        }
-        public void RemoveWindow(WindowItem windowItem)
-        {
-            _windowList.Remove(windowItem);
-            OnPropertyChanged("WindowList");
-        }
-        public void UpdateWindowLocation(WindowItem windowItem, Process proc)
-        {
-            var existingItem = _windowList.Find(x => x.WindowInfo.PrivateID == windowItem.WindowInfo.PrivateID);
-            WindowInfo windowInfo = WindowInfo.GetWindowInfoFromProc(proc);
-            if (proc == null)
-                Toolbox.uAddDebugLog("Update process was null");
-            if (existingItem != null && proc != null)
-            {
-                existingItem.WindowInfo = windowInfo;
-                OnPropertyChanged("WindowList");
-            }
-            else
-                Toolbox.uAddDebugLog("Couldn't find existing window item");
-        }
-        public void ChangeWindowProfile(WindowProfile windowProfile)
-        {
-            Toolbox.uAddDebugLog($"Saving current window list for profile: {CurrentWindowProfile.ToString()}");
-            switch (CurrentWindowProfile)
-            {
-                case WindowProfile.Profile1:
-                    _windowProfile1 = ActiveWindowList;
-                    break;
-                case WindowProfile.Profile2:
-                    _windowProfile2 = ActiveWindowList;
-                    break;
-                case WindowProfile.Profile3:
-                    _windowProfile3 = ActiveWindowList;
-                    break;
-                case WindowProfile.Profile4:
-                    _windowProfile4 = ActiveWindowList;
-                    break;
-            }
-            Toolbox.uAddDebugLog($"Moving from WindowProfile {CurrentWindowProfile.ToString()} to {windowProfile}");
-            CurrentWindowProfile = windowProfile;
-            switch (windowProfile)
-            {
-                case WindowProfile.Profile1:
-                    ActiveWindowList = _windowProfile1;
-                    break;
-                case WindowProfile.Profile2:
-                    ActiveWindowList = _windowProfile2;
-                    break;
-                case WindowProfile.Profile3:
-                    ActiveWindowList = _windowProfile3;
-                    break;
-                case WindowProfile.Profile4:
-                    ActiveWindowList = _windowProfile4;
-                    break;
-            }
-            Toolbox.uAddDebugLog("Finished changing window profile");
-        }
         public WindowProfile CurrentWindowProfile
         {
             get { return _currentWinProfile; }
@@ -489,6 +429,81 @@ namespace Panacea.Classes
             }
         }
 
+        #endregion
+
+        #region Methods
+        public void AddWindow(WindowItem windowItem)
+        {
+            _windowList.Add(windowItem);
+            OnPropertyChanged("WindowList");
+        }
+        public void RemoveWindow(WindowItem windowItem)
+        {
+            _windowList.Remove(windowItem);
+            OnPropertyChanged("WindowList");
+        }
+        public void UpdateWindowLocation(WindowItem windowItem, Process proc)
+        {
+            var existingItem = _windowList.Find(x => x.WindowInfo.PrivateID == windowItem.WindowInfo.PrivateID);
+            WindowInfo windowInfo = WindowInfo.GetWindowInfoFromProc(proc);
+            if (proc == null)
+                uDebugLogAdd("Update process was null");
+            if (existingItem != null && proc != null)
+            {
+                existingItem.WindowInfo = windowInfo;
+                OnPropertyChanged("WindowList");
+            }
+            else
+                uDebugLogAdd("Couldn't find existing window item");
+        }
+        public void ChangeWindowProfile(WindowProfile windowProfile)
+        {
+            uDebugLogAdd($"Saving current window list for profile: {CurrentWindowProfile.ToString()}");
+            switch (CurrentWindowProfile)
+            {
+                case WindowProfile.Profile1:
+                    _windowProfile1 = ActiveWindowList;
+                    break;
+                case WindowProfile.Profile2:
+                    _windowProfile2 = ActiveWindowList;
+                    break;
+                case WindowProfile.Profile3:
+                    _windowProfile3 = ActiveWindowList;
+                    break;
+                case WindowProfile.Profile4:
+                    _windowProfile4 = ActiveWindowList;
+                    break;
+            }
+            uDebugLogAdd($"Moving from WindowProfile {CurrentWindowProfile.ToString()} to {windowProfile}");
+            CurrentWindowProfile = windowProfile;
+            switch (windowProfile)
+            {
+                case WindowProfile.Profile1:
+                    ActiveWindowList = _windowProfile1;
+                    break;
+                case WindowProfile.Profile2:
+                    ActiveWindowList = _windowProfile2;
+                    break;
+                case WindowProfile.Profile3:
+                    ActiveWindowList = _windowProfile3;
+                    break;
+                case WindowProfile.Profile4:
+                    ActiveWindowList = _windowProfile4;
+                    break;
+            }
+            uDebugLogAdd("Finished changing window profile");
+        }
+        private void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO, [CallerMemberName] string caller = "")
+        {
+            try
+            {
+                Toolbox.uAddDebugLog($"CLSSETTINGS: {_log}", _type, caller);
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+        }
         #endregion
     }
 

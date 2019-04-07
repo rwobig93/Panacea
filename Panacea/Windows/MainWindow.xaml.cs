@@ -50,7 +50,6 @@ namespace Panacea
         private List<string> notifications = new List<string>();
         private MMDevice selectedAudioEndpoint = null;
         private IntPtr LastFoundWindow = IntPtr.Zero;
-        private HandleDisplay windowHandleDisplay = null;
         private Point mouseStartPoint = new Point(0, 0);
         private CurrentDisplay currentDisplay = null;
         private bool audioRefreshing = false;
@@ -80,9 +79,6 @@ namespace Panacea
         {
             // Allow borderless window to be resized
             WindowChrome.SetWindowChrome(this, new WindowChrome() { ResizeBorderThickness = new Thickness(5), CaptionHeight = .05 });
-            if (UtilityBar.UtilBarMain != null)
-                HideWinMainInBackground();
-            CleanupOldFiles();
         }
 
         private void winMain_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -218,7 +214,22 @@ namespace Panacea
 
         private void BtnTest_Click(object sender, RoutedEventArgs e)
         {
-            
+            TestOpenPort();
+        }
+
+        private void TestOpenPort()
+        {
+            try
+            {
+                var google = Network.IsPortOpen("google.com", 443, TimeSpan.FromSeconds(1));
+                var microsoft = Network.IsPortOpen("microsoft.com", 443, TimeSpan.FromSeconds(1));
+                var apple = Network.IsPortOpen("apple.com", 443, TimeSpan.FromSeconds(1));
+                Director.Main.ShowNotification($"Port open summary: [g] {google} [m] {microsoft} [a] {apple}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void lblTitle_MouseDown(object sender, MouseButtonEventArgs e)
@@ -319,14 +330,14 @@ namespace Panacea
 
         private void btnWinTarget_Click(object sender, RoutedEventArgs e)
         {
-            OpenWindowHandleFinder();
+            Director.Main.OpenWindowHandleFinder();
         }
 
         private void rectTarget_MouseDown(object sender, MouseButtonEventArgs e)
         {
             LookForWindowHandle();
             CaptureWindowHandle();
-            OpenWindowHandleFinder();
+            Director.Main.OpenWindowHandleFinder();
             DisplayWindowInfo();
             //OpenCaptureOverlay();
         }
@@ -1015,97 +1026,6 @@ namespace Panacea
             return this.GetType().GetProperty(propertyName).GetValue(this, null);
         }
 
-        private void CleanupOldFiles()
-        {
-            try
-            {
-                uDebugLogAdd("Starting old file cleanup");
-                uDebugLogAdd($"Cleaning up Director.Main.LogDirectory: {Director.Main.LogDirectory}");
-                var logDirRemoves = 0;
-                foreach (var file in Directory.EnumerateFiles(Director.Main.LogDirectory))
-                {
-                    FileInfo fileInfo = new FileInfo(file);
-                    string fileNaem = fileInfo.Name;
-                    if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
-                    {
-                        try
-                        {
-                            fileInfo.Delete();
-                            uStatusUpdate($"Deleted old log file: {fileNaem}");
-                            logDirRemoves++;
-                        }
-                        catch (IOException io)
-                        {
-                            uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
-                        }
-                        catch (Exception ex)
-                        {
-                            LogException(ex);
-                        }
-                    }
-                }
-                uDebugLogAdd($"Removed {logDirRemoves} old log(s)");
-                uDebugLogAdd($"Cleaning up Director.Main.ExceptionDirectory: {Director.Main.ExceptionDirectory}");
-                var exDirRemoves = 0;
-                foreach (var file in Directory.EnumerateFiles(Director.Main.ExceptionDirectory))
-                {
-                    FileInfo fileInfo = new FileInfo(file);
-                    string fileNaem = fileInfo.Name;
-                    if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
-                    {
-                        try
-                        {
-                            fileInfo.Delete();
-                            uStatusUpdate($"Deleted old exception file: {fileNaem}");
-                            exDirRemoves++;
-                        }
-                        catch (IOException io)
-                        {
-                            uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
-                        }
-                        catch (Exception ex)
-                        {
-                            LogException(ex);
-                        }
-                    }
-                }
-                uDebugLogAdd($"Removed {exDirRemoves} old exception log(s)");
-                var diagRemoves = 0;
-                if (Directory.Exists($@"{Director.Main.CurrentDirectory}\Diag"))
-                {
-                    uDebugLogAdd($"Cleaning up diagDir: {$@"{Director.Main.CurrentDirectory}\Diag"}");
-                    foreach (var file in Directory.EnumerateFiles($@"{Director.Main.CurrentDirectory}\Diag"))
-                    {
-                        FileInfo fileInfo = new FileInfo(file);
-                        string fileNaem = fileInfo.Name;
-                        if ((fileInfo.LastWriteTime <= DateTime.Now.AddDays(-14)))
-                        {
-                            try
-                            {
-                                fileInfo.Delete();
-                                uStatusUpdate($"Deleted old diag zip file: {fileNaem}");
-                                diagRemoves++;
-                            }
-                            catch (IOException io)
-                            {
-                                uDebugLogAdd($"File couldn't be deleted: {fileInfo.Name} | {io.Message}");
-                            }
-                            catch (Exception ex)
-                            {
-                                LogException(ex);
-                            }
-                        }
-                    }
-                    uDebugLogAdd($"Removed {diagRemoves} diag zip(s)");
-                }
-                uDebugLogAdd($"Finished old file cleanup, removed {diagRemoves + exDirRemoves + logDirRemoves} file(s)");
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
         private void SubscribeToEvents()
         {
             Events.UpdateDebugStatus += Events_UpdateDebugStatus;
@@ -1294,9 +1214,9 @@ namespace Panacea
         {
             try
             {
+                this.Show();
                 this.WindowState = WindowState.Normal;
                 this.ShowInTaskbar = true;
-                this.Show();
                 uDebugLogAdd("MainWindow has been brought back from the void");
             }
             catch (Exception ex)
@@ -1465,10 +1385,10 @@ namespace Panacea
                 uDebugLogAdd("Getting window hidden area");
                 hiddenArea = grdMain.Margin;
                 uDebugLogAdd($"hiddenArea <Before>: [T]{hiddenArea.Top} [L]{hiddenArea.Left} [B]{hiddenArea.Bottom} [R]{hiddenArea.Right}");
-                hiddenArea.Left = 120;
-                hiddenArea.Top = 60;
-                hiddenArea.Bottom = 60;
-                hiddenArea.Right = 60;
+                hiddenArea.Left = 250; // 120
+                //hiddenArea.Top = 60;
+                //hiddenArea.Bottom = 60;
+                hiddenArea.Right = 300; // 60
                 uDebugLogAdd($"hiddenArea <After>: [T]{hiddenArea.Top} [L]{hiddenArea.Left} [B]{hiddenArea.Bottom} [R]{hiddenArea.Right}");
                 return hiddenArea;
             }
@@ -2075,65 +1995,6 @@ namespace Panacea
                     uDebugLogAdd($"button.Content wasn't checked or unchecked, content was: {button.Content.ToString()}");
                     return;
                 }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void OpenWindowHandleFinder()
-        {
-            try
-            {
-                uDebugLogAdd($"Opening window handler info window");
-                windowHandleDisplay = new HandleDisplay
-                {
-                    Topmost = true,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner
-                };
-                uDebugLogAdd($"Window handler info window constructed");
-                windowHandleDisplay.Show();
-                windowHandleDisplay.Closed += WindowHandleDisplay_Closed;
-                uDebugLogAdd($"Window handler info window shown");
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void WindowHandleDisplay_Closed(object sender, EventArgs e)
-        {
-            RefreshSavedWindows();
-        }
-
-        private void RevertCursor()
-        {
-            try
-            {
-                capturingHandle = false;
-                CloseWindowHandleFinder();
-                uDebugLogAdd("Reverting cursor");
-                Cursor = Cursors.Arrow;
-                //Mouse.Capture(null);
-                //Mouse.OverrideCursor = null;
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void CloseWindowHandleFinder()
-        {
-            try
-            {
-                uDebugLogAdd($"Closing Window handler info window, current ref: {windowHandleDisplay.ToString()}");
-                windowHandleDisplay.Close();
-                uDebugLogAdd($"Closed window handler info window, current ref: {windowHandleDisplay.ToString()}");
-                windowHandleDisplay = null;
-                uDebugLogAdd("Null'd window handler info window");
             }
             catch (Exception ex)
             {
@@ -2800,6 +2661,7 @@ namespace Panacea
                             btnWinProfile3.Content = Toolbox.settings.WindowProfileName3;
                             Toolbox.settings.WindowProfileName4 = txtWindowProfileName4.Text;
                             btnWinProfile4.Content = Toolbox.settings.WindowProfileName4;
+                            Events.TriggerWindowInfoChange(true);
                             // Set startup on windows startup
                             uDebugLogAdd("SETUPDATE: Startup on windows startup");
                             if ((chkSettingsStartup.IsChecked == true) && !Toolbox.settings.WindowsStartup)

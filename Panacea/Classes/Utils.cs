@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using static Panacea.MainWindow;
 using System.Windows.Input;
 using static Panacea.Windows.UtilityBar;
+using NAudio.CoreAudioApi;
 
 namespace Panacea.Classes
 {
@@ -181,7 +182,25 @@ namespace Panacea.Classes
             UtilMoveArgs args = new UtilMoveArgs(x, y);
             UtilBarMoveTrigger(args);
         }
+        // Window info changed
+        public delegate void WindowInfoChanged(WindowInfoArgs args);
+        public static event WindowInfoChanged WinInfoChanged;
+        public static void TriggerWindowInfoChange(bool update = true)
+        {
+            WindowInfoArgs args = new WindowInfoArgs(update);
+            WinInfoChanged(args);
+        }
+        // Audio endpoint list updated
+        public delegate void AudioEndpointsUpdated(AudioEndpointListArgs args);
+        public static event AudioEndpointsUpdated AudioEndpointListUpdated;
+        public static void TriggerAudioEndpointListUpdate(DataFlow flow)
+        {
+            AudioEndpointListArgs args = new AudioEndpointListArgs(flow);
+            AudioEndpointListUpdated(args);
+        }
     }
+
+    #region Event Args
     public class WinInfoArgs : EventArgs
     {
         public WinInfoArgs(WindowInfo windowInfo)
@@ -210,6 +229,23 @@ namespace Panacea.Classes
         public int X { get; }
         public int Y { get; }
     }
+    public class WindowInfoArgs : EventArgs
+    {
+        public WindowInfoArgs(bool update)
+        {
+            this.Update = update;
+        }
+        public bool Update { get; }
+    }
+    public class AudioEndpointListArgs : EventArgs
+    {
+        public AudioEndpointListArgs(DataFlow dataFlow)
+        {
+            this.Flow = dataFlow;
+        }
+        public DataFlow Flow { get; }
+    } 
+    #endregion
 
     #endregion
 

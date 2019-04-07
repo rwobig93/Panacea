@@ -37,6 +37,7 @@ namespace Panacea.Windows
         #region Globals
 
         private bool startingUp = true;
+        private bool _firstStartup = true;
         private DoubleAnimation outAnimation = new DoubleAnimation() { To = 0.0, Duration = TimeSpan.FromSeconds(.2) };
         private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.2) };
         private double PopinLeft { get { return UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuAudio.Margin.Left; } }
@@ -73,6 +74,7 @@ namespace Panacea.Windows
             PopupShow();
             RefreshAudioDevicesLists();
             SubscribeToEvents();
+            //Audio.UpdateAudioAllEndpointLists();
             FinishStartup();
         }
 
@@ -81,6 +83,80 @@ namespace Panacea.Windows
             try
             {
                 Events.UtilBarMoveTrigger += Events_UtilBarMoveTrigger;
+                Events.AudioEndpointListUpdated += Events_AudioEndpointListUpdated;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void Events_AudioEndpointListUpdated(AudioEndpointListArgs args)
+        {
+            UpdateAudioListUI(args.Flow);
+        }
+
+        private void UpdateAudioListUI(DataFlow flow)
+        {
+            try
+            {
+                switch (flow)
+                {
+                    case DataFlow.Capture:
+                        recordingDeviceRefreshing = true;
+                        Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { lbRecordingDevices.ItemsSource = Interfaces.AudioMain.EndpointAudioRecordingDeviceList; } catch (Exception ex) { LogException(ex); } });
+                        var defDeviceR = Audio.GetDefaultAudioRecordingDevice();
+                        foreach (var item in lbRecordingDevices.Items)
+                        {
+                            if (((MMDevice)item).ID == defDeviceR.ID)
+                            {
+                                selectedRecordingEndpoint = ((MMDevice)item);
+                                Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { lbRecordingDevices.SelectedItem = item; } catch (Exception ex) { LogException(ex); } });
+                            }
+                        }
+                        recordingDeviceRefreshing = false;
+                        break;
+                    case DataFlow.Render:
+                        playbackDeviceRefreshing = true;
+                        Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { lbPlaybackDevices.ItemsSource = Interfaces.AudioMain.EndpointAudioPlaybackDeviceList; } catch (Exception ex) { LogException(ex); } });
+                        var defDeviceP = Audio.GetDefaultAudioPlaybackDevice();
+                        foreach (var item in lbPlaybackDevices.Items)
+                        {
+                            if (((MMDevice)item).ID == defDeviceP.ID)
+                            {
+                                selectedPlaybackEndpoint = ((MMDevice)item);
+                                Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { lbPlaybackDevices.SelectedItem = item; } catch (Exception ex) { LogException(ex); } });
+                            }
+                        }
+                        playbackDeviceRefreshing = false;
+                        break;
+                    case DataFlow.All:
+                        recordingDeviceRefreshing = true;
+                        playbackDeviceRefreshing = true;
+                        Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { lbPlaybackDevices.ItemsSource = Interfaces.AudioMain.EndpointAudioPlaybackDeviceList; } catch (Exception ex) { LogException(ex); } });
+                        var defDevicePA = Audio.GetDefaultAudioPlaybackDevice();
+                        foreach (var item in lbPlaybackDevices.Items)
+                        {
+                            if (((MMDevice)item).ID == defDevicePA.ID)
+                            {
+                                selectedPlaybackEndpoint = ((MMDevice)item);
+                                Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { lbPlaybackDevices.SelectedItem = item; } catch (Exception ex) { LogException(ex); } });
+                            }
+                        }
+                        Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { lbRecordingDevices.ItemsSource = Interfaces.AudioMain.EndpointAudioRecordingDeviceList; } catch (Exception ex) { LogException(ex); } });
+                        var defDeviceRA = Audio.GetDefaultAudioRecordingDevice();
+                        foreach (var item in lbRecordingDevices.Items)
+                        {
+                            if (((MMDevice)item).ID == defDeviceRA.ID)
+                            {
+                                selectedRecordingEndpoint = ((MMDevice)item);
+                                Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { lbRecordingDevices.SelectedItem = item; } catch (Exception ex) { LogException(ex); } });
+                            }
+                        }
+                        recordingDeviceRefreshing = false;
+                        playbackDeviceRefreshing = false;
+                        break;
+                }
             }
             catch (Exception ex)
             {
@@ -145,7 +221,7 @@ namespace Panacea.Windows
         {
             try
             {
-                Toolbox.uAddDebugLog(_log, _type, caller);
+                Toolbox.uAddDebugLog($"POPAUD: {_log}", _type, caller);
             }
             catch (Exception ex)
             {
@@ -186,7 +262,6 @@ namespace Panacea.Windows
             {
                 if (this.Opacity == 1.0)
                     this.BeginAnimation(Window.OpacityProperty, outAnimation);
-                Task.Delay(2000).ContinueWith(x => Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { this.Hide(); } catch (Exception ex) { LogException(ex); } }));
             }
             catch (Exception ex)
             {
@@ -198,7 +273,6 @@ namespace Panacea.Windows
         {
             try
             {
-                this.Show();
                 if (this.Opacity == 0)
                     this.BeginAnimation(Window.OpacityProperty, inAnimation);
             }
@@ -279,8 +353,10 @@ namespace Panacea.Windows
             {
                 RefreshPlaybackDevices();
                 RefreshRecordingDevices();
-                if (!startingUp)
+                if (!startingUp && !_firstStartup)
                     ShowNotification("Refreshed Audio Devices");
+                else
+                    _firstStartup = false;
             }
         }
 
@@ -419,6 +495,7 @@ namespace Panacea.Windows
         private void BtnRefreshAudio_Click(object sender, RoutedEventArgs e)
         {
             RefreshAudioDevicesLists();
+            //Audio.UpdateAudioAllEndpointLists();
         }
 
         private void BtnReset_Click(object sender, RoutedEventArgs e)

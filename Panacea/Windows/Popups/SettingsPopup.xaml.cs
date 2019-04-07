@@ -227,10 +227,12 @@ namespace Panacea.Windows.Popups
                 switch (Toolbox.settings.UtilBarEnterAction)
                 {
                     case EnterAction.DNSLookup:
-                        ComboPopSetNetAction.Text = "DNSLookup";
+                        if (Toolbox.FindComboBoxItemByString(ComboPopSetNetAction, "DNSLookup") != null)
+                            ComboPopSetNetAction.SelectedItem = Toolbox.FindComboBoxItemByString(ComboPopSetNetAction, "DNSLookup");
                         break;
                     case EnterAction.Ping:
-                        ComboPopSetNetAction.Text = "Ping";
+                        if (Toolbox.FindComboBoxItemByString(ComboPopSetNetAction, "Ping") != null)
+                            ComboPopSetNetAction.SelectedItem = Toolbox.FindComboBoxItemByString(ComboPopSetNetAction, "Ping");
                         break;
                     default:
                         ComboPopSetNetAction.Text = "???";
@@ -340,7 +342,7 @@ namespace Panacea.Windows.Popups
         {
             try
             {
-                Toolbox.uAddDebugLog(_log, _type, caller);
+                Toolbox.uAddDebugLog($"POPSET: {_log}", _type, caller);
             }
             catch (Exception ex)
             {
@@ -381,7 +383,6 @@ namespace Panacea.Windows.Popups
             {
                 if (this.Opacity == 1.0)
                     this.BeginAnimation(Window.OpacityProperty, outAnimation);
-                this.Hide();
             }
             catch (Exception ex)
             {
@@ -393,7 +394,6 @@ namespace Panacea.Windows.Popups
         {
             try
             {
-                this.Show();
                 if (this.Opacity == 0)
                     this.BeginAnimation(Window.OpacityProperty, inAnimation);
             }
@@ -594,9 +594,9 @@ namespace Panacea.Windows.Popups
                             // Set network textbox enter action
                             uDebugLogAdd("SETUPDATE: Enter action");
                             if (ComboPopSetNetAction.Text == "DNSLookup")
-                                Toolbox.settings.ToolboxEnterAction = EnterAction.DNSLookup;
+                                Toolbox.settings.UtilBarEnterAction = EnterAction.DNSLookup;
                             else if (ComboPopSetNetAction.Text == "Ping")
-                                Toolbox.settings.ToolboxEnterAction = EnterAction.Ping;
+                                Toolbox.settings.UtilBarEnterAction = EnterAction.Ping;
                             // Set beta check
                             uDebugLogAdd("SETUPDATE: Beta check");
                             if (ChkPopSetGenBeta.IsChecked == true)
@@ -613,6 +613,7 @@ namespace Panacea.Windows.Popups
                             Toolbox.settings.StartProfileName2 = TxtPopSetStartPro2.Text;
                             Toolbox.settings.StartProfileName3 = TxtPopSetStartPro3.Text;
                             Toolbox.settings.StartProfileName4 = TxtPopSetStartPro4.Text;
+                            Events.TriggerWindowInfoChange(true);
                             // Set startup on windows startup
                             uDebugLogAdd("SETUPDATE: Startup on windows startup");
                             if ((ChkPopSetGenStartup.IsChecked == true) && !Toolbox.settings.WindowsStartup)

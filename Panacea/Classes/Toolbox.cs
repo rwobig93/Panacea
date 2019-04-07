@@ -150,5 +150,16 @@ namespace Panacea.Classes
         {
             return new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex));
         }
+
+        public static ComboBoxItem FindComboBoxItemByString(ComboBox combo, string v)
+        {
+            ComboBoxItem foundItem = null;
+            foreach (ComboBoxItem item in combo.Items)
+            {
+                if (item.Content.ToString().ToLower() == v.ToLower())
+                    foundItem = item;
+            }
+            return foundItem;
+        }
     }
 }
