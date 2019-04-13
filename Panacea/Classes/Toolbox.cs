@@ -105,9 +105,7 @@ namespace Panacea.Classes
             try
             {
                 debugLog.Append($"{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {caller.ToUpper()} :: {_type.ToString()}: {_log}{Environment.NewLine}");
-#if DEBUG
                 Events.AddDebugStatus(_log, _type); 
-#endif
             }
             catch (Exception ex)
             {

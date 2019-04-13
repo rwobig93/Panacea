@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
 using static Panacea.Windows.UtilityBar;
@@ -26,7 +27,8 @@ namespace Panacea.Classes
         #region Private Properties
 
         private WindowDimensions _windowLocation { get; set; } = new WindowDimensions { Left = 0, Top = 0, Height = 300, Width = 625 };
-        private List<WindowItem> _windowList { get; set; } = new List<WindowItem>();
+        private List<WindowItem> _currentWindowList { get; set; } = new List<WindowItem>();
+        private List<StartProcessItem> _currentStartList { get; set; } = new List<StartProcessItem>();
         private string _windowProfileName1 { get; set; } = "Profile 1";
         private string _windowProfileName2 { get; set; } = "Profile 2";
         private string _windowProfileName3 { get; set; } = "Profile 3";
@@ -39,6 +41,10 @@ namespace Panacea.Classes
         private List<WindowItem> _windowProfile2 { get; set; } = new List<WindowItem>();
         private List<WindowItem> _windowProfile3 { get; set; } = new List<WindowItem>();
         private List<WindowItem> _windowProfile4 { get; set; } = new List<WindowItem>();
+        private List<StartProcessItem> _startProfile1 { get; set; } = new List<StartProcessItem>();
+        private List<StartProcessItem> _startProfile2 { get; set; } = new List<StartProcessItem>();
+        private List<StartProcessItem> _startProfile3 { get; set; } = new List<StartProcessItem>();
+        private List<StartProcessItem> _startProfile4 { get; set; } = new List<StartProcessItem>();
         private SolidColorBrush _pingSuccessFill { get; set; } = new SolidColorBrush(Color.FromArgb(100, 0, 195, 0));
         private SolidColorBrush _pingSuccessStroke { get; set; } = new SolidColorBrush(Color.FromArgb(100, 0, 255, 0));
         private SolidColorBrush _pingFailFill { get; set; } = new SolidColorBrush(Color.FromArgb(100, 195, 0, 0));
@@ -62,6 +68,7 @@ namespace Panacea.Classes
         private string _upProductionURI { get; set; } = null;
         private string _latestChangelog { get; set; } = "I'm a default Changelog! You shouldn't ever see me! :D";
         private WindowProfile _currentWinProfile { get; set; } = WindowProfile.Profile1;
+        private StartProfile _currentStartProfile { get; set; } = StartProfile.Start1;
         private EnterAction _toolboxEnterAction { get; set; } = EnterAction.DNSLookup;
         private EnterAction _utilBarEnterAction { get; set; } = EnterAction.DNSLookup;
         private DTFormat _dateTimeFormat { get; set; } = DTFormat.Sec;
@@ -84,11 +91,20 @@ namespace Panacea.Classes
         }
         public List<WindowItem> ActiveWindowList
         {
-            get { return _windowList; }
+            get { return _currentWindowList; }
             set
             {
-                _windowList = value;
+                _currentWindowList = value;
                 OnPropertyChanged("ActiveWindowList");
+            }
+        }
+        public List<StartProcessItem> ActiveStartList
+        {
+            get { return _currentStartList; }
+            set
+            {
+                _currentStartList = value;
+                OnPropertyChanged("ActiveStartList");
             }
         }
         public string WindowProfileName1
@@ -168,7 +184,7 @@ namespace Panacea.Classes
             get { return _windowProfile1; }
             set
             {
-                _windowList = value;
+                _windowProfile1 = value;
                 OnPropertyChanged("WindowProfile1");
             }
         }
@@ -177,7 +193,7 @@ namespace Panacea.Classes
             get { return _windowProfile2; }
             set
             {
-                _windowList = value;
+                _windowProfile2 = value;
                 OnPropertyChanged("WindowProfile2");
             }
         }
@@ -186,7 +202,7 @@ namespace Panacea.Classes
             get { return _windowProfile3; }
             set
             {
-                _windowList = value;
+                _windowProfile3 = value;
                 OnPropertyChanged("WindowProfile3");
             }
         }
@@ -195,8 +211,44 @@ namespace Panacea.Classes
             get { return _windowProfile4; }
             set
             {
-                _windowList = value;
+                _windowProfile4 = value;
                 OnPropertyChanged("WindowProfile4");
+            }
+        }
+        public List<StartProcessItem> StartProfile1
+        {
+            get { return _startProfile1; }
+            set
+            {
+                _startProfile1 = value;
+                OnPropertyChanged("StartProfile1");
+            }
+        }
+        public List<StartProcessItem> StartProfile2
+        {
+            get { return _startProfile2; }
+            set
+            {
+                _startProfile2 = value;
+                OnPropertyChanged("StartProfile2");
+            }
+        }
+        public List<StartProcessItem> StartProfile3
+        {
+            get { return _startProfile3; }
+            set
+            {
+                _startProfile3 = value;
+                OnPropertyChanged("StartProfile3");
+            }
+        }
+        public List<StartProcessItem> StartProfile4
+        {
+            get { return _startProfile4; }
+            set
+            {
+                _startProfile4 = value;
+                OnPropertyChanged("StartProfile4");
             }
         }
         public SolidColorBrush PingSuccessFill
@@ -374,6 +426,15 @@ namespace Panacea.Classes
                 OnPropertyChanged("CurrentWindowProfile");
             }
         }
+        public StartProfile CurrentStartProfile
+        {
+            get { return _currentStartProfile; }
+            set
+            {
+                _currentStartProfile = value;
+                OnPropertyChanged("CurrentStartProfile");
+            }
+        }
         public EnterAction ToolboxEnterAction
         {
             get { return _toolboxEnterAction; }
@@ -434,17 +495,31 @@ namespace Panacea.Classes
         #region Methods
         public void AddWindow(WindowItem windowItem)
         {
-            _windowList.Add(windowItem);
-            OnPropertyChanged("WindowList");
+            _currentWindowList.Add(windowItem);
+            OnPropertyChanged("ActiveWindowList");
+            Events.TriggerWindowInfoChange(true);
         }
         public void RemoveWindow(WindowItem windowItem)
         {
-            _windowList.Remove(windowItem);
-            OnPropertyChanged("WindowList");
+            _currentWindowList.Remove(windowItem);
+            OnPropertyChanged("ActiveWindowList");
+            Events.TriggerWindowInfoChange(true);
+        }
+        public void AddStartProcess(StartProcessItem startItem)
+        {
+            _currentStartList.Add(startItem);
+            OnPropertyChanged("ActiveStartList");
+            Events.TriggerStartInfoChange(true);
+        }
+        public void RemoveStartProcess(StartProcessItem startItem)
+        {
+            _currentStartList.Remove(startItem);
+            OnPropertyChanged("ActiveStartList");
+            Events.TriggerStartInfoChange(true);
         }
         public void UpdateWindowLocation(WindowItem windowItem, Process proc)
         {
-            var existingItem = _windowList.Find(x => x.WindowInfo.PrivateID == windowItem.WindowInfo.PrivateID);
+            var existingItem = _currentWindowList.Find(x => x.WindowInfo.PrivateID == windowItem.WindowInfo.PrivateID);
             WindowInfo windowInfo = WindowInfo.GetWindowInfoFromProc(proc);
             if (proc == null)
                 uDebugLogAdd("Update process was null");
@@ -455,43 +530,97 @@ namespace Panacea.Classes
             }
             else
                 uDebugLogAdd("Couldn't find existing window item");
+            Events.TriggerWindowInfoChange(true);
         }
         public void ChangeWindowProfile(WindowProfile windowProfile)
         {
-            uDebugLogAdd($"Saving current window list for profile: {CurrentWindowProfile.ToString()}");
-            switch (CurrentWindowProfile)
+            try
             {
-                case WindowProfile.Profile1:
-                    _windowProfile1 = ActiveWindowList;
-                    break;
-                case WindowProfile.Profile2:
-                    _windowProfile2 = ActiveWindowList;
-                    break;
-                case WindowProfile.Profile3:
-                    _windowProfile3 = ActiveWindowList;
-                    break;
-                case WindowProfile.Profile4:
-                    _windowProfile4 = ActiveWindowList;
-                    break;
+                uDebugLogAdd($"Saving current window list for profile: {CurrentWindowProfile.ToString()}");
+                switch (CurrentWindowProfile)
+                {
+                    case WindowProfile.Profile1:
+                        WindowProfile1 = ActiveWindowList;
+                        break;
+                    case WindowProfile.Profile2:
+                        WindowProfile2 = ActiveWindowList;
+                        break;
+                    case WindowProfile.Profile3:
+                        WindowProfile3 = ActiveWindowList;
+                        break;
+                    case WindowProfile.Profile4:
+                        WindowProfile4 = ActiveWindowList;
+                        break;
+                }
+                uDebugLogAdd($"Moving from WindowProfile {CurrentWindowProfile.ToString()} to {windowProfile.ToString()}");
+                CurrentWindowProfile = windowProfile;
+                switch (windowProfile)
+                {
+                    case WindowProfile.Profile1:
+                        ActiveWindowList = WindowProfile1;
+                        break;
+                    case WindowProfile.Profile2:
+                        ActiveWindowList = WindowProfile2;
+                        break;
+                    case WindowProfile.Profile3:
+                        ActiveWindowList = WindowProfile3;
+                        break;
+                    case WindowProfile.Profile4:
+                        ActiveWindowList = WindowProfile4;
+                        break;
+                }
+                uDebugLogAdd("Finished changing window profile");
+                Events.TriggerWindowInfoChange();
             }
-            uDebugLogAdd($"Moving from WindowProfile {CurrentWindowProfile.ToString()} to {windowProfile}");
-            CurrentWindowProfile = windowProfile;
-            switch (windowProfile)
+            catch (Exception ex)
             {
-                case WindowProfile.Profile1:
-                    ActiveWindowList = _windowProfile1;
-                    break;
-                case WindowProfile.Profile2:
-                    ActiveWindowList = _windowProfile2;
-                    break;
-                case WindowProfile.Profile3:
-                    ActiveWindowList = _windowProfile3;
-                    break;
-                case WindowProfile.Profile4:
-                    ActiveWindowList = _windowProfile4;
-                    break;
+                Toolbox.LogException(ex);
             }
-            uDebugLogAdd("Finished changing window profile");
+        }
+        public void ChangeStartProfile(StartProfile startProfile)
+        {
+            try
+            {
+                uDebugLogAdd($"Saving current start list for profile: {CurrentStartProfile.ToString()}");
+                switch (CurrentStartProfile)
+                {
+                    case StartProfile.Start1:
+                        StartProfile1 = ActiveStartList;
+                        break;
+                    case StartProfile.Start2:
+                        StartProfile2 = ActiveStartList;
+                        break;
+                    case StartProfile.Start3:
+                        StartProfile3 = ActiveStartList;
+                        break;
+                    case StartProfile.Start4:
+                        StartProfile4 = ActiveStartList;
+                        break;
+                }
+                uDebugLogAdd($"Moving from StartProfile {CurrentStartProfile.ToString()} to {startProfile.ToString()}");
+                CurrentStartProfile = startProfile;
+                switch (startProfile)
+                {
+                    case StartProfile.Start1:
+                        ActiveStartList = StartProfile1;
+                        break;
+                    case StartProfile.Start2:
+                        ActiveStartList = StartProfile2;
+                        break;
+                    case StartProfile.Start3:
+                        ActiveStartList = StartProfile3;
+                        break;
+                    case StartProfile.Start4:
+                        ActiveStartList = StartProfile4;
+                        break;
+                }
+                uDebugLogAdd("Finished changing start profile");
+                Events.TriggerStartInfoChange();
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
         }
         private void uDebugLogAdd(string _log, DebugType _type = DebugType.INFO, [CallerMemberName] string caller = "")
         {

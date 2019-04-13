@@ -170,6 +170,9 @@
     <Compile Include="Windows\Prompt.xaml.cs">
       <DependentUpon>Prompt.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Windows\StartProcEditor.xaml.cs">
+      <DependentUpon>StartProcEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\UtilityBar.xaml.cs">
       <DependentUpon>UtilityBar.xaml</DependentUpon>
     </Compile>
@@ -245,6 +248,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\Prompt.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\StartProcEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

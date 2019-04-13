@@ -7,7 +7,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:src="clr-namespace:Panacea.Classes"
         mc:Ignorable="d" Height="28.564" MinHeight="28.5" Width="1104" MinWidth="1104" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070" Closing="WinMain_Closing" Loaded="WinMain_Loaded"
-        Title="UtilityBar" Background="{x:Null}" ResizeMode="NoResize" Topmost="True" MaxWidth="1500" MaxHeight="29" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Auto" SnapsToDevicePixels="True" ShowInTaskbar="False" SizeToContent="Width">
+        Title="Utility Bar" Background="{x:Null}" ResizeMode="NoResize" Topmost="True" MaxWidth="1500" MaxHeight="29" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Auto" SnapsToDevicePixels="True" ShowInTaskbar="False" SizeToContent="Width">
     <Window.Resources>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus204Converter x:Key="Minus204Converter"/>

@@ -161,7 +161,7 @@ namespace Panacea.Windows
         private void WinMain_Closing(object sender, CancelEventArgs e)
         {
             SavePopoutPreferences();
-            //CloseUtilBar();
+            CloseUtilBar();
         }
 
         private void BtnMenuNetwork_Click(object sender, RoutedEventArgs e)
@@ -369,11 +369,17 @@ namespace Panacea.Windows
             {
 
                 _closing = true;
-                if (popupNetwork != null)
-                {
-                    popupNetwork.Close();
-                    popupNetwork = null;
-                }
+                //if (popupNetwork != null)
+                //    popupNetwork.Close();
+                //if (popupAudio != null)
+                //    popupAudio.Close();
+                //    popupAudio = null;
+                //if (popupEmote != null)
+                //    popupEmote.Close();
+                //if (popupSettings != null)
+                //    popupSettings.Close();
+                //if (popupWindows != null)
+                //    popupWindows.Close();
                 this.Close();
             }
             catch (Exception ex)
@@ -711,11 +717,15 @@ namespace Panacea.Windows
                 {
                     case PopupMenu.Network:
                         popupNetwork = new NetworkPopup();
+                        Director.Main.PopupWindows.Add(popupNetwork);
+                        popupNetwork.Closing += (s, e) => { Director.Main.PopupWindows.Remove(popupNetwork); };
                         popupNetwork.Show();
                         uDebugLogAdd($"Initialized new Network Popup");
                         break;
                     case PopupMenu.Settings:
                         popupSettings = new SettingsPopup();
+                        Director.Main.PopupWindows.Add(popupSettings);
+                        popupSettings.Closing += (s, e) => { Director.Main.PopupWindows.Remove(popupSettings); };
                         if (Director.Main.UpdateAvailable)
                             popupSettings.TriggerUpdateAvailable();
                         if (_betaVersion)
@@ -725,16 +735,22 @@ namespace Panacea.Windows
                         break;
                     case PopupMenu.Audio:
                         popupAudio = new AudioPopup();
+                        Director.Main.PopupWindows.Add(popupAudio);
+                        popupAudio.Closing += (s, e) => { Director.Main.PopupWindows.Remove(popupAudio); };
                         popupAudio.Show();
                         uDebugLogAdd("Initialized new Audio Popup");
                         break;
                     case PopupMenu.Emotes:
                         popupEmote = new EmotePopup();
+                        Director.Main.PopupWindows.Add(popupEmote);
+                        popupEmote.Closing += (s, e) => { Director.Main.PopupWindows.Remove(popupEmote); };
                         popupEmote.Show();
                         uDebugLogAdd("Initialized new Emote Popup");
                         break;
                     case PopupMenu.Windows:
                         popupWindows = new WindowPopup();
+                        Director.Main.PopupWindows.Add(popupWindows);
+                        popupWindows.Closing += (s, e) => { Director.Main.PopupWindows.Remove(popupWindows); };
                         popupWindows.Show();
                         uDebugLogAdd("Initialized new Windows Popup");
                         break;
@@ -905,9 +921,18 @@ namespace Panacea.Windows
         {
             try
             {
-                ThicknessAnimation slideIn = new ThicknessAnimation { AccelerationRatio = .5, Duration = new Duration(TimeSpan.FromSeconds(0.2)), To = new Thickness(534, 0, 30, -30) };
-                ThicknessAnimation slideOut = new ThicknessAnimation { AccelerationRatio = .5, Duration = new Duration(TimeSpan.FromSeconds(0.2)), To = new Thickness(534, 30, 30, -30) };
-                switch (state)
+                int tstate = 0;
+                ThicknessAnimation slideIn = new ThicknessAnimation();
+                ThicknessAnimation slideOut = new ThicknessAnimation();
+                Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate {
+                    try
+                    {
+                        tstate = state;
+                        slideIn = new ThicknessAnimation { AccelerationRatio = .5, Duration = new Duration(TimeSpan.FromSeconds(0.2)), To = new Thickness(534, 0, 30, -30) };
+                        slideOut = new ThicknessAnimation { AccelerationRatio = .5, Duration = new Duration(TimeSpan.FromSeconds(0.2)), To = new Thickness(534, 30, 30, -30) };
+                    }
+                    catch (Exception ex) { LogException(ex); } });
+                switch (tstate)
                 {
                     case 1:
                         Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { grdNotification.BeginAnimation(FrameworkElement.MarginProperty, slideIn); } catch (Exception ex) { LogException(ex); } });
@@ -1340,6 +1365,8 @@ namespace Panacea.Windows
             try
             {
                 MacPopup macPopup = new MacPopup(v);
+                Director.Main.PopupWindows.Add(macPopup);
+                macPopup.Closing += (s, e) => { Director.Main.PopupWindows.Remove(macPopup); };
                 macPopup.Show();
                 uDebugLogAdd("Opened MacPopup window");
             }
@@ -1447,7 +1474,7 @@ namespace Panacea.Windows
                         break;
                     case ConnectivityStatus.Layer3:
                         lblConnectivityStatus.Content = "Internet (L3)";
-                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 39, 216, 0));
+                        lblConnectivityStatus.Foreground = new SolidColorBrush(Toolbox.ColorFromHex("#FFC9DC05"));
                         break;
                     case ConnectivityStatus.Local:
                         lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 207, 228, 0));
@@ -1471,18 +1498,20 @@ namespace Panacea.Windows
 
         private void tUpdateNetworkConnectivity()
         {
-            BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
+            BackgroundWorker worker = new BackgroundWorker();
             worker.DoWork += (sender, e) =>
             {
                 Ping p = new Ping();
                 int prevSuccess = -1;
                 int prevFailure = -1;
+                int successCounter = 0;
+                int failureCounter = 0;
                 while (true)
                 {
                     try
                     {
-                        int successCounter = 0;
-                        int failureCounter = 0;
+                        successCounter = 0;
+                        failureCounter = 0;
                         var timeout = TimeSpan.FromSeconds(1);
 
                         /// Layer 4 connectivity verification
@@ -1495,7 +1524,7 @@ namespace Panacea.Windows
                                 if (httpsGoogle)
                                 {
                                     successCounter++;
-                                    currentConnectivityStatus = ConnectivityStatus.Internet;
+                                    currentConnectivityStatus = ConnectivityStatus.Layer4;
                                 }
                                 else
                                     failureCounter++;
@@ -1514,7 +1543,7 @@ namespace Panacea.Windows
                                 if (httpsGoogle)
                                 {
                                     successCounter++;
-                                    currentConnectivityStatus = ConnectivityStatus.Internet;
+                                    currentConnectivityStatus = ConnectivityStatus.Layer4;
                                 }
                                 else
                                     failureCounter++;
@@ -1533,7 +1562,7 @@ namespace Panacea.Windows
                                 if (httpsGoogle)
                                 {
                                     successCounter++;
-                                    currentConnectivityStatus = ConnectivityStatus.Internet;
+                                    currentConnectivityStatus = ConnectivityStatus.Layer4;
                                 }
                                 else
                                     failureCounter++;
@@ -1700,14 +1729,16 @@ namespace Panacea.Windows
             BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
             worker.DoWork += (sender, e) =>
             {
+                NetworkInterface tempEthIf = null;
+                NetworkInterface[] interfaces = null;
                 while (true)
                 {
                     try
                     {
                         if (netIfs == null)
                             netIfs = new List<NetworkInterface>();
-                        NetworkInterface tempEthIf = _currentEthIf;
-                        NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
+                        tempEthIf = _currentEthIf;
+                        interfaces = NetworkInterface.GetAllNetworkInterfaces();
                         foreach (var adapter in interfaces.ToList().FindAll(x => x.NetworkInterfaceType == NetworkInterfaceType.Ethernet || x.NetworkInterfaceType == NetworkInterfaceType.GigabitEthernet || x.NetworkInterfaceType == NetworkInterfaceType.FastEthernetFx || x.NetworkInterfaceType == NetworkInterfaceType.FastEthernetT || x.NetworkInterfaceType == NetworkInterfaceType.Ethernet3Megabit))
                         {
                             netIfs.Add(adapter);

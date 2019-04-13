@@ -47,6 +47,20 @@ namespace Panacea.Classes
         Profile4
     }
 
+    public enum StartProfile
+    {
+        Start1,
+        Start2,
+        Start3,
+        Start4
+    }
+
+    public enum StartEditorAction
+    {
+        Create,
+        Edit
+    }
+
     #region General
 
     public class DetailedProcess
@@ -63,6 +77,13 @@ namespace Panacea.Classes
                 Title = WinAPIWrapper.GetWindowText(handle)
             };
         }
+    }
+    public class StartProcessItem
+    {
+        public string Path { get; set; }
+        public string Name { get; set; }
+        public string Args { get; set; }
+        public bool MoveAfterStart { get; set; } = true;
     }
     public class ChangeLogItem
     {
@@ -198,6 +219,14 @@ namespace Panacea.Classes
             AudioEndpointListArgs args = new AudioEndpointListArgs(flow);
             AudioEndpointListUpdated(args);
         }
+        // Start info changed
+        public delegate void StartInfoChanged(StartProcArgs args);
+        public static event StartInfoChanged StartProcInfoChanged;
+        public static void TriggerStartInfoChange(bool update = true)
+        {
+            StartProcArgs args = new StartProcArgs(update);
+            StartProcInfoChanged(args);
+        }
     }
 
     #region Event Args
@@ -232,6 +261,14 @@ namespace Panacea.Classes
     public class WindowInfoArgs : EventArgs
     {
         public WindowInfoArgs(bool update)
+        {
+            this.Update = update;
+        }
+        public bool Update { get; }
+    }
+    public class StartProcArgs : EventArgs
+    {
+        public StartProcArgs(bool update)
         {
             this.Update = update;
         }

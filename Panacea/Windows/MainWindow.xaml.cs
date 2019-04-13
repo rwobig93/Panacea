@@ -81,17 +81,6 @@ namespace Panacea
             WindowChrome.SetWindowChrome(this, new WindowChrome() { ResizeBorderThickness = new Thickness(5), CaptionHeight = .05 });
         }
 
-        private void winMain_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            uDebugLogAdd("Application closing, starting closing methods");
-        }
-
-        private void winMain_Closed(object sender, EventArgs e)
-        {
-            var p = Process.GetCurrentProcess();
-            p.Kill();
-        }
-
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
             //this.Close();
@@ -760,7 +749,21 @@ namespace Panacea
 
         private void btnNetMAC_Click(object sender, RoutedEventArgs e)
         {
-            OpenMacAddressWindow();
+            try
+            {
+                var address = txtNetAddress.Text;
+                if (VerifyIfMacAddress(address))
+                {
+                    uDebugLogAdd($"NetAddress value was found to be a Mac Address, opening Macpopup: {address}");
+                    OpenMacAddressWindow(address);
+                }
+                else
+                    OpenMacAddressWindow();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         #endregion
@@ -1385,10 +1388,10 @@ namespace Panacea
                 uDebugLogAdd("Getting window hidden area");
                 hiddenArea = grdMain.Margin;
                 uDebugLogAdd($"hiddenArea <Before>: [T]{hiddenArea.Top} [L]{hiddenArea.Left} [B]{hiddenArea.Bottom} [R]{hiddenArea.Right}");
-                hiddenArea.Left = 250; // 120
+                hiddenArea.Left = 689; // 120
                 //hiddenArea.Top = 60;
                 //hiddenArea.Bottom = 60;
-                hiddenArea.Right = 300; // 60
+                hiddenArea.Right = -615; // 60
                 uDebugLogAdd($"hiddenArea <After>: [T]{hiddenArea.Top} [L]{hiddenArea.Left} [B]{hiddenArea.Bottom} [R]{hiddenArea.Right}");
                 return hiddenArea;
             }
@@ -1507,7 +1510,6 @@ namespace Panacea
                         break;
                 }
                 uDebugLogAdd("SettingsWIN: working on window process settings");
-                ChangeWindowProfiles(Toolbox.settings.CurrentWindowProfile);
                 txtWindowProfileName1.Text = Toolbox.settings.WindowProfileName1;
                 txtWindowProfileName2.Text = Toolbox.settings.WindowProfileName2;
                 txtWindowProfileName3.Text = Toolbox.settings.WindowProfileName3;
@@ -2090,7 +2092,7 @@ namespace Panacea
             {
                 WindowItem item = (WindowItem)lbSavedWindows.SelectedItem;
                 Toolbox.settings.RemoveWindow(item);
-                RefreshSavedWindows();
+                Events.TriggerWindowInfoChange(true);
             }
             catch (Exception ex)
             {
@@ -2103,7 +2105,34 @@ namespace Panacea
             try
             {
                 lbSavedWindows.ItemsSource = null;
-                lbSavedWindows.ItemsSource = Toolbox.settings.ActiveWindowList.OrderBy(x => x.WindowSum).ToList();
+                lbSavedWindows.ItemsSource = Toolbox.settings.ActiveWindowList;
+                switch (Toolbox.settings.CurrentWindowProfile)
+                {
+                    case WindowProfile.Profile1:
+                        btnWinProfile1.BorderBrush = Defaults.ButtonBorderSelected;
+                        btnWinProfile2.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile3.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile4.BorderBrush = Defaults.BaseBorderBrush;
+                        break;
+                    case WindowProfile.Profile2:
+                        btnWinProfile2.BorderBrush = Defaults.ButtonBorderSelected;
+                        btnWinProfile1.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile3.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile4.BorderBrush = Defaults.BaseBorderBrush;
+                        break;
+                    case WindowProfile.Profile3:
+                        btnWinProfile3.BorderBrush = Defaults.ButtonBorderSelected;
+                        btnWinProfile2.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile1.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile4.BorderBrush = Defaults.BaseBorderBrush;
+                        break;
+                    case WindowProfile.Profile4:
+                        btnWinProfile4.BorderBrush = Defaults.ButtonBorderSelected;
+                        btnWinProfile2.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile3.BorderBrush = Defaults.BaseBorderBrush;
+                        btnWinProfile1.BorderBrush = Defaults.BaseBorderBrush;
+                        break;
+                }
             }
             catch (Exception ex)
             {
@@ -2166,36 +2195,7 @@ namespace Panacea
             try
             {
                 WindowItem windowItem = (WindowItem)lbSavedWindows.SelectedItem;
-                Process foundProc = null;
-                if (windowItem.WindowInfo.Title == "*")
-                    foreach (var proc in Process.GetProcesses())
-                    {
-                        if (
-                            proc.ProcessName == windowItem.WindowInfo.Name &&
-                            proc.MainModule.ModuleName == windowItem.WindowInfo.ModName &&
-                            proc.MainModule.FileName == windowItem.WindowInfo.FileName
-                           )
-                            foundProc = proc;
-                    }
-                else
-                    foreach (var proc in Process.GetProcesses())
-                    {
-                        if (
-                            proc.ProcessName == windowItem.WindowInfo.Name &&
-                            proc.MainModule.ModuleName == windowItem.WindowInfo.ModName &&
-                            proc.MainWindowTitle == windowItem.WindowInfo.Title &&
-                            proc.MainModule.FileName == windowItem.WindowInfo.FileName
-                           )
-                            foundProc = proc;
-                    }
-                if (foundProc == null)
-                    uDebugLogAdd("Running process matching windowItem wasn't found");
-                else
-                {
-                    Toolbox.settings.UpdateWindowLocation(windowItem, foundProc);
-                    uDebugLogAdd($"Updated {windowItem.WindowName} windowItem");
-                    uStatusUpdate($"Updated location for {foundProc.ProcessName}");
-                }
+                Actions.GetWindowItemLocation(windowItem);
             }
             catch (Exception ex)
             {
@@ -2208,7 +2208,6 @@ namespace Panacea
             try
             {
                 Toolbox.settings.ChangeWindowProfile(profile);
-                lbSavedWindows.ItemsSource = Toolbox.settings.ActiveWindowList.OrderBy(x => x.WindowSum).ToList();
                 switch (profile)
                 {
                     case WindowProfile.Profile1:
@@ -2524,6 +2523,8 @@ namespace Panacea
             try
             {
                 MacPopup macPopup = new MacPopup(v);
+                Director.Main.PopupWindows.Add(macPopup);
+                macPopup.Closing += (s, e) => { Director.Main.PopupWindows.Remove(macPopup); };
                 macPopup.Show();
                 uDebugLogAdd("Opened MacPopup window");
             }

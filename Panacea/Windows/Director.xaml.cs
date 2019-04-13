@@ -36,59 +36,7 @@ namespace Panacea.Windows
             InitializeComponent();
             VerifyDebugMode();
             Startup();
-            InitializeMasterThread();
         }
-
-        private void InitializeMasterThread()
-        {
-            try
-            {
-                _mainWorker = new BackgroundWorker() { WorkerReportsProgress = true };
-                _mainWorker.DoWork += MasterThreadWork;
-                _mainWorker.ProgressChanged += MasterThreadHandoff;
-                _mainWorker.RunWorkerAsync();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void MasterThreadWork(object sender, DoWorkEventArgs e)
-        {
-            try
-            {
-                while (!_stopApplication)
-                {
-                    Thread.Sleep(500);
-                }
-                _mainWorker.ReportProgress(99);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void MasterThreadHandoff(object sender, ProgressChangedEventArgs e)
-        {
-            try
-            {
-                switch (e.ProgressPercentage)
-                {
-                    case 99:
-                        FullApplicationClose();
-                        break;
-                    default:
-                        uDebugLogAdd($"Master Thread Progress: {e.ProgressPercentage} | {e.UserState}");
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        } 
         #endregion
 
         #region Globals
@@ -104,10 +52,9 @@ namespace Panacea.Windows
         public bool UpdateAvailable { get; private set; } = false;
         public bool DebugMode { get; private set; } = false;
         public CurrentDisplay CurrentDisplay { get; private set; } = new CurrentDisplay();
+        public List<Window> PopupWindows { get; set; } = new List<Window>();
 
         // Private Globals
-        private BackgroundWorker _mainWorker;
-        private bool _stopApplication = false;
         private bool upstallerUpdateInProg = false;
         private bool downloadInProgress = false;
         private Hardcodet.Wpf.TaskbarNotification.TaskbarIcon taskIcon = null;
@@ -121,7 +68,7 @@ namespace Panacea.Windows
             {
                 var response = Prompt.YesNo("Are you sure you want to Anihilate the Panacea process completely?");
                 if (response == Prompt.PromptResponse.Yes)
-                    ToggleApplicationStop();
+                    FullApplicationClose();
             }
             catch (Exception ex)
             {
@@ -196,12 +143,45 @@ namespace Panacea.Windows
         {
             UtilBar.TearDownGlobalHotkey();
             TearDownBackgroundNotificationIcon();
+            CloseAllOpenPopupWindows();
             DesktopWindow.Close();
             UtilBar.Close();
             SaveSettings();
             uDebugLogAdd(string.Format("{0}##################################### Application Closing #####################################{0}", Environment.NewLine));
             DumpDebugLog();
             this.Close();
+        }
+
+        private void CloseAllOpenPopupWindows()
+        {
+            try
+            {
+                bool allWindowsGone = false;
+                while (!allWindowsGone)
+                {
+                    foreach (var popup in PopupWindows.ToList())
+                    {
+                        try
+                        {
+                            if (popup != null)
+                            {
+                                uDebugLogAdd($"Popup wasn't closed, closing now: {popup.Name}");
+                                popup.Close();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogException(ex);
+                        }
+                    }
+                    if (PopupWindows.ToList().Count <= 0)
+                        allWindowsGone = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void ShowPreferredWindow()
@@ -221,11 +201,17 @@ namespace Panacea.Windows
             Events.UpdateDebugStatus += Events_UpdateDebugStatus;
             Events.AudioEndpointListUpdated += Events_AudioEndpointListUpdated;
             Events.WinInfoChanged += Events_WinInfoChanged;
+            Events.StartProcInfoChanged += Events_StartProcInfoChanged;
+        }
+
+        private void Events_StartProcInfoChanged(StartProcArgs args)
+        {
+            UpdateAllSettingsUI();
         }
 
         private void Events_WinInfoChanged(WindowInfoArgs args)
         {
-            UpdateWindowsSettingsUI();
+            UpdateAllSettingsUI();
         }
 
         private void Events_AudioEndpointListUpdated(AudioEndpointListArgs args)
@@ -275,19 +261,6 @@ namespace Panacea.Windows
                 DesktopWindow = new MainWindow();
                 DesktopWindow.HideWinMainInBackground();
                 uDebugLogAdd("Finished Initializing Desktop Window");
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void ToggleApplicationStop()
-        {
-            try
-            {
-                uDebugLogAdd("Application stop toggled");
-                _stopApplication = true;
             }
             catch (Exception ex)
             {
@@ -400,9 +373,9 @@ namespace Panacea.Windows
                     uDebugLogAdd($@"Settings file found: {ConfigDirectory}Settings.conf");
                     var settings = new JsonSerializerSettings()
                     {
-                        MissingMemberHandling = MissingMemberHandling.Ignore,
-                        DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-                        NullValueHandling = NullValueHandling.Ignore,
+                        //MissingMemberHandling = MissingMemberHandling.Ignore,
+                        //DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                        //NullValueHandling = NullValueHandling.Ignore,
                     };
                     using (StreamReader sr = new StreamReader($@"{ConfigDirectory}Settings.conf"))
                     {
@@ -824,7 +797,7 @@ namespace Panacea.Windows
             }
         }
 
-        public void UpdateWindowsSettingsUI()
+        public void UpdateAllSettingsUI()
         {
             try
             {
@@ -1079,6 +1052,11 @@ namespace Panacea.Windows
             {
                 LogException(ex);
             }
+        }
+
+        public void OpenStartProcessWindow(StartProcessItem startItem = null)
+        {
+            throw new NotImplementedException();
         }
         #endregion
 

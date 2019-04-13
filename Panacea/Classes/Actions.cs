@@ -175,7 +175,7 @@ namespace Panacea.Classes
                     AddToWindowsStartup(false);
                     Toolbox.settings = new Settings();
                     Director.Main.SaveSettings();
-                    Director.Main.UpdateWindowsSettingsUI();
+                    Director.Main.UpdateAllSettingsUI();
                     Director.Main.ShowNotification("Config reset to Default");
                 }
                 else
@@ -195,9 +195,9 @@ namespace Panacea.Classes
         {
             try
             {
-                Process proc = new Process() { StartInfo = new ProcessStartInfo() { FileName = path } };
-                if (args != null)
-                    proc.StartInfo.Arguments = args;
+                Process proc = new Process() { StartInfo = new ProcessStartInfo() { FileName = $@"{path}" } };
+                if (string.IsNullOrWhiteSpace(args))
+                    proc.StartInfo.Arguments = $@"{args}";
                 proc.Start();
                 ProcessWatcher(proc);
             }
@@ -355,6 +355,87 @@ namespace Panacea.Classes
                 LogException(ex);
             }
             return windowMoved;
+        }
+
+        public static void GetWindowItemLocation(WindowItem windowItem)
+        {
+            try
+            {
+                Process foundProc = null;
+                if (windowItem.WindowInfo.Title == "*")
+                    foreach (var proc in Process.GetProcesses())
+                    {
+                        if (
+                            proc.ProcessName == windowItem.WindowInfo.Name &&
+                            proc.MainModule.ModuleName == windowItem.WindowInfo.ModName &&
+                            proc.MainModule.FileName == windowItem.WindowInfo.FileName
+                           )
+                            foundProc = proc;
+                    }
+                else
+                    foreach (var proc in Process.GetProcesses())
+                    {
+                        if (
+                            proc.ProcessName == windowItem.WindowInfo.Name &&
+                            proc.MainModule.ModuleName == windowItem.WindowInfo.ModName &&
+                            proc.MainWindowTitle == windowItem.WindowInfo.Title &&
+                            proc.MainModule.FileName == windowItem.WindowInfo.FileName
+                           )
+                            foundProc = proc;
+                    }
+                if (foundProc == null)
+                    uDebugLogAdd("Running process matching windowItem wasn't found");
+                else
+                {
+                    Toolbox.settings.UpdateWindowLocation(windowItem, foundProc);
+                    uDebugLogAdd($"Updated {windowItem.WindowName} windowItem");
+                    Director.Main.uStatusUpdate($"Updated location for {foundProc.ProcessName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public static void TriggerProcessProfileStart(StartProfile profile)
+        {
+            try
+            {
+                uDebugLogAdd("Starting Start profile trigger");
+                List<StartProcessItem> chosenStartList = null;
+                string startProfileName = null;
+                switch (profile)
+                {
+                    case StartProfile.Start1:
+                        chosenStartList = Toolbox.settings.StartProfile1;
+                        startProfileName = Toolbox.settings.StartProfileName1;
+                        break;
+                    case StartProfile.Start2:
+                        chosenStartList = Toolbox.settings.StartProfile2;
+                        startProfileName = Toolbox.settings.StartProfileName2;
+                        break;
+                    case StartProfile.Start3:
+                        chosenStartList = Toolbox.settings.StartProfile3;
+                        startProfileName = Toolbox.settings.StartProfileName3;
+                        break;
+                    case StartProfile.Start4:
+                        chosenStartList = Toolbox.settings.StartProfile4;
+                        startProfileName = Toolbox.settings.StartProfileName4;
+                        break;
+                }
+                uDebugLogAdd($"Start process count: {chosenStartList.Count} for {profile.ToString()}");
+                foreach (var item in chosenStartList)
+                {
+                    StartProcess(item.Path, item.Args);
+                }
+                uDebugLogAdd("Finished start profile trigger");
+                Director.Main.ShowNotification($"Started {chosenStartList.Count} Processes ({startProfileName})");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
     }
 }

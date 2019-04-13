@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Panacea.Windows.Popups"
         xmlns:src="clr-namespace:Panacea.Classes"
         mc:Ignorable="d" Topmost="True" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" Loaded="SettingsPopupMain_Loaded" SizeChanged="SettingsPopupMain_SizeChanged"
-        Title="SettingsPopup" Height="332" MinHeight="287" Width="455" MinWidth="455" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
+        Title="Settings Popup" Height="332" MinHeight="287" Width="455" MinWidth="455" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
     <Window.Resources>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus25Converter x:Key="Minus25Converter"/>
@@ -69,7 +69,7 @@
                 <Button x:Name="btnMinimize" Click="BtnMinimize_Click" Content="_" Visibility="Hidden" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,61,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
                 <Button x:Name="btnPopInOut" Click="BtnPopInOut_Click" Content="🢅" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,34,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
                 <Button x:Name="btnClose" Click="BtnClose_Click" Content="X" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,7,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" HorizontalAlignment="Right" Width="27" />
-                <Rectangle Fill="#02010102" MouseDown="Rectangle_MouseDown" Height="27" Margin="2,2,66,0" VerticalAlignment="Top"/>
+                <Rectangle x:Name="rectTitleBar" Fill="#02010102" MouseDown="Rectangle_MouseDown" Height="27" Margin="2,2,66,0" VerticalAlignment="Top" Panel.ZIndex="100"/>
                 <TextBox x:Name="TxtPopSetGenBetaLabel" Visibility="Hidden" HorizontalAlignment="Center" Style="{StaticResource TextboxNoReaction}" Height="20" Margin="353,110,10,0" TextWrapping="Wrap" Text="Beta Release" VerticalAlignment="Top" Width="75" Panel.ZIndex="100" Focusable="False" AllowDrop="False" IsReadOnly="True" IsTabStop="False" Foreground="#FFBD0101" BorderBrush="#FFBD0101"/>
                 <Label x:Name="LblPopSetGenCurrentVer" MouseDown="LblPopSetGenCurrentVer_MouseDown" Content="Current Version: " HorizontalAlignment="Left" Margin="14,111,0,0" VerticalAlignment="Top" Height="19" Padding="0" Width="336" Foreground="#FF8D8D8D" />
                 <Button x:Name="BtnPopSetGenUpdate" Visibility="Hidden" Click="BtnPopSetGenUpdate_Click" Content="Update Panacea" HorizontalAlignment="Left" Style="{StaticResource BaseButton}" Margin="32,81,0,0" VerticalAlignment="Top" Width="107"/>

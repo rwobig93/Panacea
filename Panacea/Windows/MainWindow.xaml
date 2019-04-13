@@ -8,8 +8,8 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
         mc:Ignorable="d"
-        Title="Panacea" Height="340" MinHeight="340" Width="625" MinWidth="625" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070"
-        MouseDown="winMain_MouseDown" Loaded="winMain_Loaded" Closing="winMain_Closing" Closed="winMain_Closed" Background="{x:Null}">
+        Title="Desktop Window" Height="340" MinHeight="340" Width="625" MinWidth="625" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070"
+        MouseDown="winMain_MouseDown" Loaded="winMain_Loaded" Background="{x:Null}">
     <Window.Resources>
         <Style x:Key="ButtonControlFore">
             <Setter Property="Control.Foreground" Value="#FF8D8D8D" />

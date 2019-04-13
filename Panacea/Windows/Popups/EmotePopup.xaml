@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Panacea.Windows.Popups"
         xmlns:src="clr-namespace:Panacea.Classes"
         mc:Ignorable="d" Topmost="True" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" Loaded="EmotePopupMain_Loaded"
-        Title="EmotePopup" Height="60" MinHeight="60" MaxHeight="60" Width="95" MinWidth="95" MaxWidth="95" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
+        Title="Emote Popup" Height="60" MinHeight="60" MaxHeight="60" Width="95" MinWidth="95" MaxWidth="95" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
     <Window.Resources>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus25Converter x:Key="Minus25Converter"/>

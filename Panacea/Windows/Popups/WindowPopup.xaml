@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Panacea.Windows"
         xmlns:src="clr-namespace:Panacea.Classes"
-        mc:Ignorable="d" Topmost="True" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" Loaded="WinPopupMain_Loaded"
-        Title="WindowPopup" Height="579" Width="545" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
+        mc:Ignorable="d" Topmost="True" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" Loaded="WinPopupMain_Loaded" SizeChanged="WinPopupMain_SizeChanged"
+        Title="Window Popup" Height="429" Width="545" MinHeight="325" MinWidth="526" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
     <Window.Resources>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus25Converter x:Key="Minus25Converter"/>
@@ -57,13 +57,45 @@
         <Button x:Name="BtnStartProfile3" Click="BtnStartProfile3_Click" Content="Start 3" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="268,0,0,37" VerticalAlignment="Bottom" Width="74"/>
         <Button x:Name="BtnStartProfile4" Click="BtnStartProfile4_Click" Content="Start 4" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="268,0,0,10" VerticalAlignment="Bottom" Width="74"/>
         <Label Content="Start Process" HorizontalAlignment="Left" Margin="216,0,0,59" VerticalAlignment="Bottom" Foreground="#FF8D8D8D" FontSize="16"/>
-        <Grid x:Name="GrdWinWindows" Margin="-597,1,599,95">
-            <Label Content="Windows Menu" HorizontalAlignment="Left" Margin="217,71,0,0" VerticalAlignment="Top" Height="141" Width="151" Background="{x:Null}" Foreground="#FFF5EA00" FontSize="20"/>
+        <Button x:Name="btnReset" Click="BtnReset_Click" Content="🔗" Visibility="Hidden" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,86,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
+        <Button x:Name="btnMinimize" Click="BtnMinimize_Click" Content="_" Visibility="Hidden" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,58,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
+        <Button x:Name="btnPopInOut" Click="BtnPopInOut_Click" Content="🢅" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,30,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
+        <Button x:Name="btnClose" Click="BtnClose_Click" Content="X" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,2,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" HorizontalAlignment="Right" Width="27" />
+        <Rectangle x:Name="rectTitleBar" Fill="#02010102" MouseDown="RectTitleBar_MouseDown" Height="27" Margin="2,2,58,0" VerticalAlignment="Top" Panel.ZIndex="100"/>
+        <Grid x:Name="GrdWinWindows" Margin="-548,30,550,95">
+            <ListBox x:Name="ListWindows" Margin="10,38,10,10">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Width="{Binding ActualWidth, Converter={StaticResource Minus15Converter}, ElementName=lbSavedWindows}">
+                            <TextBlock Text="{Binding WindowSum}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Height="19" Width="auto" Foreground="#FF15D3CA" Margin="0,0,0,0"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Button x:Name="BtnWinAdd" Click="BtnWinAdd_Click" Content="Add" HorizontalAlignment="Left" Style="{StaticResource ButtonCurves}" Margin="10,10,0,0" VerticalAlignment="Top" Width="36" Height="23"/>
+            <Button x:Name="BtnWinDel" Click="BtnWinDel_Click" Content="Delete" HorizontalAlignment="Left" Style="{StaticResource ButtonCurves}" Margin="472,10,0,0" VerticalAlignment="Top" Width="61" Height="23"/>
+            <Label x:Name="LblWinSelectedItem" Content="Selected Item:" HorizontalAlignment="Left" Margin="171,7,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+            <Button x:Name="BtnWinMove" Click="BtnWinMove_Click" Content="Move" HorizontalAlignment="Left" Style="{StaticResource ButtonCurves}" Margin="254,10,0,0" VerticalAlignment="Top" Width="44" Height="23"/>
+            <Button x:Name="BtnWinUpdateLocate" Click="BtnWinUpdateLocate_Click" Content="Update To Current Location" HorizontalAlignment="Left" Style="{StaticResource ButtonCurves}" Margin="303,10,0,0" VerticalAlignment="Top" Width="164" Height="23"/>
+            <ComboBox x:Name="ComboWinSelected" SelectionChanged="ComboWinSelected_SelectionChanged" HorizontalAlignment="Left" Margin="51,10,0,0" VerticalAlignment="Top" Width="76" Height="23"/>
 
         </Grid>
-        <Grid x:Name="GrdWinStartProc" Margin="592,1,-590,95">
-            <Label Content="Start Process Menu" HorizontalAlignment="Left" Margin="178,71,0,0" VerticalAlignment="Top" Height="141" Width="190" Background="{x:Null}" Foreground="#FFF5EA00" FontSize="20"/>
-
+        <Grid x:Name="GrdWinStartProc" Margin="550,30,-548,95">
+            <ListBox x:Name="ListStartProc" Margin="10,38,10,10">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Width="{Binding ActualWidth, Converter={StaticResource Minus15Converter}, ElementName=lbSavedWindows}">
+                            <TextBlock Text="{Binding WindowSum}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Height="19" Width="auto" Foreground="#FFE00F0F" Margin="0,0,0,0"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Button x:Name="BtnStartAdd" Click="BtnStartAdd_Click" Content="Add Process" HorizontalAlignment="Left" Style="{StaticResource ButtonCurves}" Margin="10,10,0,0" VerticalAlignment="Top" Width="80" Height="23"/>
+            <Button x:Name="BtnStartDelete" Click="BtnStartDelete_Click" Content="Delete Entry" HorizontalAlignment="Left" Style="{StaticResource ButtonCurves}" Margin="449,10,0,0" VerticalAlignment="Top" Width="84" Height="23"/>
+            <Label Content="Selected Item:" HorizontalAlignment="Left" Margin="219,7,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+            <Button x:Name="BtnStartProc" Click="BtnStartProc_Click" Content="Start Proc" HorizontalAlignment="Left" Style="{StaticResource ButtonCurves}" Margin="309,10,0,0" VerticalAlignment="Top" Width="69" Height="23"/>
+            <Button x:Name="BtnStartEdit" Click="BtnStartEdit_Click" Content="Edit Proc" HorizontalAlignment="Left" Style="{StaticResource ButtonCurves}" Margin="383,10,0,0" VerticalAlignment="Top" Width="61" Height="23"/>
+            <ComboBox x:Name="ComboStartSelected" SelectionChanged="ComboStartSelected_SelectionChanged" HorizontalAlignment="Left" Margin="95,10,0,0" VerticalAlignment="Top" Width="57" Height="23"/>
         </Grid>
         <Button x:Name="BtnMenuWindows" Click="BtnMenuWindows_Click" Content="Windows Menu" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="374,0,0,51" VerticalAlignment="Bottom" Width="136" Height="32"/>
         <Button x:Name="BtnMenuStartProc" Click="BtnMenuStartProc_Click" Content="Start Process Menu" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="374,0,0,14" VerticalAlignment="Bottom" Width="136" Height="32"/>

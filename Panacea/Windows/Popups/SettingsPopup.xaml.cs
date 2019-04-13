@@ -605,14 +605,14 @@ namespace Panacea.Windows.Popups
                                 Toolbox.settings.BetaUpdate = false;
                             // Set Window/Start profile names
                             uDebugLogAdd("SETUPDATE: Window/Start profile names");
-                            Toolbox.settings.WindowProfileName1 = TxtPopSetWinPro1.Text;
-                            Toolbox.settings.WindowProfileName2 = TxtPopSetWinPro2.Text;
-                            Toolbox.settings.WindowProfileName3 = TxtPopSetWinPro3.Text;
-                            Toolbox.settings.WindowProfileName4 = TxtPopSetWinPro4.Text;
-                            Toolbox.settings.StartProfileName1 = TxtPopSetStartPro1.Text;
-                            Toolbox.settings.StartProfileName2 = TxtPopSetStartPro2.Text;
-                            Toolbox.settings.StartProfileName3 = TxtPopSetStartPro3.Text;
-                            Toolbox.settings.StartProfileName4 = TxtPopSetStartPro4.Text;
+                            Toolbox.settings.WindowProfileName1 = string.IsNullOrWhiteSpace(TxtPopSetWinPro1.Text) ? "Profile 1" : TxtPopSetWinPro1.Text;
+                            Toolbox.settings.WindowProfileName2 = string.IsNullOrWhiteSpace(TxtPopSetWinPro2.Text) ? "Profile 2" : TxtPopSetWinPro2.Text;
+                            Toolbox.settings.WindowProfileName3 = string.IsNullOrWhiteSpace(TxtPopSetWinPro3.Text) ? "Profile 3" : TxtPopSetWinPro3.Text;
+                            Toolbox.settings.WindowProfileName4 = string.IsNullOrWhiteSpace(TxtPopSetWinPro4.Text) ? "Profile 4" : TxtPopSetWinPro4.Text;
+                            Toolbox.settings.StartProfileName1 = string.IsNullOrWhiteSpace(TxtPopSetStartPro1.Text) ? "Start 1" : TxtPopSetStartPro1.Text;
+                            Toolbox.settings.StartProfileName2 = string.IsNullOrWhiteSpace(TxtPopSetStartPro2.Text) ? "Start 2" : TxtPopSetStartPro2.Text;
+                            Toolbox.settings.StartProfileName3 = string.IsNullOrWhiteSpace(TxtPopSetStartPro3.Text) ? "Start 3" : TxtPopSetStartPro3.Text;
+                            Toolbox.settings.StartProfileName4 = string.IsNullOrWhiteSpace(TxtPopSetStartPro4.Text) ? "Start 4" : TxtPopSetStartPro4.Text;
                             Events.TriggerWindowInfoChange(true);
                             // Set startup on windows startup
                             uDebugLogAdd("SETUPDATE: Startup on windows startup");
