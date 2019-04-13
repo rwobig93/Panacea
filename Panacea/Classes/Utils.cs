@@ -179,14 +179,6 @@ namespace Panacea.Classes
 
     public class Events
     {
-        // Window Handle Event
-        public delegate void UpdateWinHandleInfo(WinInfoArgs args);
-        public static event UpdateWinHandleInfo UpdateWinHandle;
-        public static void UpdateWindowInfo(Process process)
-        {
-            WinInfoArgs args = new WinInfoArgs(WindowInfo.GetWindowInfoFromProc(process));
-            UpdateWinHandle(args);
-        }
         // Debug Log Add Event
         public delegate void AddDebugLogStatus(DebugUpdateArgs args);
         public static event AddDebugLogStatus UpdateDebugStatus;
@@ -230,14 +222,6 @@ namespace Panacea.Classes
     }
 
     #region Event Args
-    public class WinInfoArgs : EventArgs
-    {
-        public WinInfoArgs(WindowInfo windowInfo)
-        {
-            this.WindowInfo = windowInfo;
-        }
-        public WindowInfo WindowInfo { get; }
-    }
     public class DebugUpdateArgs : EventArgs
     {
         public DebugUpdateArgs(string logUpdate, DebugType debugType = DebugType.INFO)

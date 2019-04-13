@@ -497,19 +497,19 @@ namespace Panacea.Classes
         {
             _currentWindowList.Add(windowItem);
             OnPropertyChanged("ActiveWindowList");
-            Events.TriggerWindowInfoChange(true);
+            Events.TriggerWindowInfoChange();
         }
         public void RemoveWindow(WindowItem windowItem)
         {
             _currentWindowList.Remove(windowItem);
             OnPropertyChanged("ActiveWindowList");
-            Events.TriggerWindowInfoChange(true);
+            Events.TriggerWindowInfoChange();
         }
         public void AddStartProcess(StartProcessItem startItem)
         {
             _currentStartList.Add(startItem);
             OnPropertyChanged("ActiveStartList");
-            Events.TriggerStartInfoChange(true);
+            Events.TriggerStartInfoChange();
         }
         public void RemoveStartProcess(StartProcessItem startItem)
         {

@@ -1056,7 +1056,18 @@ namespace Panacea.Windows
 
         public void OpenStartProcessWindow(StartProcessItem startItem = null)
         {
-            throw new NotImplementedException();
+            try
+            {
+                uDebugLogAdd("Initializing new StartProcEditior");
+                StartProcEditor editor = new StartProcEditor(startItem);
+                PopupWindows.Add(editor);
+                editor.Closing += (s, e) => { PopupWindows.Remove(editor); };
+                editor.Show();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
         #endregion
 

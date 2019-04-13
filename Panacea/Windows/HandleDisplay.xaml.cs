@@ -63,47 +63,6 @@ namespace Panacea.Windows
 
         #region EventHandlers
 
-        private void HandleDisplay_UpdateWinHandleInfo(Classes.WinInfoArgs args)
-        {
-            try
-            {
-                if (args == null)
-                {
-                    Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate
-                    {
-                        try
-                        {
-                            TxtProcName.Text = $"Process Name: Null";
-                            TxtProcTitle.Text = $"Process Title: Null";
-                            TxtModName.Text = $"Module Name: Null";
-                            TxtFilePath.Text = $"File Path: Null";
-                            TxtProcLocation.Text = $"Location:{Environment.NewLine}   X: Null{Environment.NewLine}   Y: Null{Environment.NewLine}   Width: Null{Environment.NewLine}   Height: Null";
-                        }
-                        catch (Exception ex) { Toolbox.LogException(ex); }
-                    });
-                }
-                else
-                {
-                    Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate
-                    {
-                        try
-                        {
-                            TxtProcName.Text = $"Process Name: {args.WindowInfo.Name}";
-                            TxtProcTitle.Text = $"Process Title: {args.WindowInfo.Title}";
-                            TxtModName.Text = $"Module Name: {args.WindowInfo.ModName}";
-                            TxtFilePath.Text = $"File Path: {args.WindowInfo.FileName}";
-                            TxtProcLocation.Text = $"Location:{Environment.NewLine}   X: {args.WindowInfo.XValue}{Environment.NewLine}   Y: {args.WindowInfo.YValue}{Environment.NewLine}   Width: {args.WindowInfo.Width}{Environment.NewLine}   Height: {args.WindowInfo.Height}";
-                        }
-                        catch (Exception ex) { Toolbox.LogException(ex); }
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                Toolbox.LogException(ex);
-            }
-        }
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
@@ -202,6 +161,7 @@ namespace Panacea.Windows
         {
             try
             {
+                Events.TriggerWindowInfoChange();
                 CloseProcessOutline();
             }
             catch (Exception ex)

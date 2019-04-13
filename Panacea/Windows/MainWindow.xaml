@@ -102,31 +102,6 @@
             </ListBox>
             <Button x:Name="BtnDeleteWindowItem" Style="{StaticResource BaseButton}" Content="Delete" Click="BtnDeleteWindowItem_Click" HorizontalAlignment="Right" Margin="0,68,19,0" VerticalAlignment="Top" Width="47"/>
             <Button x:Name="btnWinTarget" Style="{StaticResource BaseButton}" Click="btnWinTarget_Click" Content="Add New" HorizontalAlignment="Right" Margin="0,7,19,0" VerticalAlignment="Top" Width="100"/>
-            <Rectangle x:Name="rectTarget" MouseDown="rectTarget_MouseDown" HorizontalAlignment="Left" Height="20" Margin="400,7,0,0" StrokeThickness="0.5" VerticalAlignment="Top" Width="20" Visibility="Hidden">
-                <Rectangle.Fill>
-                    <ImageBrush ImageSource="/Panacea;component/Dependencies/target_small.png"/>
-                </Rectangle.Fill>
-                <Rectangle.Stroke>
-                    <LinearGradientBrush EndPoint="0.2,1" StartPoint="0.2,0">
-                        <LinearGradientBrush.RelativeTransform>
-                            <TransformGroup>
-                                <ScaleTransform CenterY="0.5" CenterX="0.5"/>
-                                <SkewTransform CenterY="0.5" CenterX="0.5"/>
-                                <RotateTransform Angle="-52.125" CenterY="0.5" CenterX="0.5"/>
-                                <TranslateTransform/>
-                            </TransformGroup>
-                        </LinearGradientBrush.RelativeTransform>
-                        <GradientStop Color="#CC03189E" Offset="0.961"/>
-                        <GradientStop Color="#7F000000" Offset="0.082"/>
-                        <GradientStop Color="#CC03189E" Offset="0.032"/>
-                        <GradientStop Color="#7F000000" Offset="0.918"/>
-                        <GradientStop Color="#FF0CBDAD" Offset="0.014"/>
-                        <GradientStop Color="#CC0CBDAD" Offset="0.982"/>
-                        <GradientStop Color="#CC03189E" Offset="1"/>
-                        <GradientStop Color="#CC03189E"/>
-                    </LinearGradientBrush>
-                </Rectangle.Stroke>
-            </Rectangle>
             <Rectangle x:Name="rectWinSelArea" HorizontalAlignment="Right" Height="90" Margin="0,36,14,0" StrokeThickness="0.5" VerticalAlignment="Top" Width="110" Stroke="{StaticResource BaseBorderBrush}" d:IsLocked="True"/>
             <TextBlock x:Name="lblWinSelectedProcess" HorizontalAlignment="Right" Padding="0" Margin="0,116,19,0" TextWrapping="Wrap" Text="Selected Process" VerticalAlignment="Top" Height="14" Foreground="#FF8D8D8D" Width="95" TextAlignment="Center"/>
             <Button x:Name="btnWinProfile1" Click="btnWinProfile1_Click" Content="Profile 1" Padding="0" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Right" Margin="0,140,72,0" VerticalAlignment="Top" Width="54">

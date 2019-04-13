@@ -437,5 +437,126 @@ namespace Panacea.Classes
                 LogException(ex);
             }
         }
+
+        public static void MoveActiveProfileWindows()
+        {
+            try
+            {
+                uDebugLogAdd("Starting All Window Move");
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                var workerCount = 0;
+                foreach (var window in Toolbox.settings.ActiveWindowList.ToList())
+                {
+                    workerCount++;
+                    BackgroundWorker worker = new BackgroundWorker();
+                    worker.DoWork += (sender, e) =>
+                    {
+                        try
+                        {
+                            MoveProcessHandle(window);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogException(ex);
+                        }
+                        finally
+                        {
+                            workerCount--;
+                        }
+                    };
+                    worker.RunWorkerAsync();
+                }
+                BackgroundWorker verifyier = new BackgroundWorker() { WorkerReportsProgress = true };
+                verifyier.DoWork += (ws, we) =>
+                {
+                    while (workerCount != 0)
+                    {
+                        Thread.Sleep(100);
+                    }
+                    stopwatch.Stop();
+                    uDebugLogAdd($"Finished All Window Move after {stopwatch.Elapsed.Seconds}s {stopwatch.Elapsed.Milliseconds}ms");
+                    Director.Main.ShowNotification("Moved all windows");
+                };
+                verifyier.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public static void MoveProfileWindows(WindowProfile profile)
+        {
+            try
+            {
+                uDebugLogAdd("Starting All Window Move");
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                var workerCount = 0;
+                List<WindowItem> chosenWindowList = null;
+                string chosenProfileName = string.Empty;
+                switch (profile)
+                {
+                    case WindowProfile.Profile1:
+                        chosenWindowList = Toolbox.settings.WindowProfile1;
+                        chosenProfileName = Toolbox.settings.WindowProfileName1;
+                        break;
+                    case WindowProfile.Profile2:
+                        chosenWindowList = Toolbox.settings.WindowProfile2;
+                        chosenProfileName = Toolbox.settings.WindowProfileName2;
+                        break;
+                    case WindowProfile.Profile3:
+                        chosenWindowList = Toolbox.settings.WindowProfile3;
+                        chosenProfileName = Toolbox.settings.WindowProfileName3;
+                        break;
+                    case WindowProfile.Profile4:
+                        chosenWindowList = Toolbox.settings.WindowProfile4;
+                        chosenProfileName = Toolbox.settings.WindowProfileName4;
+                        break;
+                    default:
+                        chosenWindowList = Toolbox.settings.WindowProfile1;
+                        chosenProfileName = Toolbox.settings.WindowProfileName1;
+                        break;
+                }
+                foreach (var window in chosenWindowList.ToList())
+                {
+                    workerCount++;
+                    BackgroundWorker worker = new BackgroundWorker();
+                    worker.DoWork += (sender, e) =>
+                    {
+                        try
+                        {
+                            MoveProcessHandle(window);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogException(ex);
+                        }
+                        finally
+                        {
+                            workerCount--;
+                        }
+                    };
+                    worker.RunWorkerAsync();
+                }
+                BackgroundWorker verifyier = new BackgroundWorker() { WorkerReportsProgress = true };
+                verifyier.DoWork += (ws, we) =>
+                {
+                    while (workerCount != 0)
+                    {
+                        Thread.Sleep(100);
+                    }
+                    stopwatch.Stop();
+                    uDebugLogAdd($"Finished All Window Move after {stopwatch.Elapsed.Seconds}s {stopwatch.Elapsed.Milliseconds}ms");
+                    Director.Main.ShowNotification($"Moved all {chosenProfileName} windows");
+                };
+                verifyier.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
     }
 }

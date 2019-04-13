@@ -36,6 +36,7 @@ namespace Panacea.Windows
         #region Globals
 
         private bool startingUp = true;
+        private bool _updatingUI = false;
         private DoubleAnimation outAnimation = new DoubleAnimation() { To = 0.0, Duration = TimeSpan.FromSeconds(.2) };
         private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.2) };
         private double PopinLeft { get { return UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuWindows.Margin.Left; } }
@@ -58,22 +59,26 @@ namespace Panacea.Windows
         #region Event Handlers
         private void BtnWinProfile1_Click(object sender, RoutedEventArgs e)
         {
-            ChangeWindowProfile(WindowProfile.Profile1);
+            TriggerWindowProfileMove(WindowProfile.Profile1);
+            //ChangeWindowProfile(WindowProfile.Profile1);
         }
 
         private void BtnWinProfile2_Click(object sender, RoutedEventArgs e)
         {
-            ChangeWindowProfile(WindowProfile.Profile2);
+            TriggerWindowProfileMove(WindowProfile.Profile2);
+            //ChangeWindowProfile(WindowProfile.Profile2);
         }
 
         private void BtnWinProfile3_Click(object sender, RoutedEventArgs e)
         {
-            ChangeWindowProfile(WindowProfile.Profile3);
+            TriggerWindowProfileMove(WindowProfile.Profile3);
+            //ChangeWindowProfile(WindowProfile.Profile3);
         }
 
         private void BtnWinProfile4_Click(object sender, RoutedEventArgs e)
         {
-            ChangeWindowProfile(WindowProfile.Profile4);
+            TriggerWindowProfileMove(WindowProfile.Profile4);
+            //ChangeWindowProfile(WindowProfile.Profile4);
         }
 
         private void BtnStartProfile1_Click(object sender, RoutedEventArgs e)
@@ -148,12 +153,14 @@ namespace Panacea.Windows
 
         private void ComboWinSelected_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ChangeSelectedWindowProfile((ComboBoxItem)ComboWinSelected.SelectedItem);
+            if (!_updatingUI)
+                ChangeSelectedWindowProfile((ComboBoxItem)ComboWinSelected.SelectedItem);
         }
 
         private void ComboStartSelected_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ChangeSelectedStartProfile((ComboBoxItem)ComboStartSelected.SelectedItem);
+            if (!_updatingUI)
+                ChangeSelectedStartProfile((ComboBoxItem)ComboStartSelected.SelectedItem);
         }
 
         private void BtnReset_Click(object sender, RoutedEventArgs e)
@@ -213,10 +220,9 @@ namespace Panacea.Windows
         #endregion
 
         #region Methods
-
         private void Startup()
         {
-            UpdateWindowProfileButtons();
+            UpdateSettingsUI();
             PopupShow();
             SubscribeToEvents();
             ToggleMenuGrid(GrdWinWindows);
@@ -266,22 +272,6 @@ namespace Panacea.Windows
             {
                 this.Top = PopinTop;
                 this.Left = PopinLeft;
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void UpdateWindowProfileButtons()
-        {
-            try
-            {
-                BtnWinProfile1.Content = Toolbox.settings.WindowProfileName1;
-                BtnWinProfile2.Content = Toolbox.settings.WindowProfileName2;
-                BtnWinProfile3.Content = Toolbox.settings.WindowProfileName3;
-                BtnWinProfile4.Content = Toolbox.settings.WindowProfileName4;
-                uDebugLogAdd("Updated window profile buttons");
             }
             catch (Exception ex)
             {
@@ -372,7 +362,6 @@ namespace Panacea.Windows
         {
             try
             {
-                UpdateWindowProfileButtons();
                 if (this.Opacity == 0)
                     this.BeginAnimation(Window.OpacityProperty, inAnimation);
             }
@@ -387,27 +376,6 @@ namespace Panacea.Windows
             try
             {
                 Toolbox.settings.ChangeWindowProfile(profile);
-                string profileName = string.Empty;
-                switch (profile)
-                {
-                    case WindowProfile.Profile1:
-                        profileName = Toolbox.settings.WindowProfileName1;
-                        break;
-                    case WindowProfile.Profile2:
-                        profileName = Toolbox.settings.WindowProfileName2;
-                        break;
-                    case WindowProfile.Profile3:
-                        profileName = Toolbox.settings.WindowProfileName3;
-                        break;
-                    case WindowProfile.Profile4:
-                        profileName = Toolbox.settings.WindowProfileName4;
-                        break;
-                }
-                UtilityBar.UtilBarMain.btnMenuWindows.Content = profileName;
-                PopupHide();
-                uDebugLogAdd("Changed window profile");
-                UtilityBar.UtilBarMain.ShowNotification($"Window Profile Changed to: {profileName}");
-                UpdateWindowProfileButtons();
             }
             catch (Exception ex)
             {
@@ -421,9 +389,9 @@ namespace Panacea.Windows
             try
             {
                 uDebugLogAdd("Getting window display area");
-                displayArea = grdWindows.Margin; // 95+17 from bottom of grid | +1 for border
+                displayArea = grdWindows.Margin;
                 uDebugLogAdd($"displayArea <Before>: [T]{displayArea.Top} [L]{displayArea.Left} [B]{displayArea.Bottom} [R]{displayArea.Right}");
-                displayArea.Top = 1;
+                displayArea.Top = 30;
                 displayArea.Right = 1;
                 displayArea.Bottom = 95;
                 displayArea.Left = 1;
@@ -444,6 +412,7 @@ namespace Panacea.Windows
                 uDebugLogAdd($"Call ToggleMenuGrid({grid.Name})");
                 //if (grid.Margin != Defaults.MainGridIn)
                 var displayArea = GetWindowDisplayArea();
+                UpdateTitle(grid);
                 if (grid.Margin != displayArea)
                 {
                     grid.Visibility = Visibility.Visible;
@@ -455,6 +424,27 @@ namespace Panacea.Windows
                     grid.Visibility = Visibility.Hidden;
                 }
                 HideUnusedMenuGrids(grid);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void UpdateTitle(Grid grid)
+        {
+            try
+            {
+                if (grid == GrdWinStartProc)
+                {
+                    uDebugLogAdd("Updating title for Start Processes");
+                    LabelHeader.Content = "Start Processes";
+                }
+                else if (grid == GrdWinWindows)
+                {
+                    uDebugLogAdd("Updating title for Window Handles");
+                    LabelHeader.Content = "Window Mover";
+                }
             }
             catch (Exception ex)
             {
@@ -516,60 +506,79 @@ namespace Panacea.Windows
 
         private void UpdateSettingsUI()
         {
-            // Update windows UI
-            ListWindows.ItemsSource = Toolbox.settings.ActiveWindowList;
-            if (!VerifyComboBoxItems(ComboWinSelected)) { UpdateComboBoxItems(ComboWinSelected); }
-            string winProfileName = string.Empty;
-            switch (Toolbox.settings.CurrentWindowProfile)
+            try
             {
-                case WindowProfile.Profile1:
-                    winProfileName = Toolbox.settings.WindowProfileName1;
-                    break;
-                case WindowProfile.Profile2:
-                    winProfileName = Toolbox.settings.WindowProfileName2;
-                    break;
-                case WindowProfile.Profile3:
-                    winProfileName = Toolbox.settings.WindowProfileName3;
-                    break;
-                case WindowProfile.Profile4:
-                    winProfileName = Toolbox.settings.WindowProfileName4;
-                    break;
-            }
-            var comboWinItem = Toolbox.FindComboBoxItemByString(ComboWinSelected, winProfileName);
-            if (comboWinItem != null)
-            {
-                if (ComboWinSelected.SelectedItem != comboWinItem)
+                _updatingUI = true;
+                uDebugLogAdd("Updating Settings UI");
+                // Update windows UI
+                ListWindows.ItemsSource = Toolbox.settings.ActiveWindowList.OrderBy(x => x.WindowName).ToList();
+                if (!VerifyComboBoxItems(ComboWinSelected)) { UpdateComboBoxItems(ComboWinSelected); }
+                string winProfileName = string.Empty;
+                switch (Toolbox.settings.CurrentWindowProfile)
                 {
-                    ComboWinSelected.SelectedItem = comboWinItem;
+                    case WindowProfile.Profile1:
+                        winProfileName = Toolbox.settings.WindowProfileName1;
+                        break;
+                    case WindowProfile.Profile2:
+                        winProfileName = Toolbox.settings.WindowProfileName2;
+                        break;
+                    case WindowProfile.Profile3:
+                        winProfileName = Toolbox.settings.WindowProfileName3;
+                        break;
+                    case WindowProfile.Profile4:
+                        winProfileName = Toolbox.settings.WindowProfileName4;
+                        break;
                 }
-            }
+                var comboWinItem = Toolbox.FindComboBoxItemByString(ComboWinSelected, winProfileName);
+                if (comboWinItem != null)
+                {
+                    if (ComboWinSelected.SelectedItem != comboWinItem)
+                    {
+                        ComboWinSelected.SelectedItem = comboWinItem;
+                    }
+                }
+                BtnWinProfile1.Content = Toolbox.settings.WindowProfileName1;
+                BtnWinProfile2.Content = Toolbox.settings.WindowProfileName2;
+                BtnWinProfile3.Content = Toolbox.settings.WindowProfileName3;
+                BtnWinProfile4.Content = Toolbox.settings.WindowProfileName4;
 
-            // Update start proc UI
-            ListStartProc.ItemsSource = Toolbox.settings.ActiveStartList;
-            if (!VerifyComboBoxItems(ComboStartSelected)) { UpdateComboBoxItems(ComboStartSelected); }
-            string startProfileName = string.Empty;
-            switch (Toolbox.settings.CurrentStartProfile)
-            {
-                case StartProfile.Start1:
-                    startProfileName = Toolbox.settings.StartProfileName1;
-                    break;
-                case StartProfile.Start2:
-                    startProfileName = Toolbox.settings.StartProfileName2;
-                    break;
-                case StartProfile.Start3:
-                    startProfileName = Toolbox.settings.StartProfileName3;
-                    break;
-                case StartProfile.Start4:
-                    startProfileName = Toolbox.settings.StartProfileName4;
-                    break;
-            }
-            var comboStartItem = Toolbox.FindComboBoxItemByString(ComboStartSelected, startProfileName);
-            if (comboStartItem != null)
-            {
-                if (ComboStartSelected.SelectedItem != comboStartItem)
+                // Update start proc UI
+                ListStartProc.ItemsSource = Toolbox.settings.ActiveStartList.OrderBy(x => x.Name).ToList();
+                if (!VerifyComboBoxItems(ComboStartSelected)) { UpdateComboBoxItems(ComboStartSelected); }
+                string startProfileName = string.Empty;
+                switch (Toolbox.settings.CurrentStartProfile)
                 {
-                    ComboStartSelected.SelectedItem = comboStartItem;
+                    case StartProfile.Start1:
+                        startProfileName = Toolbox.settings.StartProfileName1;
+                        break;
+                    case StartProfile.Start2:
+                        startProfileName = Toolbox.settings.StartProfileName2;
+                        break;
+                    case StartProfile.Start3:
+                        startProfileName = Toolbox.settings.StartProfileName3;
+                        break;
+                    case StartProfile.Start4:
+                        startProfileName = Toolbox.settings.StartProfileName4;
+                        break;
                 }
+                var comboStartItem = Toolbox.FindComboBoxItemByString(ComboStartSelected, startProfileName);
+                if (comboStartItem != null)
+                {
+                    if (ComboStartSelected.SelectedItem != comboStartItem)
+                    {
+                        ComboStartSelected.SelectedItem = comboStartItem;
+                    }
+                }
+                BtnStartProfile1.Content = Toolbox.settings.StartProfileName1;
+                BtnStartProfile2.Content = Toolbox.settings.StartProfileName2;
+                BtnStartProfile3.Content = Toolbox.settings.StartProfileName3;
+                BtnStartProfile4.Content = Toolbox.settings.StartProfileName4;
+                uDebugLogAdd("Finished updating settings UI");
+                _updatingUI = false;
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
             }
         }
 
@@ -693,6 +702,20 @@ namespace Panacea.Windows
             {
                 WindowItem item = (WindowItem)ListWindows.SelectedItem;
                 Actions.MoveProcessHandle(item);
+                Director.Main.ShowNotification($"Moved Window: {item.WindowName}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void TriggerWindowProfileMove(WindowProfile profile)
+        {
+            try
+            {
+                uDebugLogAdd($"Triggering Windows Profile Move: {profile.ToString()}");
+                Actions.MoveProfileWindows(profile);
             }
             catch (Exception ex)
             {
@@ -706,6 +729,7 @@ namespace Panacea.Windows
             {
                 WindowItem windowItem = (WindowItem)ListWindows.SelectedItem;
                 Actions.GetWindowItemLocation(windowItem);
+                Director.Main.ShowNotification($"Updated Location: {windowItem.WindowName}");
             }
             catch (Exception ex)
             {
@@ -730,8 +754,9 @@ namespace Panacea.Windows
         {
             try
             {
-                StartProcessItem startItem = (StartProcessItem)ListWindows.SelectedItem;
+                StartProcessItem startItem = (StartProcessItem)ListStartProc.SelectedItem;
                 Actions.StartProcess(startItem.Path, startItem.Args);
+                Director.Main.ShowNotification($"Started Process: {startItem.Name}");
             }
             catch (Exception ex)
             {
@@ -825,7 +850,6 @@ namespace Panacea.Windows
                 LogException(ex);
             }
         }
-
         #endregion
     }
 }

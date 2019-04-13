@@ -322,15 +322,6 @@ namespace Panacea
             Director.Main.OpenWindowHandleFinder();
         }
 
-        private void rectTarget_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            LookForWindowHandle();
-            CaptureWindowHandle();
-            Director.Main.OpenWindowHandleFinder();
-            DisplayWindowInfo();
-            //OpenCaptureOverlay();
-        }
-
         private void btnWinProfile1_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -1997,88 +1988,6 @@ namespace Panacea
                     uDebugLogAdd($"button.Content wasn't checked or unchecked, content was: {button.Content.ToString()}");
                     return;
                 }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void CaptureWindowHandle()
-        {
-            try
-            {
-                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
-                worker.DoWork += (sender, e) =>
-                {
-                    try
-                    {
-                        while (capturingHandle)
-                        {
-                            uDebugLogAdd("Capturing window handle");
-                            IntPtr FoundWindow = ChildWindowFromPoint(WinAPIWrapper.GetMousePosition());
-                            uDebugLogAdd($"FoundWindow = {FoundWindow.ToString()}");
-                            if (FoundWindow != LastFoundWindow)
-                            {
-                                uDebugLogAdd($"FoundWindow({FoundWindow.ToString()}) != LastFoundWindow({LastFoundWindow.ToString()})");
-                                LastFoundWindow = FoundWindow;
-                            }
-                            Thread.Sleep(500);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        LogException(ex);
-                    }
-                };
-                worker.RunWorkerAsync();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void DisplayWindowInfo()
-        {
-            try
-            {
-                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
-                worker.DoWork += (sender, e) =>
-                {
-                    try
-                    {
-                        uDebugLogAdd("Starting DisplayWindowInfo, gathering windowProc");
-                        while (capturingHandle)
-                        {
-                            try
-                            {
-                                if (LastFoundWindow != IntPtr.Zero)
-                                {
-                                    Process windowProc = GetProcessIDViaHAndle(LastFoundWindow);
-                                    //Process windowProc = Process.GetProcessById(WinAPIWrapper.GetProcessId(LastFoundWindow));
-                                    uDebugLogAdd($"Gathered windowProc: {windowProc.Id}, invoking event UpdateWindowInfo");
-                                    Events.UpdateWindowInfo(windowProc);
-                                }
-                                else
-                                {
-                                    uDebugLogAdd($"Window handle was {IntPtr.Zero}, defaulting window info");
-                                    Events.UpdateWindowInfo(null);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                LogException(ex);
-                            }
-                            Thread.Sleep(500);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        LogException(ex);
-                    }
-                };
-                worker.RunWorkerAsync();
             }
             catch (Exception ex)
             {

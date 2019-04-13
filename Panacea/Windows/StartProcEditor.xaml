@@ -1,4 +1,4 @@
-﻿<Window x:Class="Panacea.Windows.StartProcEditor"
+﻿<Window x:Name="WinStartProcEditor" x:Class="Panacea.Windows.StartProcEditor"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -37,7 +37,7 @@
                 </LinearGradientBrush>
             </Rectangle.Stroke>
         </Rectangle>
-        <Rectangle x:Name="rectTitle" Height="30" VerticalAlignment="Top" Panel.ZIndex="99" Margin="1,1,1,0">
+        <Rectangle x:Name="rectTitle" Height="30" MouseDown="RectTitle_MouseDown" VerticalAlignment="Top" Panel.ZIndex="99" Margin="1,1,1,0">
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF1C1C1C" Offset="0"/>
@@ -45,7 +45,7 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <TextBlock x:Name="lblTitle" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Start Process Editor" VerticalAlignment="Top" Height="30" Width="225" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Panel.ZIndex="100" />
+        <TextBlock x:Name="lblTitle" HorizontalAlignment="Center" MouseDown="LblTitle_MouseDown" TextWrapping="Wrap" Text="Start Process Editor" VerticalAlignment="Top" Height="30" Width="225" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Panel.ZIndex="100" />
         <Button x:Name="btnExit" Click="BtnExit_Click" Style="{StaticResource ExitButtonHoverColor}" Content="X" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="32" FontSize="18" BorderBrush="{x:Null}"/>
         <Button x:Name="btnMinimize" Click="BtnMinimize_Click" Style="{StaticResource ExitButtonHoverColor}" Content="_" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="32" FontSize="18" BorderBrush="{x:Null}" Margin="0,0,32,0"/>
         <Label x:Name="LabelPath" Content="Path:" HorizontalAlignment="Left" Margin="10,45,0,0" VerticalAlignment="Top" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18"/>
