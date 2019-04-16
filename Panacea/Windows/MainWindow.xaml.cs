@@ -64,6 +64,7 @@ namespace Panacea
         private bool resizingNetGrid = false;
         private bool capturingHandle = false;
         private bool startingUp = false;
+        private bool _updatingUI = false;
 
         #endregion
 
@@ -1111,7 +1112,6 @@ namespace Panacea
                     uDebugLogAdd($"Add to windows startup is {startup}, adding registry key");
                     Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
                     key.SetValue("Panacea", $@"{Director.Main.CurrentDirectory}\Panacea.exe");
-                    Toolbox.settings.WindowsStartup = true;
                     uDebugLogAdd("Successfully added to windows startup");
                     ShowNotification("Panacea set to launch on Windows startup");
                 }
@@ -1120,7 +1120,6 @@ namespace Panacea
                     uDebugLogAdd($"Add to windows startup is {startup}, removing registry key");
                     Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
                     key.DeleteValue("Panacea", false);
-                    Toolbox.settings.WindowsStartup = false;
                     uDebugLogAdd("Successfully removed from windows startup");
                     ShowNotification("Panacea set to NOT launch on Windows startup");
                 }
@@ -1509,20 +1508,14 @@ namespace Panacea
                 btnWinProfile2.Content = Toolbox.settings.WindowProfileName2;
                 btnWinProfile3.Content = Toolbox.settings.WindowProfileName3;
                 btnWinProfile4.Content = Toolbox.settings.WindowProfileName4;
+                txtStartProfileName1.Text = Toolbox.settings.StartProfileName1;
+                txtStartProfileName2.Text = Toolbox.settings.StartProfileName2;
+                txtStartProfileName3.Text = Toolbox.settings.StartProfileName3;
+                txtStartProfileName4.Text = Toolbox.settings.StartProfileName4;
                 RefreshSavedWindows();
                 uDebugLogAdd("SettingsGEN: working on general settings");
                 chkSettingsBeta.IsChecked = Toolbox.settings.BetaUpdate;
-                chkSettingsStartup.IsChecked = Toolbox.settings.WindowsStartup;
-                //if (Toolbox.settings.ShowUtilBarOnStartup)
-                //{
-                //    uDebugLogAdd($"SettingsACT: Show Util on Startup is: {Toolbox.settings.ShowUtilBarOnStartup} | Showing utility bar");
-                //    OpenUtilityBar();
-                //}
-                //if (Toolbox.settings.StartMinimized)
-                //{
-                //    uDebugLogAdd($"SettingsACT: Start minimized is: {Toolbox.settings.StartMinimized} | Minimizing window");
-                //    this.WindowState = WindowState.Minimized;
-                //}
+                chkSettingsStartup.IsChecked = Actions.CheckWinStartupRegKeyExistance();
                 uDebugLogAdd("Finished settings UI update");
             }
             catch (Exception ex)
@@ -1540,6 +1533,11 @@ namespace Panacea
                     uDebugLogAdd("Application is still starting up, skipping settings update");
                     return;
                 }
+                if (_updatingUI)
+                {
+                    uDebugLogAdd("Already updating settings UI, skipping settings update");
+                    return;
+                }
                 SettingsTimerRefresh();
                 if (!settingsSaveVerificationInProgress)
                 {
@@ -1554,6 +1552,7 @@ namespace Panacea
                                 Thread.Sleep(1000);
                                 settingsTimer--;
                             }
+                            _updatingUI = true;
                             worker.ReportProgress(1);
                             settingsSaveVerificationInProgress = false;
                             SettingsTimerRefresh();
@@ -2564,25 +2563,24 @@ namespace Panacea
                             // Set Window/Start profile names
                             uDebugLogAdd("SETUPDATE: Window/Start profile names");
                             Toolbox.settings.WindowProfileName1 = txtWindowProfileName1.Text;
-                            btnWinProfile1.Content = Toolbox.settings.WindowProfileName1;
                             Toolbox.settings.WindowProfileName2 = txtWindowProfileName2.Text;
-                            btnWinProfile2.Content = Toolbox.settings.WindowProfileName2;
                             Toolbox.settings.WindowProfileName3 = txtWindowProfileName3.Text;
-                            btnWinProfile3.Content = Toolbox.settings.WindowProfileName3;
                             Toolbox.settings.WindowProfileName4 = txtWindowProfileName4.Text;
-                            btnWinProfile4.Content = Toolbox.settings.WindowProfileName4;
-                            Events.TriggerWindowInfoChange(true);
+                            Toolbox.settings.StartProfileName1 = txtStartProfileName1.Text;
+                            Toolbox.settings.StartProfileName2 = txtStartProfileName2.Text;
+                            Toolbox.settings.StartProfileName3 = txtStartProfileName3.Text;
+                            Toolbox.settings.StartProfileName4 = txtStartProfileName4.Text;
+                            Events.TriggerWindowInfoChange();
+                            Events.TriggerStartInfoChange();
                             // Set startup on windows startup
                             uDebugLogAdd("SETUPDATE: Startup on windows startup");
-                            if ((chkSettingsStartup.IsChecked == true) && !Toolbox.settings.WindowsStartup)
+                            if ((chkSettingsStartup.IsChecked == true) && !Actions.CheckWinStartupRegKeyExistance())
                             {
                                 AddToWindowsStartup(true);
-                                Toolbox.settings.WindowsStartup = true;
                             }
-                            else if ((chkSettingsStartup.IsChecked == false) && Toolbox.settings.WindowsStartup)
+                            else if ((chkSettingsStartup.IsChecked == false) && Actions.CheckWinStartupRegKeyExistance())
                             {
                                 AddToWindowsStartup(false);
-                                Toolbox.settings.WindowsStartup = false;
                             }
                             break;
                         case 99:
@@ -2590,6 +2588,7 @@ namespace Panacea
                             break;
                     }
                     uDebugLogAdd("Finished settings update");
+                    _updatingUI = false;
                 }
                 catch (Exception ex)
                 {

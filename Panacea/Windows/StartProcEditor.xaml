@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:Panacea.Windows"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:src="clr-namespace:Panacea.Classes"
-        mc:Ignorable="d"
-        Title="Process Startup Editor" ResizeMode="NoResize" Height="232" MinHeight="232" MaxHeight="232" Width="818" MinWidth="818" MaxWidth="818" WindowStyle="None" AllowsTransparency="True" Background="{StaticResource BaseBackgroundBrush}" Foreground="{x:Null}">
+        mc:Ignorable="d" Closing="WinStartProcEditor_Closing"
+        Title="Process Startup Editor" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Height="232" MinHeight="232" MaxHeight="232" Width="818" MinWidth="818" MaxWidth="818" WindowStyle="None" AllowsTransparency="True" Background="{StaticResource BaseBackgroundBrush}" Foreground="{x:Null}">
     <Grid>
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">

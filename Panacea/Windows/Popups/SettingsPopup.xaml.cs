@@ -603,6 +603,17 @@ namespace Panacea.Windows.Popups
                                 Toolbox.settings.BetaUpdate = true;
                             else
                                 Toolbox.settings.BetaUpdate = false;
+                            // Set startup on windows startup
+                            uDebugLogAdd("SETUPDATE: Startup on windows startup");
+                            if ((ChkPopSetGenStartup.IsChecked == true) && !Actions.CheckWinStartupRegKeyExistance())
+                            {
+                                Actions.AddToWindowsStartup(true);
+                            }
+                            else if ((ChkPopSetGenStartup.IsChecked == false) && Actions.CheckWinStartupRegKeyExistance())
+                            {
+                                Actions.AddToWindowsStartup(false);
+                            }
+                            UpdateUISettings();
                             // Set Window/Start profile names
                             uDebugLogAdd("SETUPDATE: Window/Start profile names");
                             Toolbox.settings.WindowProfileName1 = string.IsNullOrWhiteSpace(TxtPopSetWinPro1.Text) ? "Profile 1" : TxtPopSetWinPro1.Text;
@@ -614,19 +625,6 @@ namespace Panacea.Windows.Popups
                             Toolbox.settings.StartProfileName3 = string.IsNullOrWhiteSpace(TxtPopSetStartPro3.Text) ? "Start 3" : TxtPopSetStartPro3.Text;
                             Toolbox.settings.StartProfileName4 = string.IsNullOrWhiteSpace(TxtPopSetStartPro4.Text) ? "Start 4" : TxtPopSetStartPro4.Text;
                             Events.TriggerWindowInfoChange(true);
-                            // Set startup on windows startup
-                            uDebugLogAdd("SETUPDATE: Startup on windows startup");
-                            if ((ChkPopSetGenStartup.IsChecked == true) && !Toolbox.settings.WindowsStartup)
-                            {
-                                Actions.AddToWindowsStartup(true);
-                                Toolbox.settings.WindowsStartup = true;
-                            }
-                            else if ((ChkPopSetGenStartup.IsChecked == false) && Toolbox.settings.WindowsStartup)
-                            {
-                                Actions.AddToWindowsStartup(false);
-                                Toolbox.settings.WindowsStartup = false;
-                            }
-                            UpdateUISettings();
                             break;
                         case 99:
                             ShowNotification("Incorrect format entered");

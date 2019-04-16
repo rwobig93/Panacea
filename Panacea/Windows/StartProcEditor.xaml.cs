@@ -127,6 +127,18 @@ namespace Panacea.Windows
                 LogException(ex);
             }
         }
+
+        private void WinStartProcEditor_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            try
+            {
+                Director.Main.PopupWindows.Remove(this);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
         #endregion
 
         #region Methods
@@ -162,6 +174,7 @@ namespace Panacea.Windows
             try
             {
                 uDebugLogAdd("Initialized new StartProcEditor");
+                Director.Main.PopupWindows.Add(this);
                 if (_startItem == null)
                     ChangeUIForCreation();
                 else if (_startItem != null)
@@ -199,7 +212,9 @@ namespace Panacea.Windows
                 TxtProcPath.Text = startItem.Path;
                 TxtProcArgs.Text = startItem.Args;
                 TxtFriendlyName.Text = startItem.Name;
-                ComboWindowMove.Text = startItem.MoveAfterStart ? "Yes" : "No";
+                string comboString = startItem.MoveAfterStart ? "Yes" : "No";
+                if (Toolbox.FindComboBoxItemByString(ComboWindowMove, comboString) != null)
+                    ComboWindowMove.SelectedItem = Toolbox.FindComboBoxItemByString(ComboWindowMove, comboString);
                 uDebugLogAdd($"Finished UI update for editing");
             }
             catch (Exception ex)
@@ -216,7 +231,8 @@ namespace Panacea.Windows
                 TxtProcPath.Text = string.Empty;
                 TxtProcArgs.Text = string.Empty;
                 TxtFriendlyName.Text = string.Empty;
-                ComboWindowMove.Text = "Yes";
+                if (Toolbox.FindComboBoxItemByString(ComboWindowMove, "Yes") != null)
+                    ComboWindowMove.SelectedItem = Toolbox.FindComboBoxItemByString(ComboWindowMove, "Yes");
             }
             catch (Exception ex)
             {

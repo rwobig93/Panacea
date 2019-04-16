@@ -65,7 +65,7 @@ namespace Panacea.Classes
                         message.Subject = $"Panacea Diag {DateTime.Today.ToString("MM-dd-yy_hh:mm_tt")}";
                         message.IsBodyHtml = false;
                         message.Body = "Panacea Diag Attached";
-                        message.To.Add("rick@wobigtech.net");
+                        message.To.Add("PanaceaDiag@wobigtech.net");
                         message.Attachments.Add(new Attachment(zipPath) { Name = $"{zipName}.zip" });
                         uDebugLogAdd("Attempting to send mail");
                         smtp.Send(message);
@@ -96,7 +96,6 @@ namespace Panacea.Classes
                     {
                         uDebugLogAdd($"Add to windows startup is {startup} and keyExists is {keyExists}, adding registry key");
                         key.SetValue("Panacea", $@"{Director.Main.CurrentDirectory}\Panacea.exe");
-                        Toolbox.settings.WindowsStartup = true;
                         uDebugLogAdd("Successfully added to windows startup");
                     }
                     Director.Main.ShowNotification("Panacea set to launch on Windows startup");
@@ -107,7 +106,6 @@ namespace Panacea.Classes
                     {
                         uDebugLogAdd($"Add to windows startup is {startup} and keyExists is {keyExists}, removing registry key");
                         key.DeleteValue("Panacea", false);
-                        Toolbox.settings.WindowsStartup = false;
                         uDebugLogAdd("Successfully removed from windows startup");
                     }
                     else
@@ -128,8 +126,13 @@ namespace Panacea.Classes
 
         public static bool CheckWinStartupRegKeyExistance()
         {
+            bool keyExists = false;
             RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            return key.GetValue("Panacea") == null ? false : true;
+            var value = key.GetValue("Panacea");
+            if (value != null)
+                if ($@"{value}" == $@"{Director.Main.CurrentDirectory}\Panacea.exe")
+                    keyExists = true;
+            return keyExists;
         }
 
         public static void ShowChangelog()
@@ -191,15 +194,17 @@ namespace Panacea.Classes
             }
         }
 
-        public static void StartProcess(string path, string args = null)
+        public static void StartProcess(string path, string args = null, bool moveProcess = true)
         {
             try
             {
                 Process proc = new Process() { StartInfo = new ProcessStartInfo() { FileName = $@"{path}" } };
-                if (string.IsNullOrWhiteSpace(args))
+                if (!string.IsNullOrWhiteSpace(args))
                     proc.StartInfo.Arguments = $@"{args}";
                 proc.Start();
-                ProcessWatcher(proc);
+                uDebugLogAdd($"Started process: [path] {path} | [args] {args}");
+                if (moveProcess)
+                    ProcessWatcher(proc);
             }
             catch (Exception ex)
             {
@@ -231,7 +236,6 @@ namespace Panacea.Classes
                         var existingWindow = Toolbox.settings.ActiveWindowList.Find(x => x.WindowInfo.Name.ToLower() == proc.ProcessName.ToLower());
                         if (existingWindow != null)
                         {
-                            uDebugLogAdd($"Found matching window item for process, initiating process window move [name] {proc.ProcessName} [path] {proc.StartInfo.FileName}");
                             movedWindow = MoveProcessHandle(existingWindow, proc);
                         }
                         Thread.Sleep(1000);
@@ -319,11 +323,8 @@ namespace Panacea.Classes
                                 WinAPIWrapper.MoveWindow(detProc.Handle, selectedWindow.WindowInfo.XValue, selectedWindow.WindowInfo.YValue, selectedWindow.WindowInfo.Width, selectedWindow.WindowInfo.Height, true);
                                 windowMoved = true;
                             }
-                            else
-                            {
-                                uDebugLogAdd($"Skipping handle window as it has another place to be | [{detProc.Handle}]{detProc.Name} {detProc.Title}");
-                            }
                         }
+                        catch (ArgumentException) { }
                         catch (Exception ex)
                         {
                             uDebugLogAdd($"Unable to move handle window | [{detProc.Handle}]{detProc.Name} {detProc.Title}: {ex.Message}");
@@ -343,6 +344,7 @@ namespace Panacea.Classes
                                 windowMoved = true;
                             }
                         }
+                        catch (ArgumentException) { }
                         catch (Exception ex)
                         {
                             uDebugLogAdd($"Unable to move handle window | [{detProc.Handle}]{detProc.Name} {detProc.Title}: {ex.Message}");
@@ -350,6 +352,7 @@ namespace Panacea.Classes
                     }
                 }
             }
+            catch (ArgumentException) { }
             catch (Exception ex)
             {
                 LogException(ex);
@@ -427,7 +430,7 @@ namespace Panacea.Classes
                 uDebugLogAdd($"Start process count: {chosenStartList.Count} for {profile.ToString()}");
                 foreach (var item in chosenStartList)
                 {
-                    StartProcess(item.Path, item.Args);
+                    StartProcess(item.Path, item.Args, item.MoveAfterStart);
                 }
                 uDebugLogAdd("Finished start profile trigger");
                 Director.Main.ShowNotification($"Started {chosenStartList.Count} Processes ({startProfileName})");

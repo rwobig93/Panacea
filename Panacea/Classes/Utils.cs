@@ -13,6 +13,8 @@ using static Panacea.MainWindow;
 using System.Windows.Input;
 using static Panacea.Windows.UtilityBar;
 using NAudio.CoreAudioApi;
+using System.Net.NetworkInformation;
+using NativeWifi;
 
 namespace Panacea.Classes
 {
@@ -89,6 +91,7 @@ namespace Panacea.Classes
     {
         public string Version { get; set; }
         public string Body { get; set; }
+        public SolidColorBrush VersionColor { get; set; } = new SolidColorBrush(Toolbox.ColorFromHex("#FFA0A0A0"));
         public Visibility BugFixes { get; set; }
         public Visibility NewFeatures { get; set; }
         public Visibility BetaRelease { get; set; }
@@ -219,6 +222,14 @@ namespace Panacea.Classes
             StartProcArgs args = new StartProcArgs(update);
             StartProcInfoChanged(args);
         }
+        // Network Connectivity Status Updated
+        public delegate void NetConnectionUpdated(NetConnectivityArgs args);
+        public static event NetConnectionUpdated NetConnectivityChanged;
+        public static void TriggerNetConnectivityUpdate(ConnectivityStatus conStatus, NetConnectionType conType, double? wLinkSpeed, double? eLinkSpeed, NetworkInterface currEth, WlanClient.WlanInterface currWlan)
+        {
+            NetConnectivityArgs args = new NetConnectivityArgs(conStatus, conType, wLinkSpeed, eLinkSpeed, currEth, currWlan);
+            NetConnectivityChanged(args);
+        }
     }
 
     #region Event Args
@@ -266,6 +277,24 @@ namespace Panacea.Classes
         }
         public DataFlow Flow { get; }
     } 
+    public class NetConnectivityArgs : EventArgs
+    {
+        public NetConnectivityArgs(ConnectivityStatus conStatus, NetConnectionType conType, double? wLinkSpeed, double? eLinkSpeed, NetworkInterface currEth, WlanClient.WlanInterface currWlan)
+        {
+            this.ConnectionStatus = conStatus;
+            this.ConnectionType = conType;
+            this.WifiLinkSpeed = wLinkSpeed;
+            this.EthLinkSpeed = eLinkSpeed;
+            this.CurrentEthIf = CurrentEthIf;
+            this.CurrentWlanIf = currWlan;
+        }
+        public ConnectivityStatus ConnectionStatus { get; }
+        public NetConnectionType ConnectionType { get; }
+        public double? WifiLinkSpeed { get; }
+        public double? EthLinkSpeed { get; }
+        public NetworkInterface CurrentEthIf { get; }
+        public WlanClient.WlanInterface CurrentWlanIf { get; }
+    }
     #endregion
 
     #endregion

@@ -155,6 +155,9 @@
     <Compile Include="Windows\Popups\EmotePopup.xaml.cs">
       <DependentUpon>EmotePopup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Windows\Popups\InfoPopup.xaml.cs">
+      <DependentUpon>InfoPopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Windows\Popups\MacPopup.xaml.cs">
       <DependentUpon>MacPopup.xaml</DependentUpon>
     </Compile>
@@ -204,6 +207,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\Popups\EmotePopup.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\Popups\InfoPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

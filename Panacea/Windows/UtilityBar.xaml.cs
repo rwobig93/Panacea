@@ -42,52 +42,6 @@ namespace Panacea.Windows
 
         #region Enums
 
-        public enum NetConnectionType
-        {
-            Wired,
-            Wireless,
-            NoConnection,
-            Unknown,
-            EthWifi
-        }
-
-        public enum LinkSpeedNotation
-        {
-            Tbps,
-            Gbps,
-            Mbps,
-            Kbps,
-            Bps
-        }
-
-        public enum WifiFrequency
-        {
-            RF5G,
-            RF24G,
-            None
-        }
-
-        public enum WifiPHYProto
-        {
-            ac,
-            n,
-            g,
-            b,
-            a,
-            None
-        }
-
-        public enum ConnectivityStatus
-        {
-            Internet,
-            Local,
-            None,
-            DNSError,
-            Layer3,
-            Layer4,
-            DHCPError
-        }
-
         public enum PopupMenu
         {
             Network,
@@ -95,7 +49,8 @@ namespace Panacea.Windows
             Audio,
             Windows,
             Emotes,
-            None
+            None,
+            Info
         }
 
         public enum Emotes
@@ -131,6 +86,8 @@ namespace Panacea.Windows
         private ConnectivityStatus currentConnectivityStatus = ConnectivityStatus.None;
         private EnterAction currentEnterAction = EnterAction.DNSLookup;
         private double? currentLinkSpeed;
+        private double? _currentEthSpeed;
+        private double? _currentWifiSpeed;
         private DoubleAnimation outAnimation = new DoubleAnimation() { To = 0.0, Duration = TimeSpan.FromSeconds(.7) };
         private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.7) };
         private NetworkPopup popupNetwork;
@@ -138,8 +95,10 @@ namespace Panacea.Windows
         private WindowPopup popupWindows;
         private EmotePopup popupEmote;
         private SettingsPopup popupSettings;
+        private InfoPopup popupInfo;
         private INTER.HwndSource _source;
         public WlanClient.WlanInterface CurrentWifiInterface { get; private set; }
+        public NetworkInterface CurrentEthInterface { get { return _currentEthIf; } }
 
         #endregion
 
@@ -261,6 +220,11 @@ namespace Panacea.Windows
                 NetToggleEnterAction();
         }
 
+        private void LblConnectivityStatus_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ToggleMenuPopup(PopupMenu.Info);
+        }
+
         #endregion
 
         #endregion
@@ -369,19 +333,9 @@ namespace Panacea.Windows
             {
 
                 _closing = true;
-                //if (popupNetwork != null)
-                //    popupNetwork.Close();
-                //if (popupAudio != null)
-                //    popupAudio.Close();
-                //    popupAudio = null;
-                //if (popupEmote != null)
-                //    popupEmote.Close();
-                //if (popupSettings != null)
-                //    popupSettings.Close();
-                //if (popupWindows != null)
-                //    popupWindows.Close();
                 this.Close();
             }
+            catch (InvalidOperationException) { }
             catch (Exception ex)
             {
                 LogException(ex);
@@ -697,6 +651,21 @@ namespace Panacea.Windows
                                 popupWindows.PopupHide();
                         }
                         break;
+                    case PopupMenu.Info:
+                        // Info Panel
+                        if (popupInfo == null)
+                        {
+                            uDebugLogAdd("Info Popup is null, Creating new Windows popup");
+                            CreatePopup(menu);
+                        }
+                        else if (popupInfo != null)
+                        {
+                            if (popupInfo.Opacity == 0)
+                                popupInfo.PopupShow();
+                            else if (popupInfo.Opacity == 1.0)
+                                popupInfo.PopupHide();
+                        }
+                        break;
                 }
 
                 // All other menus
@@ -753,6 +722,11 @@ namespace Panacea.Windows
                         popupWindows.Closing += (s, e) => { Director.Main.PopupWindows.Remove(popupWindows); };
                         popupWindows.Show();
                         uDebugLogAdd("Initialized new Windows Popup");
+                        break;
+                    case PopupMenu.Info:
+                        popupInfo = new InfoPopup();
+                        popupInfo.Show();
+                        uDebugLogAdd("Initialized new Info Popup");
                         break;
                 }
             }
@@ -1816,15 +1790,18 @@ namespace Panacea.Windows
         {
             try
             {
+                _currentWifiSpeed = null;
+                _currentEthSpeed = null;
                 if (_connectedToEth && _connectedToWifi)
                 {
                     if (currentConnType != NetConnectionType.EthWifi)
                         ToggleConnectionType(NetConnectionType.EthWifi);
-                    var wifiLinkSpeed = GetWifiLinkSpeed();
-                    currentLinkSpeed = wifiLinkSpeed;
-                    if (wifiLinkSpeed != null)
+                    _currentWifiSpeed = GetWifiLinkSpeed();
+                    _currentEthSpeed = _currentEthIf.Speed;
+                    currentLinkSpeed = _currentWifiSpeed;
+                    if (_currentWifiSpeed != null)
                     {
-                        UpdateLinkSpeed(wifiLinkSpeed, _currentEthIf.Speed);
+                        UpdateLinkSpeed(_currentWifiSpeed, _currentEthIf.Speed);
                     }
                     else
                     {
@@ -1836,10 +1813,10 @@ namespace Panacea.Windows
                 {
                     if (currentConnType != NetConnectionType.Wireless)
                         ToggleConnectionType(NetConnectionType.Wireless);
-                    var wifiLinkSpeed = GetWifiLinkSpeed();
-                    if (wifiLinkSpeed != null)
+                    _currentWifiSpeed = GetWifiLinkSpeed();
+                    if (_currentWifiSpeed != null)
                     {
-                        UpdateLinkSpeed(wifiLinkSpeed);
+                        UpdateLinkSpeed(_currentWifiSpeed);
                     }
                     else
                     {
@@ -1851,6 +1828,7 @@ namespace Panacea.Windows
                 {
                     if (currentConnType != NetConnectionType.Wired)
                         ToggleConnectionType(NetConnectionType.Wired);
+                    _currentEthSpeed = _currentEthIf.Speed;
                     UpdateLinkSpeed(_currentEthIf.Speed);
                     UpdateWifiStats();
                 }
@@ -1861,6 +1839,7 @@ namespace Panacea.Windows
                     UpdateLinkSpeed(0);
                     UpdateWifiStats();
                 }
+                Events.TriggerNetConnectivityUpdate(currentConnectivityStatus, currentConnType, _currentWifiSpeed, _currentEthSpeed, CurrentEthInterface, CurrentWifiInterface);
             }
             catch (Exception ex)
             {

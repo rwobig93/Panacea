@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Panacea.Windows"
         xmlns:src="clr-namespace:Panacea.Classes"
         mc:Ignorable="d"
-        Topmost="True" ResizeMode="CanResizeWithGrip"
+        Topmost="True" ResizeMode="CanResizeWithGrip" WindowStartupLocation="CenterScreen"
         Title="Changelog" Height="573.95" MinHeight="573.95" Width="810.852" MinWidth="668.852" WindowStyle="None" AllowsTransparency="True" Background="{StaticResource BaseBackgroundBrush}" Foreground="{x:Null}"
         MouseDown="Window_MouseDown" Loaded="Window_Loaded" Closing="Window_Closing">
     <Window.Resources>

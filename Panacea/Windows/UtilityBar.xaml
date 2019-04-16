@@ -70,7 +70,7 @@
             </Button.Background>
         </Button>
         <Label x:Name="lblWlanRSSI" Content="-127dBm" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,3,30,3" Foreground="#FF8D8D8D" FontSize="16" Width="76"/>
-        <Label x:Name="lblConnectivityStatus" Content="Internet" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,3,369,3" Foreground="#FF8D8D8D" FontSize="16" RenderTransformOrigin="0.5,0.5" Width="117" Background="{x:Null}"/>
+        <Label x:Name="lblConnectivityStatus" Content="Internet" MouseDown="LblConnectivityStatus_MouseDown" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,3,369,3" Foreground="#FF8D8D8D" FontSize="16" RenderTransformOrigin="0.5,0.5" Width="117" Background="{x:Null}"/>
         <Button x:Name="btnMenuNetwork" Click="BtnMenuNetwork_Click" Style="{DynamicResource BaseButton}" Content="🌎" Panel.ZIndex="1000" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" FontSize="16" Margin="64,1,0,0" BorderBrush="#FF575757">
             <Button.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">

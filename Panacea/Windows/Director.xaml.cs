@@ -59,6 +59,7 @@ namespace Panacea.Windows
         private bool downloadInProgress = false;
         private Hardcodet.Wpf.TaskbarNotification.TaskbarIcon taskIcon = null;
         private Octokit.GitHubClient gitClient = null;
+        private int _netLogCounter = 0;
         #endregion
 
         #region Event Handlers
@@ -136,6 +137,7 @@ namespace Panacea.Windows
             ShowPreferredWindow();
             tStartTimedActions();
             CleanupOldFiles();
+            tCheckForUpdates();
             this.Hide();
         }
 
@@ -202,6 +204,19 @@ namespace Panacea.Windows
             Events.AudioEndpointListUpdated += Events_AudioEndpointListUpdated;
             Events.WinInfoChanged += Events_WinInfoChanged;
             Events.StartProcInfoChanged += Events_StartProcInfoChanged;
+            Events.NetConnectivityChanged += Events_NetConnectivityChanged;
+        }
+
+        private void Events_NetConnectivityChanged(NetConnectivityArgs args)
+        {
+            try
+            {
+                // Thrown here currently so the event has a listener if the InfoPopup window isn't initialized
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void Events_StartProcInfoChanged(StartProcArgs args)
@@ -631,6 +646,7 @@ namespace Panacea.Windows
                                 if (Toolbox.settings.ShowChangelog)
                                 {
                                     Toolbox.settings.ShowChangelog = false;
+                                    SaveSettings();
                                     Actions.ShowChangelog();
                                 }
                             }
@@ -730,6 +746,7 @@ namespace Panacea.Windows
                             {
                                 Version = $"v{release.TagName}",
                                 Body = release.Body,
+                                VersionColor = new SolidColorBrush(Toolbox.ColorFromHex("#FFA0A0A0")),
                                 BugFixes = release.Body.Contains("Bug Fixes:") ? Visibility.Visible : Visibility.Hidden,
                                 NewFeatures = release.Body.Contains("New Features:") ? Visibility.Visible : Visibility.Hidden,
                                 BetaRelease = release.Prerelease ? Visibility.Visible : Visibility.Hidden

@@ -456,9 +456,11 @@ namespace Panacea.Windows
         {
             double left = 0;
             double right = 0;
-            if (grid == GrdWinStartProc) { left = 550; right = -548; }
-            else if (grid == GrdWinWindows) { left = -548; right = 550; }
-            else { left = 550; right = -548; }
+            double top = 0;
+            double bottom = 0;
+            if (grid == GrdWinStartProc) { left = 550; right = -548; top = 30; bottom = 95; }
+            else if (grid == GrdWinWindows) { left = -548; right = 550; top = 30; bottom = 95; }
+            else { left = 550; right = -548; top = 30; bottom = 95; }
             Thickness hiddenArea = new Thickness();
             try
             {
@@ -466,9 +468,9 @@ namespace Panacea.Windows
                 hiddenArea = grdWindows.Margin;
                 uDebugLogAdd($"hiddenArea <Before>: [T]{hiddenArea.Top} [L]{hiddenArea.Left} [B]{hiddenArea.Bottom} [R]{hiddenArea.Right}");
                 hiddenArea.Left = left;
-                //hiddenArea.Top = 60;
-                //hiddenArea.Bottom = 60;
-                hiddenArea.Right = right; // 60
+                hiddenArea.Top = top;
+                hiddenArea.Bottom = bottom;
+                hiddenArea.Right = right;
                 uDebugLogAdd($"hiddenArea <After>: [T]{hiddenArea.Top} [L]{hiddenArea.Left} [B]{hiddenArea.Bottom} [R]{hiddenArea.Right}");
                 return hiddenArea;
             }
@@ -490,12 +492,12 @@ namespace Panacea.Windows
                 if (grid != GrdWinStartProc)
                 {
                     GrdWinStartProc.Visibility = Visibility.Hidden;
-                    Toolbox.AnimateGrid(GrdWinStartProc, GetWindowHiddenArea(grid));
+                    Toolbox.AnimateGrid(GrdWinStartProc, GetWindowHiddenArea(GrdWinStartProc));
                 }
                 if (grid != GrdWinWindows)
                 {
                     GrdWinWindows.Visibility = Visibility.Hidden;
-                    Toolbox.AnimateGrid(GrdWinWindows, GetWindowHiddenArea(grid));
+                    Toolbox.AnimateGrid(GrdWinWindows, GetWindowHiddenArea(GrdWinWindows));
                 }
             }
             catch (Exception ex)
@@ -755,7 +757,7 @@ namespace Panacea.Windows
             try
             {
                 StartProcessItem startItem = (StartProcessItem)ListStartProc.SelectedItem;
-                Actions.StartProcess(startItem.Path, startItem.Args);
+                Actions.StartProcess(startItem.Path, startItem.Args, startItem.MoveAfterStart);
                 Director.Main.ShowNotification($"Started Process: {startItem.Name}");
             }
             catch (Exception ex)
@@ -781,7 +783,7 @@ namespace Panacea.Windows
         {
             try
             {
-                uDebugLogAdd("Resetting Audio Popup Size and Location to Default");
+                uDebugLogAdd("Resetting Info Popup Size and Location to Default");
                 this.Left = PopinLeft;
                 this.Top = PopinTop;
                 this.Width = PopinWidth;

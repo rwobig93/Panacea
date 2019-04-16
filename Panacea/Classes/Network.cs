@@ -44,6 +44,53 @@ namespace Panacea.Classes
         Unknown
     }
 
+    public enum NetConnectionType
+    {
+        Wired,
+        Wireless,
+        NoConnection,
+        Unknown,
+        EthWifi
+    }
+
+    public enum LinkSpeedNotation
+    {
+        Tbps,
+        Gbps,
+        Mbps,
+        Kbps,
+        Bps,
+        None
+    }
+
+    public enum WifiFrequency
+    {
+        RF5G,
+        RF24G,
+        None
+    }
+
+    public enum WifiPHYProto
+    {
+        ac,
+        n,
+        g,
+        b,
+        a,
+        None
+    }
+
+    public enum ConnectivityStatus
+    {
+        Internet,
+        Local,
+        None,
+        DNSError,
+        Layer3,
+        Layer4,
+        DHCPError
+    }
+
     #endregion
 
     #region Ping
@@ -1442,7 +1489,7 @@ namespace Panacea.Classes
 
     #endregion
 
-    public class Network
+    public static class Network
     {
         public static bool IsPortOpen(string host, int port, TimeSpan timeout)
         {
@@ -1465,6 +1512,46 @@ namespace Panacea.Classes
                 return false;
             }
             return true;
+        }
+
+        public static string GetSpeedString(double? linkSpeed, LinkSpeedNotation speedNotation = LinkSpeedNotation.None)
+        {
+            string speed = string.Empty;
+            if (speedNotation == LinkSpeedNotation.None)
+                speedNotation = GetSpeedNotation(linkSpeed);
+            switch (speedNotation)
+            {
+                case LinkSpeedNotation.Tbps:
+                    speed = $"{linkSpeed / 1000000000000} {speedNotation.ToString()}";
+                    break;
+                case LinkSpeedNotation.Gbps:
+                    speed = $"{linkSpeed / 1000000000} {speedNotation.ToString()}";
+                    break;
+                case LinkSpeedNotation.Mbps:
+                    speed = $"{linkSpeed / 1000000} {speedNotation.ToString()}";
+                    break;
+                case LinkSpeedNotation.Kbps:
+                    speed = $"{linkSpeed / 1000} {speedNotation.ToString()}";
+                    break;
+                case LinkSpeedNotation.Bps:
+                    speed = $"{linkSpeed} {speedNotation.ToString()}";
+                    break;
+            }
+            return speed;
+        }
+
+        public static LinkSpeedNotation GetSpeedNotation(double? linkSpeed)
+        {
+            var speedNotation = LinkSpeedNotation.Bps;
+            if (linkSpeed > 999999999999)
+                speedNotation = LinkSpeedNotation.Tbps;
+            else if (linkSpeed > 999999999)
+                speedNotation = LinkSpeedNotation.Gbps;
+            else if (linkSpeed > 999999)
+                speedNotation = LinkSpeedNotation.Mbps;
+            else if (linkSpeed > 999)
+                speedNotation = LinkSpeedNotation.Kbps;
+            return speedNotation;
         }
     }
 }

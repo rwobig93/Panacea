@@ -1,0 +1,72 @@
+﻿<Window x:Class="Panacea.Windows.Popups.InfoPopup"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Panacea.Windows.Popups"
+        xmlns:src="clr-namespace:Panacea.Classes"
+        mc:Ignorable="d" Topmost="True" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" Loaded="WinInfoPopup_Loaded" SizeChanged="WinInfoPopup_SizeChanged" Closing="WinInfoPopup_Closing"
+        Title="Info Popup" x:Name="WinInfoPopup" Height="402" MinHeight="402" MaxHeight="402" Width="405" MinWidth="405" MaxWidth="405" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
+    <Window.Resources>
+        <src:Minus15Converter x:Key="Minus15Converter"/>
+        <src:Minus25Converter x:Key="Minus25Converter"/>
+        <src:Minus204Converter x:Key="Minus204Converter"/>
+        <BorderGapMaskConverter x:Key="BorderGapMaskConverter"/>
+    </Window.Resources>
+    <Grid x:Name="GridInfoMain" Background="#02010101">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="165*"/>
+            <RowDefinition Height="17"/>
+        </Grid.RowDefinitions>
+        <Polygon x:Name="PlyInfoVisualSlider" Points="28.9,.5,1.1,.5,15,16.1" Stroke="#FFA0A0A0" Grid.Row="1" Height="17" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30" Fill="#FFA0A0A0" />
+        <Rectangle x:Name="RectInfoBackground" Stroke="#FFA0A0A0" Grid.Row="0">
+            <Rectangle.Fill>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF1B1B1B" Offset="0"/>
+                    <GradientStop Color="#FF1B1B1B" Offset="0.97"/>
+                    <GradientStop Color="#FF232323" Offset="0.267"/>
+                    <GradientStop Color="#FF191919" Offset="0.84"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Button x:Name="BtnReset" Click="BtnReset_Click" Content="🔗" Visibility="Hidden" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,86,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
+        <Button x:Name="BtnMinimize" Click="BtnMinimize_Click" Content="_" Visibility="Hidden" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,58,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
+        <Button x:Name="BtnPopInOut" Click="BtnPopInOut_Click" Content="🢅" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,30,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
+        <Button x:Name="BtnClose" Click="BtnClose_Click" Content="X" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,2,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" HorizontalAlignment="Right" Width="27" />
+        <Rectangle x:Name="RectTitleBar" Fill="#02010102" MouseDown="RectTitleBar_MouseDown" Height="27" Margin="2,2,58,0" VerticalAlignment="Top" Panel.ZIndex="100"/>
+        <GroupBox Header="GroupBox" Style="{StaticResource GroupBoxBase}" BorderThickness="2" Height="150" Margin="10,0,10,167" VerticalAlignment="Bottom">
+            <GroupBox.BorderBrush>
+                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                    <GradientStop Color="#FF303030" Offset="0.55"/>
+                    <GradientStop Color="#FF787878" Offset="1"/>
+                    <GradientStop Color="#FF787878"/>
+                </LinearGradientBrush>
+            </GroupBox.BorderBrush>
+            <Label x:Name="LabelWlanTitle" Content="wlan" HorizontalContentAlignment="Center" Margin="0,-9,0,0" VerticalAlignment="Top" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1"/>
+        </GroupBox>
+        <Label x:Name="LabelWlanIP" Content="IP Address:" Margin="13,0,0,244" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1" HorizontalAlignment="Left" Width="177"/>
+        <Label x:Name="LabelWlanMac" Content="MAC Address:" Margin="13,0,0,210" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1" HorizontalAlignment="Left" Width="177"/>
+        <Label x:Name="LabelWlanSpeed" Content="Link Speed:" Margin="13,0,0,176" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1" HorizontalAlignment="Left" Width="177"/>
+        <Label x:Name="LabelWlanMacValue" Content="AA-AA-AA-AA-AA-AA" MouseDown="LabelNetInfo_MouseDown" Margin="195,0,11,210" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1"/>
+        <Label x:Name="LabelWlanIPValue" Content="255.255.255.255" MouseDown="LabelNetInfo_MouseDown" Margin="195,0,11,244" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1"/>
+        <Label x:Name="LabelWlanSpeedValue" Content="1000000000000000bps" MouseDown="LabelNetInfo_MouseDown" Margin="195,0,11,176" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1"/>
+        <GroupBox Header="GroupBox" Style="{StaticResource GroupBoxBase}" BorderThickness="2" Height="150" Margin="11,0,9,10" VerticalAlignment="Bottom">
+            <GroupBox.BorderBrush>
+                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                    <GradientStop Color="#FF303030" Offset="0.55"/>
+                    <GradientStop Color="#FF787878" Offset="1"/>
+                    <GradientStop Color="#FF787878"/>
+                </LinearGradientBrush>
+            </GroupBox.BorderBrush>
+            <Label x:Name="LabelEthTitle" Content="ethernet" HorizontalContentAlignment="Center" Margin="0,-9,0,0" VerticalAlignment="Top" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1"/>
+        </GroupBox>
+        <Label x:Name="LabelEthIP" Content="IP Address:" Margin="14,0,0,87" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1" HorizontalAlignment="Left" Width="177"/>
+        <Label x:Name="LabelEthMac" Content="MAC Address:" Margin="14,0,0,53" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1" HorizontalAlignment="Left" Width="177"/>
+        <Label x:Name="LabelEthSpeed" Content="Link Speed:" Margin="14,0,0,19" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1" HorizontalAlignment="Left" Width="177"/>
+        <Label x:Name="LabelEthMacValue" Content="AA-AA-AA-AA-AA-AA" MouseDown="LabelNetInfo_MouseDown" Margin="196,0,10,53" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1"/>
+        <Label x:Name="LabelEthIPValue" Content="255.255.255.255" MouseDown="LabelNetInfo_MouseDown" Margin="196,0,10,87" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1"/>
+        <Label x:Name="LabelEthSpeedValue" Content="1000000000000000bps" MouseDown="LabelNetInfo_MouseDown" Margin="196,0,10,19" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1"/>
+        <Label x:Name="LabelConnectivity" Content="Connectivity:" Margin="14,0,0,322" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1" HorizontalAlignment="Left" Width="116"/>
+        <Label x:Name="LabelConnectivityValue" Content="255.255.255.255" MouseDown="LabelNetInfo_MouseDown" Margin="135,0,10,322" VerticalAlignment="Bottom" Background="{x:Null}" Foreground="#FF8D8D8D" FontSize="18" Panel.ZIndex="1"/>
+    </Grid>
+</Window>

@@ -61,7 +61,6 @@ namespace Panacea.Classes
         private bool _betaUpdate { get; set; } = false;
         private bool _showChangelog { get; set; } = true;
         private bool _pingTypeChosen { get; set; } = false;
-        private bool _windowsStartup { get; set; } = false;
         private bool _showUtilBarOnStartup { get; set; } = false;
         private bool _startMinimized { get; set; } = false;
         private string _productionURI { get; set; } = null;
@@ -370,15 +369,6 @@ namespace Panacea.Classes
         {
             get { return _pingTypeChosen; }
             set { _pingTypeChosen = value; OnPropertyChanged("PingTypeChosen"); }
-        }
-        public bool WindowsStartup
-        {
-            get { return _windowsStartup; }
-            set
-            {
-                _windowsStartup = value;
-                OnPropertyChanged("WindowsStartup");
-            }
         }
         public bool ShowUtilBarOnStartup
         {

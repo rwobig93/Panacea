@@ -51,6 +51,7 @@ namespace Panacea.Windows
                 if (curVerItem != null)
                 {
                     Toolbox.uAddDebugLog("We found the changelog item for the current version, changing current selected item");
+                    curVerItem.VersionColor = new SolidColorBrush(Toolbox.ColorFromHex("#FF13D6C5"));
                     lbVersions.SelectedItem = curVerItem;
                     Toolbox.uAddDebugLog($"Changed selected item to: {curVerItem.Version}");
                 }

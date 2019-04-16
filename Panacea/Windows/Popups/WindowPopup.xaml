@@ -82,7 +82,7 @@
 
         </Grid>
         <Grid x:Name="GrdWinStartProc" Margin="550,30,-548,95">
-            <ListBox x:Name="ListStartProc" Margin="10,38,10,10">
+            <ListBox x:Name="ListStartProc" Margin="10,10,250,10">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid Width="{Binding ActualWidth, Converter={StaticResource Minus15Converter}, ElementName=lbSavedWindows}">
@@ -91,12 +91,23 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Button x:Name="BtnStartAdd" Click="BtnStartAdd_Click" Content="Add Process" HorizontalAlignment="Left" Style="{StaticResource ButtonCurves}" Margin="10,10,0,0" VerticalAlignment="Top" Width="80" Height="23"/>
-            <Button x:Name="BtnStartDelete" Click="BtnStartDelete_Click" Content="Delete Entry" HorizontalAlignment="Left" Style="{StaticResource ButtonCurves}" Margin="449,10,0,0" VerticalAlignment="Top" Width="84" Height="23"/>
-            <Label Content="Selected Item:" HorizontalAlignment="Left" Margin="219,7,0,0" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
-            <Button x:Name="BtnStartProc" Click="BtnStartProc_Click" Content="Start Proc" HorizontalAlignment="Left" Style="{StaticResource ButtonCurves}" Margin="309,10,0,0" VerticalAlignment="Top" Width="69" Height="23"/>
-            <Button x:Name="BtnStartEdit" Click="BtnStartEdit_Click" Content="Edit Proc" HorizontalAlignment="Left" Style="{StaticResource ButtonCurves}" Margin="383,10,0,0" VerticalAlignment="Top" Width="61" Height="23"/>
-            <ComboBox x:Name="ComboStartSelected" SelectionChanged="ComboStartSelected_SelectionChanged" HorizontalAlignment="Left" Margin="95,10,0,0" VerticalAlignment="Top" Width="57" Height="23"/>
+            <Button x:Name="BtnStartAdd" Click="BtnStartAdd_Click" Content="Add Process" HorizontalAlignment="Right" Style="{StaticResource ButtonCurves}" Margin="0,10,165,0" VerticalAlignment="Top" Width="80" Height="23"/>
+            <Button x:Name="BtnStartDelete" Click="BtnStartDelete_Click" Content="Delete Process" Panel.ZIndex="1" HorizontalAlignment="Right" Style="{StaticResource ButtonCurves}" Margin="0,127,130,0" VerticalAlignment="Top" Width="105" Height="24"/>
+            <Button x:Name="BtnStartProc" Click="BtnStartProc_Click" Content="Start Process" Panel.ZIndex="1" HorizontalAlignment="Right" Style="{StaticResource ButtonCurves}" Margin="0,98,130,0" VerticalAlignment="Top" Width="105" Height="24"/>
+            <Button x:Name="BtnStartEdit" Click="BtnStartEdit_Click" Content="Edit Process" Panel.ZIndex="1" HorizontalAlignment="Right" Style="{StaticResource ButtonCurves}" Margin="0,98,20,0" VerticalAlignment="Top" Width="105" Height="24"/>
+            <ComboBox x:Name="ComboStartSelected" SelectionChanged="ComboStartSelected_SelectionChanged" HorizontalAlignment="Right" Margin="0,38,10,0" VerticalAlignment="Top" Width="132" Height="22"/>
+            <GroupBox Header="Selected Item" HorizontalAlignment="Right" Style="{StaticResource GroupBoxBase}" BorderThickness="2" Height="100" Margin="0,63,10,0" VerticalAlignment="Top" Width="235">
+                <GroupBox.BorderBrush>
+                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                        <GradientStop Color="#FF303030" Offset="0.55"/>
+                        <GradientStop Color="#FF787878" Offset="1"/>
+                        <GradientStop Color="#FF787878"/>
+                    </LinearGradientBrush>
+                </GroupBox.BorderBrush>
+                <Label Content="Selected Item" HorizontalAlignment="Left" Margin="0,-12,0,61" VerticalAlignment="Bottom" Foreground="#FF8D8D8D" FontSize="16"/>
+            </GroupBox>
+            <Button x:Name="BtnStartAdd_Copy" Click="BtnStartAdd_Click" Content="Add Multiple Processes" HorizontalAlignment="Right" Style="{StaticResource ButtonEdges}" IsEnabled="False" Margin="0,10,10,0" VerticalAlignment="Top" Width="149" Height="23"/>
+            <Label Content="Current Profile:" HorizontalAlignment="Right" Margin="0,0,142,223" VerticalAlignment="Bottom" Foreground="#FF8D8D8D" FontSize="14"/>
         </Grid>
         <Button x:Name="BtnMenuWindows" Click="BtnMenuWindows_Click" Content="Windows Menu" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="374,0,0,51" VerticalAlignment="Bottom" Width="136" Height="32"/>
         <Button x:Name="BtnMenuStartProc" Click="BtnMenuStartProc_Click" Content="Start Process Menu" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="374,0,0,14" VerticalAlignment="Bottom" Width="136" Height="32"/>
