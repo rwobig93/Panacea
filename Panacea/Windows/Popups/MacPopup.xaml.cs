@@ -36,24 +36,8 @@ namespace Panacea.Windows
         }
 
         #region Globals
-
-        public enum MACFormat
-        {
-            Dash,
-            Colon,
-            Net,
-            Mixed
-        }
-
-        public enum MACNotation
-        {
-            Uppercase,
-            Lowercase
-        }
-
         private bool _notificationPlaying = false;
         private List<string> _notificationList = new List<string>();
-
         #endregion
 
         #region Event Handlers
@@ -184,22 +168,22 @@ namespace Panacea.Windows
         {
             try
             {
-                MACFormat format = GetMacFormat();
+                MACFormat format = Network.GetMacFormat(txtMacAddress.Text);
                 MACNotation notation = GetMacNotation();
                 uDebugLogAdd($"Converting MAC address [f]{format.ToString()} [n]{notation.ToString()} [a]{txtMacAddress.Text}");
                 string macAddr = txtMacAddress.Text.Replace(":", "").Replace("-", "").Replace(".", "");
                 if (notation == MACNotation.Uppercase)
                 {
-                    lblMacAddressDashValue.Text = ConvertMacAddrDash(macAddr).ToUpper();
-                    lblMacAddressColValue.Text = ConvertMacAddrCol(macAddr).ToUpper();
-                    lblMacAddressNetValue.Text = ConvertMacAddrNet(macAddr).ToUpper();
+                    lblMacAddressDashValue.Text = Network.ConvertMacAddrToDashNotation(macAddr).ToUpper();
+                    lblMacAddressColValue.Text = Network.ConvertMacAddrToColonNotation(macAddr).ToUpper();
+                    lblMacAddressNetValue.Text = Network.ConvertMacAddrToNetNotation(macAddr).ToUpper();
                     uDebugLogAdd("Set MAC Addresses to Upper");
                 }
                 else if (notation == MACNotation.Lowercase)
                 {
-                    lblMacAddressDashValue.Text = ConvertMacAddrDash(macAddr).ToLower();
-                    lblMacAddressColValue.Text = ConvertMacAddrCol(macAddr).ToLower();
-                    lblMacAddressNetValue.Text = ConvertMacAddrNet(macAddr).ToLower();
+                    lblMacAddressDashValue.Text = Network.ConvertMacAddrToDashNotation(macAddr).ToLower();
+                    lblMacAddressColValue.Text = Network.ConvertMacAddrToColonNotation(macAddr).ToLower();
+                    lblMacAddressNetValue.Text = Network.ConvertMacAddrToNetNotation(macAddr).ToLower();
                     uDebugLogAdd("Set MAC Addresses to Lower");
                 }
             }
@@ -207,98 +191,6 @@ namespace Panacea.Windows
             {
                 LogException(ex);
             }
-        }
-
-        public static string ConvertMacAddrNet(string macAddr)
-        {
-            string newMac = string.Empty;
-            var counter = 1;
-            foreach (var chara in macAddr)
-            {
-                if (counter % 4 == 0)
-                    newMac = $"{newMac}{chara}.";
-                else
-                    newMac = $"{newMac}{chara}";
-                counter++;
-            }
-            return newMac.TrimEnd('.');
-        }
-
-        public static string ConvertMacAddrCol(string macAddr)
-        {
-            string newMac = string.Empty;
-            var counter = 1;
-            foreach (var chara in macAddr)
-            {
-                if (counter % 2 == 0)
-                    newMac = $"{newMac}{chara}:";
-                else
-                    newMac = $"{newMac}{chara}";
-                counter++;
-            }
-            return newMac.TrimEnd(':');
-        }
-
-        public static string ConvertMacAddrDash(string macAddr)
-        {
-            string newMac = string.Empty;
-            var counter = 1;
-            foreach (var chara in macAddr)
-            {
-                if (counter % 2 == 0)
-                    newMac = $"{newMac}{chara}-";
-                else
-                    newMac = $"{newMac}{chara}";
-                counter++;
-            }
-            return newMac.TrimEnd('-');
-        }
-
-        private MACFormat GetMacFormat()
-        {
-            var str = txtMacAddress.Text;
-            var matches = 0;
-            MACFormat format = MACFormat.Colon;
-            try
-            {
-                if (str.Contains(":"))
-                {
-                    format = MACFormat.Colon;
-                    matches++;
-                }
-                else if (str.Contains("-"))
-                {
-                    format = MACFormat.Dash;
-                    matches++;
-                }
-                else if (str.Contains("."))
-                {
-                    format = MACFormat.Net;
-                    matches++;
-                }
-                if (matches > 1)
-                    format = MACFormat.Mixed;
-                else if (matches < 1)
-                {
-                    uDebugLogAdd($"Mac address had less than 1 match, something went wrong: [a]{str} [m]{matches}", DebugType.FAILURE);
-                    throw new ArgumentException($"Mac address had less than 1 match, something went wrong: [a]{str} [m]{matches}", "MAC Format");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-            return format;
-        }
-
-        private MACNotation GetMacNotation()
-        {
-            MACNotation notation = MACNotation.Lowercase;
-            if (togMACCase.IsChecked == true)
-                notation = MACNotation.Uppercase;
-            else
-                notation = MACNotation.Lowercase;
-            return notation;
         }
 
         private void CopyToClipboard(string clip)
@@ -383,6 +275,16 @@ namespace Panacea.Windows
             {
                 LogException(ex);
             }
+        }
+
+        private MACNotation GetMacNotation()
+        {
+            MACNotation notation = MACNotation.Lowercase;
+            if (togMACCase.IsChecked == true)
+                notation = MACNotation.Uppercase;
+            else
+                notation = MACNotation.Lowercase;
+            return notation;
         }
 
         private void uDebugLogAdd(string _log, DebugType debugType = DebugType.INFO, [CallerMemberName] string caller = "")

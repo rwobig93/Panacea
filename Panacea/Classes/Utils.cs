@@ -63,6 +63,15 @@ namespace Panacea.Classes
         Edit
     }
 
+    public enum WindowPreference
+    {
+        DesktopWindow,
+        UtilityBar,
+        NotChosen
+    }
+
+    #endregion
+
     #region General
 
     public class DetailedProcess
@@ -285,7 +294,7 @@ namespace Panacea.Classes
             this.ConnectionType = conType;
             this.WifiLinkSpeed = wLinkSpeed;
             this.EthLinkSpeed = eLinkSpeed;
-            this.CurrentEthIf = CurrentEthIf;
+            this.CurrentEthIf = currEth;
             this.CurrentWlanIf = currWlan;
         }
         public ConnectivityStatus ConnectionStatus { get; }
@@ -295,8 +304,6 @@ namespace Panacea.Classes
         public NetworkInterface CurrentEthIf { get; }
         public WlanClient.WlanInterface CurrentWlanIf { get; }
     }
-    #endregion
-
     #endregion
 
     #endregion

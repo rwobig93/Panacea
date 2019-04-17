@@ -6,7 +6,7 @@
         xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:local="clr-namespace:Panacea.Windows"
         mc:Ignorable="d" Topmost="True" ResizeMode="NoResize"
-        Title="Mac Address Popup" Height="214.5" Width="395.166" WindowStyle="None" MouseDown="Window_MouseDown" AllowsTransparency="True" Background="{StaticResource BaseBackgroundBrush}" Foreground="{x:Null}">
+        Title="Mac Address Popup" Height="214.5" Width="395.166" WindowStyle="None" WindowStartupLocation="CenterScreen" MouseDown="Window_MouseDown" AllowsTransparency="True" Background="{StaticResource BaseBackgroundBrush}" Foreground="{x:Null}">
     <Grid x:Name="grdMain" Background="#02000000">
         <TextBox x:Name="txtMacAddress" MaxLength="17" Style="{StaticResource TextboxNoReaction}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextAlignment="Center" HorizontalAlignment="Left" Height="29" Margin="116,44,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="192" FontSize="16"/>
         <TextBlock x:Name="lblMacAddressTitle" Padding="0" HorizontalAlignment="Left" Margin="10,46,0,0" TextWrapping="Wrap" Text="Mac Address:" VerticalAlignment="Top" Foreground="#FF8D8D8D" Width="106" Height="20" TextAlignment="Center" FontSize="16"/>

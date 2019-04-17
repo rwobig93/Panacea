@@ -20,70 +20,15 @@ namespace Panacea.Windows
     /// </summary>
     public sealed partial class Prompt : Window
     {
+        #region Private Constructor
         private Prompt(PromptType type)
         {
             InitializeComponent();
-            this.Topmost = true;
-            switch (type)
-            {
-                case PromptType.YesNo:
-                    this.btnYes.Visibility = Visibility.Visible;
-                    this.btnNo.Visibility = Visibility.Visible;
-                    this.btnOK.Visibility = Visibility.Hidden;
-                    this.btnCustom1.Visibility = Visibility.Hidden;
-                    this.btnCustom2.Visibility = Visibility.Hidden;
-                    this.imgBasicPing.Visibility = Visibility.Hidden;
-                    this.imgVisualPing.Visibility = Visibility.Hidden;
-                    break;
-                case PromptType.OK:
-                    this.btnOK.Visibility = Visibility.Visible;
-                    this.btnYes.Visibility = Visibility.Hidden;
-                    this.btnNo.Visibility = Visibility.Hidden;
-                    this.btnCustom1.Visibility = Visibility.Hidden;
-                    this.btnCustom2.Visibility = Visibility.Hidden;
-                    this.imgBasicPing.Visibility = Visibility.Hidden;
-                    this.imgVisualPing.Visibility = Visibility.Hidden;
-                    break;
-                case PromptType.Custom1:
-                    this.btnYes.Visibility = Visibility.Hidden;
-                    this.btnNo.Visibility = Visibility.Hidden;
-                    this.btnOK.Visibility = Visibility.Hidden;
-                    this.btnCustom1.Visibility = Visibility.Hidden;
-                    this.btnCustom2.Visibility = Visibility.Hidden;
-                    this.imgBasicPing.Visibility = Visibility.Hidden;
-                    this.imgVisualPing.Visibility = Visibility.Hidden;
-                    break;
-                case PromptType.Custom2:
-                    this.btnYes.Visibility = Visibility.Hidden;
-                    this.btnNo.Visibility = Visibility.Hidden;
-                    this.btnOK.Visibility = Visibility.Hidden;
-                    this.btnCustom1.Visibility = Visibility.Hidden;
-                    this.btnCustom2.Visibility = Visibility.Hidden;
-                    this.imgBasicPing.Visibility = Visibility.Hidden;
-                    this.imgVisualPing.Visibility = Visibility.Hidden;
-                    break;
-                case PromptType.Custom3:
-                    this.btnYes.Visibility = Visibility.Hidden;
-                    this.btnNo.Visibility = Visibility.Hidden;
-                    this.btnOK.Visibility = Visibility.Hidden;
-                    this.btnCustom1.Visibility = Visibility.Hidden;
-                    this.btnCustom2.Visibility = Visibility.Hidden;
-                    this.imgBasicPing.Visibility = Visibility.Hidden;
-                    this.imgVisualPing.Visibility = Visibility.Hidden;
-                    break;
-                case PromptType.PingType:
-                    this.btnCustom1.Visibility = Visibility.Visible;
-                    this.btnCustom2.Visibility = Visibility.Visible;
-                    this.imgBasicPing.Visibility = Visibility.Visible;
-                    this.imgVisualPing.Visibility = Visibility.Visible;
-                    this.btnYes.Visibility = Visibility.Hidden;
-                    this.btnNo.Visibility = Visibility.Hidden;
-                    this.btnOK.Visibility = Visibility.Hidden;
-                    break;
-            }
-            Toolbox.uAddDebugLog($"Prompt initiated with type: {type.ToString()}");
-        }
+            Startup(type);
+        } 
+        #endregion
 
+        #region Enums
         public enum PromptType
         {
             YesNo,
@@ -91,7 +36,8 @@ namespace Panacea.Windows
             Custom1,
             Custom2,
             Custom3,
-            PingType
+            PingType,
+            WindowPreference
         }
 
         public enum PromptResponse
@@ -104,8 +50,255 @@ namespace Panacea.Windows
             Custom3,
             OK
         }
+        #endregion
 
-        public PromptResponse Response { get; set; } = PromptResponse.Cancel;
+        #region Public Variables
+        public PromptResponse Response { get; set; } = PromptResponse.Cancel; 
+        #endregion
+
+        #region Public Methods / Constructors
+        public static PromptResponse YesNo(string message, TextAlignment alignment = TextAlignment.Center)
+        {
+            var response = PromptResponse.Cancel;
+            try
+            {
+                Prompt prompt = new Prompt(PromptType.YesNo);
+                Toolbox.uAddDebugLog($"Prompt created with message: {message}");
+                prompt.txtMessage.Text = message;
+                prompt.txtMessage.TextAlignment = alignment;
+                SizeWindowBasedOnMessage(prompt);
+                prompt.ShowDialog();
+                response = prompt.Response;
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+            return response;
+        }
+
+        public static PromptResponse OK(string message, TextAlignment alignment = TextAlignment.Center)
+        {
+            var response = PromptResponse.Cancel;
+            try
+            {
+                Prompt prompt = new Prompt(PromptType.OK);
+                Toolbox.uAddDebugLog($"Prompt created with message: {message}");
+                prompt.txtMessage.Text = message;
+                prompt.txtMessage.TextAlignment = alignment;
+                SizeWindowBasedOnMessage(prompt);
+                prompt.ShowDialog();
+                response = prompt.Response;
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+            return response;
+        }
+
+        public static PromptResponse WindowPreference()
+        {
+            var response = PromptResponse.Cancel;
+            try
+            {
+                Prompt prompt = new Prompt(PromptType.WindowPreference);
+                prompt.btnCustom1.Content = "Utility Bar";
+                prompt.btnCustom2.Content = "Desktop Window";
+                prompt.Height = 711;
+                prompt.Width = 1363;
+                prompt.ShowDialog();
+                response = prompt.Response;
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+            return response;
+        }
+
+        public static PromptResponse PingType()
+        {
+            var response = PromptResponse.Cancel;
+            try
+            {
+                Prompt prompt = new Prompt(PromptType.PingType);
+                string pingQuestion = string.Format(
+                    "                                                                             I see this is the first time picking your ping preference.{0}" +
+                    "                                                                                  Do you prefer a visual ping or a basic ping style?{0}" +
+                    "                                                 Visual:                                                                                                                  Basic: {0}" +
+                    "                                         More CPU Usage                                                                                                    More Detail{0}" +
+                    "                                         Visual Style Chart                                                                                             Less space per ping{0}" +
+                    "                                      Takes up more space                                                                                           Minimal CPU usage", Environment.NewLine);
+                prompt.txtMessage.Text = pingQuestion;
+                prompt.txtMessage.TextAlignment = TextAlignment.Left;
+                prompt.btnCustom1.Content = "Visual Ping";
+                prompt.btnCustom2.Content = "Basic Ping";
+                prompt.Height = 724;
+                prompt.Width = 1327;
+                prompt.ShowDialog();
+                response = prompt.Response;
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+            return response;
+        }
+        #endregion
+
+        #region Private Methods
+        private void Startup(PromptType type)
+        {
+            this.Topmost = true;
+            SetControlVisibility(type);
+            ResizeControls(type);
+            Toolbox.uAddDebugLog($"Prompt initiated with type: {type.ToString()}");
+        }
+
+        private void ResizeControls(PromptType type)
+        {
+            switch (type)
+            {
+                case PromptType.YesNo:
+                    txtMessage.Margin = new Thickness(10, 10, 10, 61);
+                    break;
+                case PromptType.OK:
+                    txtMessage.Margin = new Thickness(10, 10, 10, 61);
+                    break;
+                case PromptType.Custom1:
+                    txtMessage.Margin = new Thickness(10, 10, 10, 61);
+                    break;
+                case PromptType.Custom2:
+                    txtMessage.Margin = new Thickness(10, 10, 10, 61);
+                    break;
+                case PromptType.Custom3:
+                    txtMessage.Margin = new Thickness(10, 10, 10, 61);
+                    break;
+                case PromptType.PingType:
+                    txtMessage.Margin = new Thickness(10, 10, 10, 61);
+                    break;
+                case PromptType.WindowPreference:
+                    ImgWinStyDeskWin.Margin = new Thickness(10, 253, 0, 0);
+                    ImgWinStyUtilBar.Margin = new Thickness(10, 401, 0, 0);
+                    LabelChoiceWinStyTitle.Margin = new Thickness(512, 10, 0, 0);
+                    LabelChoiceWinStyDeskDesc.Margin = new Thickness(15, 153, 0, 0);
+                    LabelChoiceWinStyUtilDesc.Margin = new Thickness(905, 431, 0, 0);
+                    break;
+            }
+        }
+
+        private void SetControlVisibility(PromptType type)
+        {
+            switch (type)
+            {
+                case PromptType.YesNo:
+                    this.btnYes.Visibility = Visibility.Visible;
+                    this.btnNo.Visibility = Visibility.Visible;
+                    this.txtMessage.Visibility = Visibility.Visible;
+                    this.btnOK.Visibility = Visibility.Hidden;
+                    this.btnCustom1.Visibility = Visibility.Hidden;
+                    this.btnCustom2.Visibility = Visibility.Hidden;
+                    this.imgBasicPing.Visibility = Visibility.Hidden;
+                    this.imgVisualPing.Visibility = Visibility.Hidden;
+                    this.ImgWinStyDeskWin.Visibility = Visibility.Hidden;
+                    this.ImgWinStyUtilBar.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyTitle.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Hidden;
+                    break;
+                case PromptType.OK:
+                    this.btnOK.Visibility = Visibility.Visible;
+                    this.txtMessage.Visibility = Visibility.Visible;
+                    this.btnYes.Visibility = Visibility.Hidden;
+                    this.btnNo.Visibility = Visibility.Hidden;
+                    this.btnCustom1.Visibility = Visibility.Hidden;
+                    this.btnCustom2.Visibility = Visibility.Hidden;
+                    this.imgBasicPing.Visibility = Visibility.Hidden;
+                    this.imgVisualPing.Visibility = Visibility.Hidden;
+                    this.ImgWinStyDeskWin.Visibility = Visibility.Hidden;
+                    this.ImgWinStyUtilBar.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyTitle.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Hidden;
+                    break;
+                case PromptType.Custom1:
+                    this.txtMessage.Visibility = Visibility.Visible;
+                    this.btnYes.Visibility = Visibility.Hidden;
+                    this.btnNo.Visibility = Visibility.Hidden;
+                    this.btnOK.Visibility = Visibility.Hidden;
+                    this.btnCustom1.Visibility = Visibility.Hidden;
+                    this.btnCustom2.Visibility = Visibility.Hidden;
+                    this.imgBasicPing.Visibility = Visibility.Hidden;
+                    this.imgVisualPing.Visibility = Visibility.Hidden;
+                    this.ImgWinStyDeskWin.Visibility = Visibility.Hidden;
+                    this.ImgWinStyUtilBar.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyTitle.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Hidden;
+                    break;
+                case PromptType.Custom2:
+                    this.txtMessage.Visibility = Visibility.Visible;
+                    this.btnYes.Visibility = Visibility.Hidden;
+                    this.btnNo.Visibility = Visibility.Hidden;
+                    this.btnOK.Visibility = Visibility.Hidden;
+                    this.btnCustom1.Visibility = Visibility.Hidden;
+                    this.btnCustom2.Visibility = Visibility.Hidden;
+                    this.imgBasicPing.Visibility = Visibility.Hidden;
+                    this.imgVisualPing.Visibility = Visibility.Hidden;
+                    this.ImgWinStyDeskWin.Visibility = Visibility.Hidden;
+                    this.ImgWinStyUtilBar.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyTitle.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Hidden;
+                    break;
+                case PromptType.Custom3:
+                    this.txtMessage.Visibility = Visibility.Visible;
+                    this.btnYes.Visibility = Visibility.Hidden;
+                    this.btnNo.Visibility = Visibility.Hidden;
+                    this.btnOK.Visibility = Visibility.Hidden;
+                    this.btnCustom1.Visibility = Visibility.Hidden;
+                    this.btnCustom2.Visibility = Visibility.Hidden;
+                    this.imgBasicPing.Visibility = Visibility.Hidden;
+                    this.imgVisualPing.Visibility = Visibility.Hidden;
+                    this.ImgWinStyDeskWin.Visibility = Visibility.Hidden;
+                    this.ImgWinStyUtilBar.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyTitle.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Hidden;
+                    break;
+                case PromptType.PingType:
+                    this.btnCustom1.Visibility = Visibility.Visible;
+                    this.btnCustom2.Visibility = Visibility.Visible;
+                    this.imgBasicPing.Visibility = Visibility.Visible;
+                    this.imgVisualPing.Visibility = Visibility.Visible;
+                    this.txtMessage.Visibility = Visibility.Hidden;
+                    this.btnYes.Visibility = Visibility.Hidden;
+                    this.btnNo.Visibility = Visibility.Hidden;
+                    this.btnOK.Visibility = Visibility.Hidden;
+                    this.ImgWinStyDeskWin.Visibility = Visibility.Hidden;
+                    this.ImgWinStyUtilBar.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyTitle.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Hidden;
+                    break;
+                case PromptType.WindowPreference:
+                    this.btnCustom1.Visibility = Visibility.Visible;
+                    this.btnCustom2.Visibility = Visibility.Visible;
+                    this.ImgWinStyDeskWin.Visibility = Visibility.Visible;
+                    this.ImgWinStyUtilBar.Visibility = Visibility.Visible;
+                    this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Visible;
+                    this.LabelChoiceWinStyTitle.Visibility = Visibility.Visible;
+                    this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Visible;
+                    this.txtMessage.Visibility = Visibility.Hidden;
+                    this.btnYes.Visibility = Visibility.Hidden;
+                    this.btnNo.Visibility = Visibility.Hidden;
+                    this.btnOK.Visibility = Visibility.Hidden;
+                    this.imgBasicPing.Visibility = Visibility.Hidden;
+                    this.imgVisualPing.Visibility = Visibility.Hidden;
+                    break;
+            }
+        }
 
         private void btnYes_Click(object sender, RoutedEventArgs e)
         {
@@ -177,75 +370,6 @@ namespace Panacea.Windows
             }
         }
 
-        public static PromptResponse YesNo(string message, TextAlignment alignment = TextAlignment.Center)
-        {
-            var response = PromptResponse.Cancel;
-            try
-            {
-                Prompt prompt = new Prompt(PromptType.YesNo);
-                Toolbox.uAddDebugLog($"Prompt created with message: {message}");
-                prompt.txtMessage.Text = message;
-                prompt.txtMessage.TextAlignment = alignment;
-                SizeWindowBasedOnMessage(prompt);
-                prompt.ShowDialog();
-                response = prompt.Response;
-            }
-            catch (Exception ex)
-            {
-                Toolbox.LogException(ex);
-            }
-            return response;
-        }
-
-        public static PromptResponse OK(string message, TextAlignment alignment = TextAlignment.Center)
-        {
-            var response = PromptResponse.Cancel;
-            try
-            {
-                Prompt prompt = new Prompt(PromptType.OK);
-                Toolbox.uAddDebugLog($"Prompt created with message: {message}");
-                prompt.txtMessage.Text = message;
-                prompt.txtMessage.TextAlignment = alignment;
-                SizeWindowBasedOnMessage(prompt);
-                prompt.ShowDialog();
-                response = prompt.Response;
-            }
-            catch (Exception ex)
-            {
-                Toolbox.LogException(ex);
-            }
-            return response;
-        }
-
-        public static PromptResponse PingType()
-        {
-            var response = PromptResponse.Cancel;
-            try
-            {
-                Prompt prompt = new Prompt(PromptType.PingType);
-                string pingQuestion = string.Format(
-                    "                                                                             I see this is the first time picking your ping preference.{0}" +
-                    "                                                                                  Do you prefer a visual ping or a basic ping style?{0}" +
-                    "                                                 Visual:                                                                                                                  Basic: {0}" +
-                    "                                         More CPU Usage                                                                                                    More Detail{0}" +
-                    "                                         Visual Style Chart                                                                                             Less space per ping{0}" +
-                    "                                      Takes up more space                                                                                           Minimal CPU usage", Environment.NewLine);
-                prompt.txtMessage.Text = pingQuestion;
-                prompt.txtMessage.TextAlignment = TextAlignment.Left;
-                prompt.btnCustom1.Content = "Visual Ping";
-                prompt.btnCustom2.Content = "Basic Ping";
-                prompt.Height = 724;
-                prompt.Width = 1327;
-                prompt.ShowDialog();
-                response = prompt.Response;
-            }
-            catch (Exception ex)
-            {
-                Toolbox.LogException(ex);
-            }
-            return response;
-        }
-
         private static void SizeWindowBasedOnMessage(Prompt prompt)
         {
             try
@@ -275,11 +399,6 @@ namespace Panacea.Windows
                     additionalHeight = (lines - 4) * 27;
                 else if (lines > 17)
                     additionalHeight = 13 * 27;
-                //for (int i = longerLineCounter; i > 0; i--)
-                //{
-                //    if (additionalHeight < 13 * 27)
-                //        additionalHeight = additionalHeight + 27;
-                //}
                 prompt.Height = prompt.Height + additionalHeight;
             }
             catch (Exception ex)
@@ -299,6 +418,7 @@ namespace Panacea.Windows
             {
                 Toolbox.LogException(ex);
             }
-        }
+        } 
+        #endregion
     }
 }

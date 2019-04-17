@@ -78,7 +78,6 @@ namespace Panacea.Windows
         private bool _imHiding = false;
         private int _totalNotificationsRun = 0;
         private List<string> notifications = new List<string>();
-        private NetworkInterface _currentEthIf;
         private Display dockedDisplay;
         private NetConnectionType currentConnType = NetConnectionType.Unknown;
         private WifiFrequency currentFrequency = WifiFrequency.None;
@@ -98,7 +97,7 @@ namespace Panacea.Windows
         private InfoPopup popupInfo;
         private INTER.HwndSource _source;
         public WlanClient.WlanInterface CurrentWifiInterface { get; private set; }
-        public NetworkInterface CurrentEthInterface { get { return _currentEthIf; } }
+        public NetworkInterface CurrentEthInterface { get; private set; }
 
         #endregion
 
@@ -829,7 +828,7 @@ namespace Panacea.Windows
                         emoteString = @"¯\_(ツ)_/¯";
                         break;
                 }
-                CopyToClipboard(emoteString);
+                CopyToClipboard(emoteString, "You now have the almighty shrug on your clipboard!");
             }
             catch (Exception ex)
             {
@@ -1204,23 +1203,38 @@ namespace Panacea.Windows
         {
             try
             {
-                if (popupNetwork == null)
+                var address = txtNetMain.Text;
+                if (string.IsNullOrWhiteSpace(address))
                 {
-                    uDebugLogAdd("Network popup is null, initializing new network popup");
-                    CreatePopup(PopupMenu.Network);
+                    ShowNotification("Nothing was entered, try again");
+                    return;
                 }
-                switch (currentEnterAction)
+                if (VerifyIfMacAddress(address))
                 {
-                    case EnterAction.DNSLookup:
-                        popupNetwork.PopupShow();
-                        NetNSLookupEntryAdd();
-                        break;
-                    case EnterAction.Ping:
-                        popupNetwork.PopupShow();
-                        NetPingEntryAdd();
-                        break;
-                    case EnterAction.Trace:
-                        throw new NotImplementedException();
+                    uDebugLogAdd($"Address value was found to be a Mac Address, opening Macpopup: {address}");
+                    OpenMacAddressWindow(address);
+                    return;
+                }
+                else
+                {
+                    if (popupNetwork == null)
+                    {
+                        uDebugLogAdd("Network popup is null, initializing new network popup");
+                        CreatePopup(PopupMenu.Network);
+                    }
+                    switch (currentEnterAction)
+                    {
+                        case EnterAction.DNSLookup:
+                            popupNetwork.PopupShow();
+                            NetNSLookupEntryAdd(address);
+                            break;
+                        case EnterAction.Ping:
+                            popupNetwork.PopupShow();
+                            NetPingEntryAdd(address);
+                            break;
+                        case EnterAction.Trace:
+                            throw new NotImplementedException();
+                    }
                 }
             }
             catch (Exception ex)
@@ -1274,22 +1288,10 @@ namespace Panacea.Windows
             }
         }
 
-        private void NetPingEntryAdd()
+        private void NetPingEntryAdd(string address)
         {
             try
             {
-                var address = txtNetMain.Text;
-                if (string.IsNullOrWhiteSpace(address))
-                {
-                    ShowNotification("Nothing was entered, try again");
-                    return;
-                }
-                if (VerifyIfMacAddress(address))
-                {
-                    uDebugLogAdd($"NetAddress value was found to be a Mac Address, opening Macpopup: {address}");
-                    OpenMacAddressWindow(address);
-                    return;
-                }
                 var sendNotif = false;
                 var addressNoSpace = Regex.Replace(address, @"\s+", "");
                 var entries = addressNoSpace.Split(',');
@@ -1342,6 +1344,7 @@ namespace Panacea.Windows
                 Director.Main.PopupWindows.Add(macPopup);
                 macPopup.Closing += (s, e) => { Director.Main.PopupWindows.Remove(macPopup); };
                 macPopup.Show();
+                Director.Main.ShowNotification("MAC Address Identified");
                 uDebugLogAdd("Opened MacPopup window");
             }
             catch (Exception ex)
@@ -1350,20 +1353,13 @@ namespace Panacea.Windows
             }
         }
 
-        private void NetNSLookupEntryAdd()
+        private void NetNSLookupEntryAdd(string address)
         {
             try
             {
-                var address = txtNetMain.Text;
                 if (string.IsNullOrWhiteSpace(address))
                 {
                     popupNetwork.lbNetNSLookup.Items.Clear();
-                    return;
-                }
-                if (VerifyIfMacAddress(address))
-                {
-                    uDebugLogAdd($"NetAddress value was found to be a Mac Address, opening Macpopup: {address}");
-                    OpenMacAddressWindow(address);
                     return;
                 }
                 if (!VerifyInput(address, EnterAction.DNSLookup))
@@ -1486,7 +1482,7 @@ namespace Panacea.Windows
                     {
                         successCounter = 0;
                         failureCounter = 0;
-                        var timeout = TimeSpan.FromSeconds(1);
+                        var timeout = TimeSpan.FromMilliseconds(400);
 
                         /// Layer 4 connectivity verification
                         // Google https
@@ -1649,7 +1645,7 @@ namespace Panacea.Windows
                             }
                             else if (_connectedToEth)
                             {
-                                try { defGateway = _currentEthIf.GetIPProperties().GatewayAddresses[0].Address.ToString(); }
+                                try { defGateway = CurrentEthInterface.GetIPProperties().GatewayAddresses[0].Address.ToString(); }
                                 catch (Exception) { }
                             }
 
@@ -1711,19 +1707,19 @@ namespace Panacea.Windows
                     {
                         if (netIfs == null)
                             netIfs = new List<NetworkInterface>();
-                        tempEthIf = _currentEthIf;
+                        tempEthIf = CurrentEthInterface;
                         interfaces = NetworkInterface.GetAllNetworkInterfaces();
                         foreach (var adapter in interfaces.ToList().FindAll(x => x.NetworkInterfaceType == NetworkInterfaceType.Ethernet || x.NetworkInterfaceType == NetworkInterfaceType.GigabitEthernet || x.NetworkInterfaceType == NetworkInterfaceType.FastEthernetFx || x.NetworkInterfaceType == NetworkInterfaceType.FastEthernetT || x.NetworkInterfaceType == NetworkInterfaceType.Ethernet3Megabit))
                         {
                             netIfs.Add(adapter);
                         }
                         if (_connectedEthIfs.Count > 0)
-                            _currentEthIf = _connectedEthIfs[0];
-                        if (_currentEthIf != null)
-                            if (tempEthIf != _currentEthIf)
+                            CurrentEthInterface = _connectedEthIfs[0];
+                        if (CurrentEthInterface != null)
+                            if (tempEthIf != CurrentEthInterface)
                             {
                                 uDebugLogAdd($"Connected eth ifs found: {_connectedEthIfs.Count}");
-                                uDebugLogAdd($"Primary connected eth if: {_currentEthIf.Name}");
+                                uDebugLogAdd($"Primary connected eth if: {CurrentEthInterface.Name}");
                             }
                     }
                     catch (Win32Exception) { }
@@ -1797,15 +1793,15 @@ namespace Panacea.Windows
                     if (currentConnType != NetConnectionType.EthWifi)
                         ToggleConnectionType(NetConnectionType.EthWifi);
                     _currentWifiSpeed = GetWifiLinkSpeed();
-                    _currentEthSpeed = _currentEthIf.Speed;
+                    _currentEthSpeed = CurrentEthInterface.Speed;
                     currentLinkSpeed = _currentWifiSpeed;
                     if (_currentWifiSpeed != null)
                     {
-                        UpdateLinkSpeed(_currentWifiSpeed, _currentEthIf.Speed);
+                        UpdateLinkSpeed(_currentWifiSpeed, CurrentEthInterface.Speed);
                     }
                     else
                     {
-                        UpdateLinkSpeed(_currentEthIf.Speed);
+                        UpdateLinkSpeed(CurrentEthInterface.Speed);
                     }
                     UpdateWifiStats();
                 }
@@ -1828,8 +1824,8 @@ namespace Panacea.Windows
                 {
                     if (currentConnType != NetConnectionType.Wired)
                         ToggleConnectionType(NetConnectionType.Wired);
-                    _currentEthSpeed = _currentEthIf.Speed;
-                    UpdateLinkSpeed(_currentEthIf.Speed);
+                    _currentEthSpeed = CurrentEthInterface.Speed;
+                    UpdateLinkSpeed(CurrentEthInterface.Speed);
                     UpdateWifiStats();
                 }
                 else if (currentConnType == NetConnectionType.EthWifi || currentConnType == NetConnectionType.Wired || currentConnType == NetConnectionType.Wireless) { }
@@ -1878,7 +1874,7 @@ namespace Panacea.Windows
                     p.Start();
                     string output = p.StandardOutput.ReadToEnd();
                     p.WaitForExit();
-                    Regex rbssid = new Regex($@"({MacPopup.ConvertMacAddrCol(CurrentWifiInterface.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString()).ToLower()})([\s\S]*?)Basic rates");
+                    Regex rbssid = new Regex($@"({Network.ConvertMacAddrToColonNotation(CurrentWifiInterface.CurrentConnection.wlanAssociationAttributes.Dot11Bssid.ToString()).ToLower()})([\s\S]*?)Basic rates");
                     Regex rphyProto = new Regex(@"Radio.*");
                     var bssidOut = rbssid.Match(output);
                     var phyProtoOut = Regex.Replace(rphyProto.Match(bssidOut.Value).Value.Replace("Radio type", "").Replace(":", ""), @"\s+", "");

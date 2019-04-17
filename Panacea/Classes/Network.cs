@@ -19,7 +19,7 @@ using System.Windows.Media;
 
 namespace Panacea.Classes
 {
-    #region Supporting
+    #region Enums
 
     public enum DTFormat
     {
@@ -89,6 +89,20 @@ namespace Panacea.Classes
         Layer3,
         Layer4,
         DHCPError
+    }
+
+    public enum MACFormat
+    {
+        Dash,
+        Colon,
+        Net,
+        Mixed
+    }
+
+    public enum MACNotation
+    {
+        Uppercase,
+        Lowercase
     }
 
     #endregion
@@ -1552,6 +1566,88 @@ namespace Panacea.Classes
             else if (linkSpeed > 999)
                 speedNotation = LinkSpeedNotation.Kbps;
             return speedNotation;
+        }
+
+        public static string ConvertMacAddrToNetNotation(string macAddr)
+        {
+            string newMac = string.Empty;
+            var counter = 1;
+            foreach (var chara in macAddr)
+            {
+                if (counter % 4 == 0)
+                    newMac = $"{newMac}{chara}.";
+                else
+                    newMac = $"{newMac}{chara}";
+                counter++;
+            }
+            return newMac.TrimEnd('.');
+        }
+
+        public static string ConvertMacAddrToColonNotation(string macAddr)
+        {
+            string newMac = string.Empty;
+            var counter = 1;
+            foreach (var chara in macAddr)
+            {
+                if (counter % 2 == 0)
+                    newMac = $"{newMac}{chara}:";
+                else
+                    newMac = $"{newMac}{chara}";
+                counter++;
+            }
+            return newMac.TrimEnd(':');
+        }
+
+        public static string ConvertMacAddrToDashNotation(string macAddr)
+        {
+            string newMac = string.Empty;
+            var counter = 1;
+            foreach (var chara in macAddr)
+            {
+                if (counter % 2 == 0)
+                    newMac = $"{newMac}{chara}-";
+                else
+                    newMac = $"{newMac}{chara}";
+                counter++;
+            }
+            return newMac.TrimEnd('-');
+        }
+
+        public static MACFormat GetMacFormat(string macAddress)
+        {
+            var str = macAddress;
+            var matches = 0;
+            MACFormat format = MACFormat.Colon;
+            try
+            {
+                if (str.Contains(":"))
+                {
+                    format = MACFormat.Colon;
+                    matches++;
+                }
+                else if (str.Contains("-"))
+                {
+                    format = MACFormat.Dash;
+                    matches++;
+                }
+                else if (str.Contains("."))
+                {
+                    format = MACFormat.Net;
+                    matches++;
+                }
+                if (matches > 1)
+                    format = MACFormat.Mixed;
+                else if (matches < 1)
+                {
+                    Toolbox.uAddDebugLog($"Mac address had less than 1 match, something went wrong: [a]{str} [m]{matches}", DebugType.FAILURE);
+                    throw new ArgumentException($"Mac address had less than 1 match, something went wrong: [a]{str} [m]{matches}", "MAC Format");
+                }
+            }
+            catch (Exception ex)
+            {
+                Toolbox.LogException(ex);
+            }
+            return format;
         }
     }
 }

@@ -37,7 +37,7 @@
                 <CheckBox x:Name="ChkPopSetGenStartup" Click="ChkPopSetGenStartup_Click" Content="Run Panacea when Windows starts" HorizontalAlignment="Left" Margin="221,33,0,0" VerticalAlignment="Top" Foreground="#FF918C8C"/>
                 <Button x:Name="BtnPopSetGenChangelog" Click="BtnPopSetGenChangelog_Click" Content="View Changelog" HorizontalAlignment="Left" Style="{StaticResource BaseButton}" Margin="32,54,0,0" VerticalAlignment="Top" Width="107"/>
                 <Button x:Name="BtnPopSetGenSendDiag" Click="BtnPopSetGenSendDiag_Click" Content="Send Diagnostic Logs" HorizontalAlignment="Left" Style="{StaticResource BaseButton}" Margin="144,54,0,0" VerticalAlignment="Top" Width="124"/>
-                <Button x:Name="BtnPopSetGenConfigDefault" Click="BtnPopSetGenConfigDefault_Click" Content="Reset Config to Default" HorizontalAlignment="Left" Style="{StaticResource BaseButton}" Margin="273,54,0,0" VerticalAlignment="Top" Width="138"/>
+                <Button x:Name="BtnPopSetGenConfigDefault" Click="BtnPopSetGenConfigDefault_Click" Content="Reset Config to Default" HorizontalAlignment="Left" Style="{StaticResource BaseButton}" Margin="273,54,0,0" VerticalAlignment="Top" Width="140"/>
                 <Rectangle x:Name="rectPopSetNetBorder" Height="35" Margin="10,141,7,0" Stroke="#FF918C8C" VerticalAlignment="Top"/>
                 <Rectangle x:Name="rectPopSetNetTitle" HorizontalAlignment="Left" Height="16" Margin="10,141,0,0" Stroke="#FF918C8C" VerticalAlignment="Top" Width="53"/>
                 <TextBlock x:Name="lblPopSetNetTitle" HorizontalAlignment="Left" Margin="14,140,0,0" TextWrapping="Wrap" Text="Network" VerticalAlignment="Top" Foreground="#FF1DD8D0" Width="46"/>
@@ -72,7 +72,12 @@
                 <Rectangle x:Name="rectTitleBar" Fill="#02010102" MouseDown="Rectangle_MouseDown" Height="27" Margin="2,2,66,0" VerticalAlignment="Top" Panel.ZIndex="100"/>
                 <TextBox x:Name="TxtPopSetGenBetaLabel" Visibility="Hidden" HorizontalAlignment="Center" Style="{StaticResource TextboxNoReaction}" Height="20" Margin="353,110,10,0" TextWrapping="Wrap" Text="Beta Release" VerticalAlignment="Top" Width="75" Panel.ZIndex="100" Focusable="False" AllowDrop="False" IsReadOnly="True" IsTabStop="False" Foreground="#FFBD0101" BorderBrush="#FFBD0101"/>
                 <Label x:Name="LblPopSetGenCurrentVer" MouseDown="LblPopSetGenCurrentVer_MouseDown" Content="Current Version: " HorizontalAlignment="Left" Margin="14,111,0,0" VerticalAlignment="Top" Height="19" Padding="0" Width="336" Foreground="#FF8D8D8D" />
-                <Button x:Name="BtnPopSetGenUpdate" Visibility="Hidden" Click="BtnPopSetGenUpdate_Click" Content="Update Panacea" HorizontalAlignment="Left" Style="{StaticResource BaseButton}" Margin="32,81,0,0" VerticalAlignment="Top" Width="107"/>
+                <Button x:Name="BtnPopSetGenUpdate" Visibility="Hidden" Click="BtnPopSetGenUpdate_Click" Content="Update Panacea" HorizontalAlignment="Left" Style="{StaticResource BaseButton}" Foreground="#FF00CD00" Margin="32,81,0,0" VerticalAlignment="Top" Width="107"/>
+                <TextBlock x:Name="LabelPopSetGenWinPref" HorizontalAlignment="Left" Margin="148,84,0,0" TextWrapping="Wrap" Text="Preferred Startup Window:" VerticalAlignment="Top" Foreground="#FF8D8D8D"/>
+                <ComboBox x:Name="ComboPopSetGenWinPref" SelectionChanged="ComboPopSetGenWinPref_SelectionChanged" HorizontalAlignment="Left" Margin="293,81,0,0" VerticalAlignment="Top" Width="118">
+                    <ComboBoxItem Content="Utility Bar"/>
+                    <ComboBoxItem Content="Desktop Window"/>
+                </ComboBox>
             </Grid>
         </ScrollViewer>
     </Grid>

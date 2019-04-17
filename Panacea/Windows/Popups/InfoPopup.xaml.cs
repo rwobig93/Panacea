@@ -36,7 +36,7 @@ namespace Panacea.Windows.Popups
         private bool startingUp = true;
         private DoubleAnimation outAnimation = new DoubleAnimation() { To = 0.0, Duration = TimeSpan.FromSeconds(.2) };
         private DoubleAnimation inAnimation = new DoubleAnimation() { To = 1.0, Duration = TimeSpan.FromSeconds(.2) };
-        private double PopinLeft { get { return UtilityBar.UtilBarMain.Left + (UtilityBar.UtilBarMain.lblConnectivityStatus.Margin.Left + (UtilityBar.UtilBarMain.lblConnectivityStatus.ActualWidth / 2)); } }
+        private double PopinLeft { get { return (UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.ActualWidth) - (UtilityBar.UtilBarMain.lblConnectivityStatus.Margin.Right + (UtilityBar.UtilBarMain.lblConnectivityStatus.ActualWidth / 2)); } } // UtilityBar.UtilBarMain.Left + (UtilityBar.UtilBarMain.lblConnectivityStatus.Margin.Left + (UtilityBar.UtilBarMain.lblConnectivityStatus.ActualWidth / 2))
         private double PopinTop { get { return UtilityBar.UtilBarMain.Top - this.ActualHeight; } }
         private double PopinWidth { get { return 405; } }
         private double PopinHeight { get { return 402; } }
@@ -46,8 +46,16 @@ namespace Panacea.Windows.Popups
         #region Event Handlers
         private void WinInfoPopup_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (!startingUp)
-                VerifyResetButtonRequirement();
+            try
+            {
+                /// Removed for now as popup isn't meant to be resized
+                //if (!startingUp)
+                //    VerifyResetButtonRequirement();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void WinInfoPopup_Loaded(object sender, RoutedEventArgs e)
@@ -264,7 +272,7 @@ namespace Panacea.Windows.Popups
             try
             {
                 this.Top = UtilityBar.UtilBarMain.Top - PopinHeight;
-                this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuWindows.Margin.Left;
+                this.Left = (UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.ActualWidth) - (UtilityBar.UtilBarMain.lblConnectivityStatus.Margin.Right + (UtilityBar.UtilBarMain.lblConnectivityStatus.ActualWidth / 2));
                 this.Opacity = 0;
             }
             catch (Exception ex)
@@ -361,7 +369,6 @@ namespace Panacea.Windows.Popups
             {
                 var utilTop = UtilityBar.UtilBarMain.Top;
                 var actHeight = this.ActualHeight;
-                uDebugLogAdd($"{utilTop - actHeight}");
                 if ((this.Left != PopinLeft || this.Top != PopinTop || this.ActualWidth != PopinWidth || this.ActualHeight != PopinHeight) && BtnReset.Visibility != Visibility.Visible)
                 {
                     BtnReset.Visibility = Visibility.Visible;
@@ -375,7 +382,21 @@ namespace Panacea.Windows.Popups
 
         private void SubscribeToEvents()
         {
+            Events.UtilBarMoveTrigger += Events_UtilBarMoveTrigger;
             Events.NetConnectivityChanged += Events_NetConnectivityChanged;
+        }
+
+        private void Events_UtilBarMoveTrigger(UtilMoveArgs args)
+        {
+            try
+            {
+                if (!PoppedOut)
+                    MoveToNewLocation();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void Events_NetConnectivityChanged(NetConnectivityArgs args)
@@ -405,8 +426,17 @@ namespace Panacea.Windows.Popups
                 {
                     if (currentEthIf != null)
                     {
-                        LabelEthIPValue.Content = currentEthIf.GetIPProperties().UnicastAddresses[0].ToString();
-                        LabelEthMacValue.Content = currentEthIf.GetPhysicalAddress().ToString();
+                        string ipAddress = string.Empty;
+                        foreach (var address in currentEthIf.GetIPProperties().UnicastAddresses)
+                        {
+                            if (address.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                                ipAddress = address.Address.ToString();
+                            // UnicastIPAddressInformation.Address = {192.168.1.178} | AddressFamily = InterNetwork | PrefixOrigin = Dhcp || Address = {fe80::d9e7:80a9:764c:344b%8} | AddressFamily = InterNetworkV6 | PrefixOrigin = WellKnown
+                        }
+                        if (string.IsNullOrWhiteSpace(ipAddress))
+                            ipAddress = currentEthIf.GetIPProperties().UnicastAddresses[0].Address.ToString();
+                        LabelEthIPValue.Content = ipAddress;
+                        LabelEthMacValue.Content = Network.ConvertMacAddrToColonNotation(currentEthIf.GetPhysicalAddress().ToString());
                         LabelEthSpeedValue.Content = Network.GetSpeedString(ethLinkSpeed);
                     }
                     else
@@ -431,8 +461,17 @@ namespace Panacea.Windows.Popups
                 {
                     if (currentWlanIf != null)
                     {
-                        LabelWlanIPValue.Content = currentWlanIf.NetworkInterface.GetIPProperties().UnicastAddresses[0].ToString();
-                        LabelWlanMacValue.Content = currentWlanIf.NetworkInterface.GetPhysicalAddress().ToString();
+                        string ipAddress = string.Empty;
+                        foreach (var address in currentWlanIf.NetworkInterface.GetIPProperties().UnicastAddresses)
+                        {
+                            if (address.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                                ipAddress = address.Address.ToString();
+                            // UnicastIPAddressInformation.Address = {192.168.1.178} | AddressFamily = InterNetwork | PrefixOrigin = Dhcp || Address = {fe80::d9e7:80a9:764c:344b%8} | AddressFamily = InterNetworkV6 | PrefixOrigin = WellKnown
+                        }
+                        if (string.IsNullOrWhiteSpace(ipAddress))
+                            ipAddress = currentWlanIf.NetworkInterface.GetIPProperties().UnicastAddresses[0].Address.ToString();
+                        LabelWlanIPValue.Content = ipAddress;
+                        LabelWlanMacValue.Content = Network.ConvertMacAddrToColonNotation(currentWlanIf.NetworkInterface.GetPhysicalAddress().ToString());
                         LabelWlanSpeedValue.Content = Network.GetSpeedString(wifiLinkSpeed);
                     }
                     else

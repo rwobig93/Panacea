@@ -5,7 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Panacea.Windows"
         mc:Ignorable="d" MouseDown="Window_MouseDown"
-        Title="Prompt" MinHeight="180" Height="180" MinWidth="600" Width="600" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070" WindowStartupLocation="CenterScreen">
+        Title="Prompt" WindowStyle="None" AllowsTransparency="True" BorderBrush="#FF707070" WindowStartupLocation="CenterScreen"
+        MinHeight="180" MinWidth="600" Height="180" Width="600">
+    <!--Small: Height="180" Width="600"-->
+    <!--WindowPreference: Height="711" Width="1363"-->
     <Grid>
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -24,14 +27,18 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <Button x:Name="btnYes" Style="{StaticResource ButtonCurves}" Click="btnYes_Click" Content="Yes" HorizontalAlignment="Center" Margin="223,0,303,8" VerticalAlignment="Bottom" Width="74" Height="40" FontSize="22" Visibility="Hidden"/>
-        <Button x:Name="btnNo" Style="{StaticResource ButtonCurves}" Click="btnNo_Click" Content="No" HorizontalAlignment="Center" Margin="302,0,224,8" VerticalAlignment="Bottom" Width="74" Height="40" FontSize="22" Visibility="Hidden"/>
-        <TextBlock x:Name="txtMessage" Margin="10,10,10,61" TextWrapping="Wrap" Foreground="#FF8D8D8D" FontSize="20"/>
+        <Button x:Name="btnYes" Visibility="Hidden" Style="{StaticResource ButtonCurves}" Click="btnYes_Click" Content="Yes" HorizontalAlignment="Center" Margin="223,0,303,8" VerticalAlignment="Bottom" Width="74" Height="40" FontSize="22"/>
+        <Button x:Name="btnNo" Visibility="Hidden" Style="{StaticResource ButtonCurves}" Click="btnNo_Click" Content="No" HorizontalAlignment="Center" Margin="302,0,224,8" VerticalAlignment="Bottom" Width="74" Height="40" FontSize="22"/>
+        <TextBlock x:Name="txtMessage" Visibility="Hidden" Margin="10,10,10,61" TextWrapping="Wrap" Foreground="#FF8D8D8D" FontSize="20" Text="This is a test message"/>
         <Button x:Name="btnOK" Style="{StaticResource ButtonCurves}" Click="btnOK_Click" Content="OK" HorizontalAlignment="Center" Margin="0,0,0,8" VerticalAlignment="Bottom" Width="74" Height="40" FontSize="22" Visibility="Hidden"/>
         <Image x:Name="imgVisualPing" HorizontalAlignment="Left" Height="474" Margin="10,189,0,0" VerticalAlignment="Top" Width="650" Source="/Panacea;component/Dependencies/VisualPing.png" Stretch="None" Visibility="Hidden"/>
         <Image x:Name="imgBasicPing" HorizontalAlignment="Left" Height="474" Margin="666,189,0,0" VerticalAlignment="Top" Width="661" Source="/Panacea;component/Dependencies/BasicPing.png" Stretch="None" Visibility="Hidden"/>
-        <Button x:Name="btnCustom1" Style="{StaticResource ButtonCurves}" Click="btnCustom1_Click" Content="Visual Ping" HorizontalAlignment="Center" Margin="532,0,667,8" VerticalAlignment="Bottom" Width="128" Height="40" FontSize="22" Visibility="Hidden"/>
-        <Button x:Name="btnCustom2" Style="{StaticResource ButtonCurves}" Click="btnCustom2_Click" Content="Basic Ping" HorizontalAlignment="Center" Margin="666,0,541,8" VerticalAlignment="Bottom" Width="120" Height="40" FontSize="22" Visibility="Hidden"/>
-        <Label Content="Label" HorizontalAlignment="Left" Margin="-49,256,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="btnCustom1" Visibility="Hidden" Style="{StaticResource ButtonCurves}" Click="btnCustom1_Click" Content="Utility Bar" HorizontalAlignment="Center" Margin="87,0,303,8" VerticalAlignment="Bottom" Width="210" Height="40" FontSize="22"/>
+        <Button x:Name="btnCustom2" Visibility="Hidden" Style="{StaticResource ButtonCurves}" Click="btnCustom2_Click" Content="Desktop Window" HorizontalAlignment="Center" Margin="302,0,88,8" VerticalAlignment="Bottom" Width="210" Height="40" FontSize="22"/>
+        <Image x:Name="ImgWinStyUtilBar" Visibility="Hidden" HorizontalAlignment="Left" Height="249" Margin="10,401,0,0" VerticalAlignment="Top" Width="890" Source="/Panacea;component/Dependencies/Panacea_Demo_UtilBar.png" Stretch="Fill"/>
+        <Label x:Name="LabelChoiceWinStyTitle" Visibility="Hidden" Margin="512,10,0,0" HorizontalContentAlignment="Center" Content="Which style would you prefer on application startup?&#xD;&#xA;&#xD;&#xA;* You can change this option whenever you want from a settings menu&#xD;&#xA;* Either window can be shown at any time from the notification icon" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="#FF8D8D8D" FontSize="24" Width="841" Height="219"/>
+        <Label x:Name="LabelChoiceWinStyDeskDesc" Visibility="Hidden" Margin="15,153,0,0" Content="Desktop Window (Below)&#xD;&#xA;       - Traditional application window&#xA;       - Same feature set as the UtilityBar" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="#FF8D8D8D" FontSize="20" Width="669" Height="95"/>
+        <Label x:Name="LabelChoiceWinStyUtilDesc" Visibility="Hidden" Margin="905,431,0,0" Content="       - Small bar above your taskbar&#xA;       - Quick access to features&#xD;&#xA;       - Multiple individual popup windows,&#xD;&#xA;          allowing you to choose what features you&#xD;&#xA;          always want visible if preferred&#xD;&#xA;&#xD;&#xA;&lt;-- Utility Bar" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="#FF8D8D8D" FontSize="20" Width="448" Height="219"/>
+        <Image x:Name="ImgWinStyDeskWin" Visibility="Hidden" HorizontalAlignment="Left" Height="324" Margin="10,253,0,0" VerticalAlignment="Top" Width="656" Source="/Panacea;component/Dependencies/Panacea_Demo_DesktopWindow.png"/>
     </Grid>
 </Window>

@@ -326,6 +326,10 @@
     <Resource Include="Dependencies\BasicPing.png" />
     <Resource Include="Dependencies\VisualPing.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Dependencies\Panacea_Demo_DesktopWindow.png" />
+    <Resource Include="Dependencies\Panacea_Demo_UtilBar.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

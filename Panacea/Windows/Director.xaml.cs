@@ -59,7 +59,6 @@ namespace Panacea.Windows
         private bool downloadInProgress = false;
         private Hardcodet.Wpf.TaskbarNotification.TaskbarIcon taskIcon = null;
         private Octokit.GitHubClient gitClient = null;
-        private int _netLogCounter = 0;
         #endregion
 
         #region Event Handlers
@@ -190,7 +189,28 @@ namespace Panacea.Windows
         {
             try
             {
-                ShowUtilityBar();
+                if (Toolbox.settings.PreferredWindow == WindowPreference.NotChosen)
+                    AskForPreferredWindowStyle();
+                if (Toolbox.settings.PreferredWindow == WindowPreference.DesktopWindow)
+                    ShowDesktopWindow();
+                else
+                    ShowUtilityBar();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void AskForPreferredWindowStyle()
+        {
+            try
+            {
+                var response = Prompt.WindowPreference();
+                if (response == Prompt.PromptResponse.Custom2)
+                    Toolbox.settings.PreferredWindow = WindowPreference.DesktopWindow;
+                else
+                    Toolbox.settings.PreferredWindow = WindowPreference.UtilityBar;
             }
             catch (Exception ex)
             {
@@ -647,7 +667,10 @@ namespace Panacea.Windows
                                 {
                                     Toolbox.settings.ShowChangelog = false;
                                     SaveSettings();
-                                    Actions.ShowChangelog();
+                                    if (DebugMode)
+                                        ShowNotification($"Skipping Changelog show as debug: {DebugMode}");
+                                    else
+                                        Actions.ShowChangelog();
                                 }
                             }
                             if (Toolbox.changeLogs.Find(x => x.Version == Toolbox.settings.CurrentVersion.ToString()) != null)
@@ -729,6 +752,11 @@ namespace Panacea.Windows
         {
             try
             {
+                if (DebugMode)
+                {
+                    uDebugLogAdd($"Debug mode is {DebugMode}, skipping gitClient call...");
+                    return;
+                }
                 var releases = await gitClient.Repository.Release.GetAll("rwobig93", "Panacea");
                 var appName = appUpdate.ToString();
                 uDebugLogAdd($"Releases found: {releases.Count}");

@@ -461,6 +461,7 @@ namespace Panacea.Classes
                 OnPropertyChanged("CurrentEmote");
             }
         }
+        public WindowPreference PreferredWindow { get; set; } = WindowPreference.NotChosen;
         public List<PopoutPreferences> PopoutPreferencesList
         {
             get { return _popoutPreferencesList; }

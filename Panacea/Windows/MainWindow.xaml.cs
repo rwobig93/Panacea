@@ -827,6 +827,11 @@ namespace Panacea
             StartSettingsUpdate(SettingsUpdate.StartMin);
         }
 
+        private void ComboGenWinPref_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            StartSettingsUpdate(SettingsUpdate.WinStartup);
+        }
+
         #endregion
 
         #endregion
@@ -1516,6 +1521,7 @@ namespace Panacea
                 uDebugLogAdd("SettingsGEN: working on general settings");
                 chkSettingsBeta.IsChecked = Toolbox.settings.BetaUpdate;
                 chkSettingsStartup.IsChecked = Actions.CheckWinStartupRegKeyExistance();
+                ComboGenWinPref.SelectedItem = Toolbox.settings.PreferredWindow == WindowPreference.UtilityBar ? Toolbox.FindComboBoxItemByString(ComboGenWinPref, "Utility Bar") : Toolbox.FindComboBoxItemByString(ComboGenWinPref, "Desktop Window");
                 uDebugLogAdd("Finished settings UI update");
             }
             catch (Exception ex)
@@ -2434,6 +2440,7 @@ namespace Panacea
                 Director.Main.PopupWindows.Add(macPopup);
                 macPopup.Closing += (s, e) => { Director.Main.PopupWindows.Remove(macPopup); };
                 macPopup.Show();
+                Director.Main.ShowNotification("MAC Address Identified");
                 uDebugLogAdd("Opened MacPopup window");
             }
             catch (Exception ex)
@@ -2570,8 +2577,6 @@ namespace Panacea
                             Toolbox.settings.StartProfileName2 = txtStartProfileName2.Text;
                             Toolbox.settings.StartProfileName3 = txtStartProfileName3.Text;
                             Toolbox.settings.StartProfileName4 = txtStartProfileName4.Text;
-                            Events.TriggerWindowInfoChange();
-                            Events.TriggerStartInfoChange();
                             // Set startup on windows startup
                             uDebugLogAdd("SETUPDATE: Startup on windows startup");
                             if ((chkSettingsStartup.IsChecked == true) && !Actions.CheckWinStartupRegKeyExistance())
@@ -2582,6 +2587,12 @@ namespace Panacea
                             {
                                 AddToWindowsStartup(false);
                             }
+                            // Set Window Preference
+                            uDebugLogAdd("SETUPDATE: Preferred Window");
+                            Toolbox.settings.PreferredWindow = ComboGenWinPref.SelectedItem == Toolbox.FindComboBoxItemByString(ComboGenWinPref, "Utility Bar") ? WindowPreference.UtilityBar : WindowPreference.DesktopWindow;
+                            // Trigger events
+                            Events.TriggerWindowInfoChange();
+                            //Events.TriggerStartInfoChange();
                             break;
                         case 99:
                             ShowNotification("Incorrect format entered");

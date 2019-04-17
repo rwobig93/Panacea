@@ -197,6 +197,11 @@ namespace Panacea.Windows.Popups
             Actions.CopyToClipboard($"{Director.Main.GetVersionNumber()}");
         }
 
+        private void ComboPopSetGenWinPref_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            StartSettingsUpdate(SettingsUpdate.WinStartup);
+        }
+
         #endregion
 
         #region Methods
@@ -222,6 +227,7 @@ namespace Panacea.Windows.Popups
                 ChkPopSetGenBeta.IsChecked = Toolbox.settings.BetaUpdate;
                 ChkPopSetGenStartup.IsChecked = Actions.CheckWinStartupRegKeyExistance();
                 LblPopSetGenCurrentVer.Content = $"Current Version: {Director.Main.GetVersionNumber()}";
+                ComboPopSetGenWinPref.SelectedItem = Toolbox.settings.PreferredWindow == WindowPreference.UtilityBar ? Toolbox.FindComboBoxItemByString(ComboPopSetGenWinPref,"Utility Bar") : Toolbox.FindComboBoxItemByString(ComboPopSetGenWinPref, "Desktop Window");
                 uDebugLogAdd("SETUI: Network");
                 // Network Settings
                 switch (Toolbox.settings.UtilBarEnterAction)
@@ -249,7 +255,6 @@ namespace Panacea.Windows.Popups
                 TxtPopSetStartPro2.Text = Toolbox.settings.StartProfileName2;
                 TxtPopSetStartPro3.Text = Toolbox.settings.StartProfileName3;
                 TxtPopSetStartPro4.Text = Toolbox.settings.StartProfileName4;
-
                 settingsUpdating = false;
                 uDebugLogAdd("Finished settings UI update");
             }
@@ -624,7 +629,11 @@ namespace Panacea.Windows.Popups
                             Toolbox.settings.StartProfileName2 = string.IsNullOrWhiteSpace(TxtPopSetStartPro2.Text) ? "Start 2" : TxtPopSetStartPro2.Text;
                             Toolbox.settings.StartProfileName3 = string.IsNullOrWhiteSpace(TxtPopSetStartPro3.Text) ? "Start 3" : TxtPopSetStartPro3.Text;
                             Toolbox.settings.StartProfileName4 = string.IsNullOrWhiteSpace(TxtPopSetStartPro4.Text) ? "Start 4" : TxtPopSetStartPro4.Text;
-                            Events.TriggerWindowInfoChange(true);
+                            // Preferred Window
+                            Toolbox.settings.PreferredWindow = ComboPopSetGenWinPref.SelectedItem == Toolbox.FindComboBoxItemByString(ComboPopSetGenWinPref, "Utility Bar") ? WindowPreference.UtilityBar : WindowPreference.DesktopWindow;
+                            // Trigger Events
+                            Events.TriggerWindowInfoChange();
+                            //Events.TriggerStartInfoChange();
                             break;
                         case 99:
                             ShowNotification("Incorrect format entered");
@@ -645,6 +654,7 @@ namespace Panacea.Windows.Popups
             try
             {
                 BtnPopSetGenUpdate.Visibility = Visibility.Visible;
+                BtnPopSetGenUpdate.Foreground = Toolbox.SolidBrushFromHex("#FF00CD00");
             }
             catch (Exception ex)
             {
