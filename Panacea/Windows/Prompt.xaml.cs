@@ -179,11 +179,11 @@ namespace Panacea.Windows
                     txtMessage.Margin = new Thickness(10, 10, 10, 61);
                     break;
                 case PromptType.WindowPreference:
-                    ImgWinStyDeskWin.Margin = new Thickness(10, 253, 0, 0);
-                    ImgWinStyUtilBar.Margin = new Thickness(10, 401, 0, 0);
-                    LabelChoiceWinStyTitle.Margin = new Thickness(512, 10, 0, 0);
-                    LabelChoiceWinStyDeskDesc.Margin = new Thickness(15, 153, 0, 0);
-                    LabelChoiceWinStyUtilDesc.Margin = new Thickness(905, 431, 0, 0);
+                    ImgWinStyDeskWin.Margin = new Thickness(10, 152, 0, 0);
+                    LabelChoiceWinStyTitle.Margin = new Thickness(10, 10, 0, 0);
+                    LabelChoiceWinStyDeskDesc.Margin = new Thickness(803, 229, 0, 0);
+                    LabelChoiceWinStyUtilDesc.Margin = new Thickness(430, 508, 0, 0);
+                    LabelChoiceWinStyUtilTitle.Margin = new Thickness(235, 543, 0, 0);
                     break;
             }
         }
@@ -202,10 +202,10 @@ namespace Panacea.Windows
                     this.imgBasicPing.Visibility = Visibility.Hidden;
                     this.imgVisualPing.Visibility = Visibility.Hidden;
                     this.ImgWinStyDeskWin.Visibility = Visibility.Hidden;
-                    this.ImgWinStyUtilBar.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyTitle.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyUtilTitle.Visibility = Visibility.Hidden;
                     break;
                 case PromptType.OK:
                     this.btnOK.Visibility = Visibility.Visible;
@@ -217,10 +217,10 @@ namespace Panacea.Windows
                     this.imgBasicPing.Visibility = Visibility.Hidden;
                     this.imgVisualPing.Visibility = Visibility.Hidden;
                     this.ImgWinStyDeskWin.Visibility = Visibility.Hidden;
-                    this.ImgWinStyUtilBar.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyTitle.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyUtilTitle.Visibility = Visibility.Hidden;
                     break;
                 case PromptType.Custom1:
                     this.txtMessage.Visibility = Visibility.Visible;
@@ -232,10 +232,10 @@ namespace Panacea.Windows
                     this.imgBasicPing.Visibility = Visibility.Hidden;
                     this.imgVisualPing.Visibility = Visibility.Hidden;
                     this.ImgWinStyDeskWin.Visibility = Visibility.Hidden;
-                    this.ImgWinStyUtilBar.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyTitle.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyUtilTitle.Visibility = Visibility.Hidden;
                     break;
                 case PromptType.Custom2:
                     this.txtMessage.Visibility = Visibility.Visible;
@@ -247,10 +247,10 @@ namespace Panacea.Windows
                     this.imgBasicPing.Visibility = Visibility.Hidden;
                     this.imgVisualPing.Visibility = Visibility.Hidden;
                     this.ImgWinStyDeskWin.Visibility = Visibility.Hidden;
-                    this.ImgWinStyUtilBar.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyTitle.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyUtilTitle.Visibility = Visibility.Hidden;
                     break;
                 case PromptType.Custom3:
                     this.txtMessage.Visibility = Visibility.Visible;
@@ -262,10 +262,10 @@ namespace Panacea.Windows
                     this.imgBasicPing.Visibility = Visibility.Hidden;
                     this.imgVisualPing.Visibility = Visibility.Hidden;
                     this.ImgWinStyDeskWin.Visibility = Visibility.Hidden;
-                    this.ImgWinStyUtilBar.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyTitle.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyUtilTitle.Visibility = Visibility.Hidden;
                     break;
                 case PromptType.PingType:
                     this.btnCustom1.Visibility = Visibility.Visible;
@@ -277,19 +277,19 @@ namespace Panacea.Windows
                     this.btnNo.Visibility = Visibility.Hidden;
                     this.btnOK.Visibility = Visibility.Hidden;
                     this.ImgWinStyDeskWin.Visibility = Visibility.Hidden;
-                    this.ImgWinStyUtilBar.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyTitle.Visibility = Visibility.Hidden;
                     this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Hidden;
+                    this.LabelChoiceWinStyUtilTitle.Visibility = Visibility.Hidden;
                     break;
                 case PromptType.WindowPreference:
                     this.btnCustom1.Visibility = Visibility.Visible;
                     this.btnCustom2.Visibility = Visibility.Visible;
                     this.ImgWinStyDeskWin.Visibility = Visibility.Visible;
-                    this.ImgWinStyUtilBar.Visibility = Visibility.Visible;
                     this.LabelChoiceWinStyDeskDesc.Visibility = Visibility.Visible;
                     this.LabelChoiceWinStyTitle.Visibility = Visibility.Visible;
                     this.LabelChoiceWinStyUtilDesc.Visibility = Visibility.Visible;
+                    this.LabelChoiceWinStyUtilTitle.Visibility = Visibility.Visible;
                     this.txtMessage.Visibility = Visibility.Hidden;
                     this.btnYes.Visibility = Visibility.Hidden;
                     this.btnNo.Visibility = Visibility.Hidden;
