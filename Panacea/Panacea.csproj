@@ -336,6 +336,15 @@
   <ItemGroup>
     <Resource Include="Dependencies\Help_Images\Panacea_Demo_DesktopWindow_Edited.png" />
     <Resource Include="Dependencies\Help_Images\Panacea_Demo_NotificationTray_Edited.png" />
+    <Resource Include="Dependencies\Help_Images\Panacea_Demo_UtilityBar_Edited.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Dependencies\Help_Images\Panacea_Demo_Windows.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Dependencies\Help_Images\Panacea_Demo_NotificationTray_RightClick_Edited.png" />
+  </ItemGroup>
+  <ItemGroup>
     <Resource Include="Dependencies\Help_Images\Panacea_Demo_Popup_PoppedOutResized_Edited.png" />
     <Resource Include="Dependencies\Help_Images\Panacea_Demo_Popup_PoppedOut_Edited.png" />
     <Resource Include="Dependencies\Help_Images\Panacea_Demo_UtilBar_Audio_Edited.png" />
@@ -345,13 +354,6 @@
     <Resource Include="Dependencies\Help_Images\Panacea_Demo_UtilBar_StartProc_Edited.png" />
     <Resource Include="Dependencies\Help_Images\Panacea_Demo_UtilBar_Windows_Add_Edited.png" />
     <Resource Include="Dependencies\Help_Images\Panacea_Demo_UtilBar_Windows_Edited.png" />
-    <Resource Include="Dependencies\Help_Images\Panacea_Demo_UtilityBar_Edited.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Dependencies\Help_Images\Panacea_Demo_Windows.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Dependencies\Help_Images\Panacea_Demo_NotificationTray_RightClick_Edited.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

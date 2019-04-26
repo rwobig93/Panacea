@@ -129,6 +129,19 @@
                     </LinearGradientBrush>
                 </Rectangle.Fill>
             </Rectangle>
+            <Rectangle x:Name="RectSlide3Title" Height="58" VerticalAlignment="Top" Stroke="#7F918C8C" Panel.ZIndex="0" Margin="0,1520,0,0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Label x:Name="LabelSlide3Title" Content="Utility Bar" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="36" Foreground="{StaticResource TitleColor}" Margin="10,1520,10,0"/>
+            <Image x:Name="ImgSlide3_1" HorizontalAlignment="Left" Height="205" Margin="10,2069,0,0" VerticalAlignment="Top" Width="1100" Source="/Panacea;component/Dependencies/Help_Images/Panacea_Demo_UtilityBar_Edited.png"/>
+            <Label x:Name="LabelSlide3Desc1" Content="1. Close button &#xD;&#xA;(application still runs in the background, &#xD;&#xA;open from the notification icon)&#xD;&#xA;&#xD;&#xA;2. Network Menu&#xD;&#xA;&#xD;&#xA;3. Audio Devices Menu&#xD;&#xA;&#xD;&#xA;4. Settings Menu&#xD;&#xA;&#xD;&#xA;5. Windows / Process Start Menu&#xD;&#xA;- Left click moves all windows for the active&#xD;&#xA;window profile&#xD;&#xA;- Right click opens the Window/Start Process&#xD;&#xA;Menu&#xD;&#xA;&#xD;&#xA;6. Copy Emote Button (Shruggie)" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="10,1582,704,0" Height="487" TextOptions.TextFormattingMode="Display"/>
+            <Label x:Name="LabelSlide3Desc2" Content="7. Main Textbox&#xA;- Press enter to use the current active&#xA;function&#xA;- Also pulls up MAC converter window if&#xA;entry is validated as a MAC address&#xA;&#xA;8. Active Function&#xA;- Click this to toggle active function&#xA;(Ping / NSlookup)&#xA;&#xA;9. Current Network Connectivity Status&#xD;&#xA;- Left Click this to show info panel&#xA;&#xA;10. Current Interface Active&#xA;&#xA;11. Current Throughput / WiFi RSSI/Signal" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="421,1583,299,0" Height="487" TextOptions.TextFormattingMode="Display"/>
+            <Label x:Name="LabelSlide3Desc2_Copy" Content="Hotkeys:&#xD;&#xA;(While cursor is in Textbox)&#xD;&#xA;&#xD;&#xA;Shift + Enter:&#xD;&#xA;Toggle Active Function&#xD;&#xA;&#xD;&#xA;Ctrl + Left/Right Arrow Key:&#xD;&#xA;Move Utility Bar to another&#xD;&#xA;monitor" VerticalAlignment="Top" HorizontalContentAlignment="Center" Foreground="{StaticResource TitleColor}" FontSize="20" Margin="826,1583,10,0" Height="487" TextOptions.TextFormattingMode="Display"/>
             <!--#endregion-->
             <!--#region Help Slide 4-->
             <Rectangle x:Name="RectSlide4" Margin="0,2280,0,0" HorizontalAlignment="Left" Height="760" Stroke="#7F918C8C" VerticalAlignment="Top" Width="1120" Panel.ZIndex="0">
@@ -139,6 +152,17 @@
                     </LinearGradientBrush>
                 </Rectangle.Fill>
             </Rectangle>
+            <Rectangle x:Name="RectSlide4Title" Height="58" VerticalAlignment="Top" Stroke="#7F918C8C" Panel.ZIndex="0" Margin="0,2280,0,0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Label x:Name="LabelSlide4Title" Content="Audio Menu" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="36" Foreground="{StaticResource TitleColor}" Margin="10,2280,10,0"/>
+            <Image x:Name="ImgSlide4_1" HorizontalAlignment="Left" Height="335" Margin="406,2471,0,0" VerticalAlignment="Top" Width="704" Source="/Panacea;component/Dependencies/Help_Images/Panacea_Demo_UtilBar_Audio_Edited.png"/>
+            <Label x:Name="LabelSlide4Desc1" Content="1. Windows Recording Devices&#xD;&#xA;- List of current active recording devices,&#xD;&#xA;these are things like mics.&#xD;&#xA;- The current selected device is highlighted&#xD;&#xA;- Click another device to change default&#xD;&#xA;communication to that device&#xD;&#xA;- Currently only available from the Utility&#xD;&#xA;Bar&#xD;&#xA;&#xD;&#xA;2. Windows Playback Devices&#xD;&#xA;- List of current active playback devices,&#xD;&#xA;these are things like speakers&#xD;&#xA;- The current selected device is highlighted&#xD;&#xA;- Click another device to change default&#xD;&#xA;sound playback to that device&#xD;&#xA;&#xD;&#xA;3. Close Button&#xD;&#xA;&#xD;&#xA;4. Popout Button&#xD;&#xA;- Only on popup menus on the Utility Bar&#xD;&#xA;&#xD;&#xA;5. Refresh Audio Devices&#xD;&#xA;- Refresh Playback and Recording Device&#xD;&#xA;lists manually, these should auto refresh" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="10,2343,719,0" Height="692" TextOptions.TextFormattingMode="Display"/>
             <!--#endregion-->
             <!--#region Help Slide 5-->
             <Rectangle x:Name="RectSlide5" Margin="0,3040,0,0" HorizontalAlignment="Left" Height="760" Stroke="#7F918C8C" VerticalAlignment="Top" Width="1120" Panel.ZIndex="0">
@@ -149,6 +173,17 @@
                     </LinearGradientBrush>
                 </Rectangle.Fill>
             </Rectangle>
+            <Rectangle x:Name="RectSlide5Title" Height="58" VerticalAlignment="Top" Stroke="#7F918C8C" Panel.ZIndex="0" Margin="0,3040,0,0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Label x:Name="LabelSlide5Title" Content="Network Menu" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="36" Foreground="{StaticResource TitleColor}" Margin="10,3040,10,0"/>
+            <Image x:Name="ImgSlide5_1" HorizontalAlignment="Left" Height="335" Margin="5,3102,0,0" VerticalAlignment="Top" Width="704" Source="/Panacea;component/Dependencies/Help_Images/Panacea_Demo_UtilBar_Network_Edited.png"/>
+            <Label x:Name="LabelSlide5Desc1" Content="1. Windows Recording Devices&#xD;&#xA;- List of current active recording devices,&#xD;&#xA;these are things like mics.&#xD;&#xA;- The current selected device is highlighted&#xD;&#xA;- Click another device to change default&#xD;&#xA;communication to that device&#xD;&#xA;- Currently only available from the Utility&#xD;&#xA;Bar&#xD;&#xA;&#xD;&#xA;2. Windows Playback Devices&#xD;&#xA;- List of current active playback devices,&#xD;&#xA;these are things like speakers&#xD;&#xA;- The current selected device is highlighted&#xD;&#xA;- Click another device to change default&#xD;&#xA;sound playback to that device&#xD;&#xA;&#xD;&#xA;3. Close Button&#xD;&#xA;&#xD;&#xA;4. Popout Button&#xD;&#xA;- Only on popup menus on the Utility Bar&#xD;&#xA;&#xD;&#xA;5. Refresh Audio Devices&#xD;&#xA;- Refresh Playback and Recording Device&#xD;&#xA;lists manually, these should auto refresh" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="10,3437,719,0" Height="354" TextOptions.TextFormattingMode="Display"/>
             <!--#endregion-->
         </Grid>
     </Grid>
