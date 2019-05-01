@@ -56,6 +56,7 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
+                <Button x:Name="BtnInfo" Style="{StaticResource BaseButton}" Click="BtnInfo_Click" Content="🛈" HorizontalAlignment="Left" VerticalAlignment="Top" Width="26" Foreground="#FF8D8D8D" Margin="66,2,0,0" Height="27" Grid.Row="0" Background="{x:Null}" FontSize="16"/>
             </Grid>
         </ScrollViewer>
     </Grid>

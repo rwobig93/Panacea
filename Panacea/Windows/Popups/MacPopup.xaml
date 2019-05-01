@@ -25,7 +25,7 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <TextBlock x:Name="lblTitle" HorizontalAlignment="Center" TextWrapping="Wrap" Text="MAC Address Converter" VerticalAlignment="Top" Height="30" Width="225" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Panel.ZIndex="100" />
+        <TextBlock x:Name="lblTitle" TextWrapping="Wrap" Text="MAC Address Converter" VerticalAlignment="Top" Height="30" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Panel.ZIndex="100" Margin="85,0" />
         <Button x:Name="btnExit" Click="btnExit_Click" Style="{StaticResource ExitButtonHoverColor}" Content="X" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="32" FontSize="18" BorderBrush="{x:Null}"/>
         <Button x:Name="btnMinimize" Click="btnMinimize_Click" Style="{StaticResource ExitButtonHoverColor}" Content="_" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="32" FontSize="18" BorderBrush="{x:Null}" Margin="0,0,32,0"/>
         <Controls:ToggleSwitch x:Name="togMACCase" IsChecked="False" Click="togMACCase_Click" OnLabel="UpperCase" OffLabel="LowerCase" Margin="146,78,0,0" Height="24" VerticalAlignment="Top" HorizontalAlignment="Left" Width="136" Foreground="#FF8D8D8D" OffSwitchBrush="#FF595959" OnSwitchBrush="#FF3C3C3C" SwitchForeground="#FF3C3C3C" ThumbIndicatorBrush="#FF8D8D8D" >
@@ -44,5 +44,6 @@
             </Controls:ToggleSwitch.Background>
         </Controls:ToggleSwitch>
         <TextBlock x:Name="lblNotification" Padding="0" Margin="10,0,10,4" TextWrapping="NoWrap" VerticalAlignment="Bottom" Foreground="#FF00E2CD" Height="20" TextAlignment="Left" FontSize="16"/>
+        <Button x:Name="BtnInfo" Click="BtnInfo_Click" Style="{StaticResource ExitButtonHoverColor}" Content="🛈" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" FontSize="18" BorderBrush="{x:Null}" HorizontalAlignment="Left" Width="32"/>
     </Grid>
 </Window>

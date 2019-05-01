@@ -70,6 +70,21 @@ namespace Panacea.Classes
         NotChosen
     }
 
+    public enum HelpMenu
+    {
+        NotificationIcon,
+        DesktopWindow,
+        UtilityBar,
+        AudioMenu,
+        NetworkMenu,
+        MacPopup,
+        SettingsMenu,
+        WindowsMenu,
+        AddWindowsMenu,
+        StartProcessMenu,
+        PopoutFeature
+    }
+
     #endregion
 
     #region General

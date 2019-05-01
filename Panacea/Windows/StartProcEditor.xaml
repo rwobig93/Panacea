@@ -73,5 +73,6 @@
         </ComboBox>
         <Button x:Name="BtnFinish" Content="Save" Click="BtnFinish_Click" HorizontalAlignment="Right" Margin="0,0,10,25" VerticalAlignment="Bottom" Width="75" Height="34" Style="{StaticResource BaseButton}" FontSize="16"/>
         <TextBlock x:Name="LabelMessage" Margin="447,0,90,25" TextWrapping="NoWrap" VerticalAlignment="Bottom" Height="34" Foreground="#FF8D8D8D" FontSize="16" TextAlignment="Center"/>
+        <Button x:Name="BtnInfo" Click="BtnInfo_Click" Style="{StaticResource ExitButtonHoverColor}" Content="🛈" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="32" FontSize="20" BorderBrush="{x:Null}" Margin="0,1,64,0"/>
     </Grid>
 </Window>

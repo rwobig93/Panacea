@@ -111,5 +111,6 @@
         </Grid>
         <Button x:Name="BtnMenuWindows" Click="BtnMenuWindows_Click" Content="Windows Menu" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="374,0,0,51" VerticalAlignment="Bottom" Width="136" Height="32"/>
         <Button x:Name="BtnMenuStartProc" Click="BtnMenuStartProc_Click" Content="Start Process Menu" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="374,0,0,14" VerticalAlignment="Bottom" Width="136" Height="32"/>
+        <Button x:Name="BtnInfo" Click="BtnInfo_Click" Content="🛈" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="3,2,0,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="18" />
     </Grid>
 </Window>

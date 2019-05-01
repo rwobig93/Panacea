@@ -202,6 +202,11 @@ namespace Panacea.Windows.Popups
             StartSettingsUpdate(SettingsUpdate.WinStartup);
         }
 
+        private void BtnInfo_Click(object sender, RoutedEventArgs e)
+        {
+            Director.Main.OpenInfoWindow(HelpMenu.SettingsMenu);
+        }
+
         #endregion
 
         #region Methods

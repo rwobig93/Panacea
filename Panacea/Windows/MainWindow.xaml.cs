@@ -101,6 +101,11 @@ namespace Panacea
             }
         }
 
+        private void BtnInfo_Click(object sender, RoutedEventArgs e)
+        {
+            ShowInfoWindow();
+        }
+
         #endregion
 
         #region Event Handlers
@@ -1414,6 +1419,27 @@ namespace Panacea
         {
             //Retained for future use
             throw new NotImplementedException();
+        }
+
+        private void ShowInfoWindow()
+        {
+            try
+            {
+                HelpMenu menu = HelpMenu.DesktopWindow;
+                if (grdAudio.Visibility == Visibility.Visible)
+                    menu = HelpMenu.AudioMenu;
+                else if (grdWindows.Visibility == Visibility.Visible)
+                    menu = HelpMenu.WindowsMenu;
+                else if (grdNetwork.Visibility == Visibility.Visible)
+                    menu = HelpMenu.NetworkMenu;
+                else
+                    menu = HelpMenu.DesktopWindow;
+                Director.Main.OpenInfoWindow(menu);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
         #endregion
 

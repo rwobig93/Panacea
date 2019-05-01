@@ -265,5 +265,6 @@
         </ScrollViewer>
         <Button x:Name="btnMinimize" Click="btnMinimize_Click" Style="{StaticResource ExitButton}" Content="_" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" FontSize="18" Margin="0,0,29,0"/>
         <TextBox x:Name="txtBetaLabel" HorizontalAlignment="Center" Style="{StaticResource TextboxNoReaction}" Height="20" Margin="354,6,241,0" TextWrapping="Wrap" Text="Beta" VerticalAlignment="Top" Width="30" Panel.ZIndex="100" Focusable="False" AllowDrop="False" IsReadOnly="True" IsTabStop="False" Foreground="#FFBD0101" BorderBrush="#FFBD0101" Visibility="Hidden"/>
+        <Button x:Name="BtnInfo" Click="BtnInfo_Click" Style="{StaticResource ExitButton}" Content="🛈" Panel.ZIndex="1000" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" FontSize="18" Margin="0,0,58,0"/>
     </Grid>
 </Window>

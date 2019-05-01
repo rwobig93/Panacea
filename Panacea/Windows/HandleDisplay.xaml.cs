@@ -178,6 +178,11 @@ namespace Panacea.Windows
             uDebugLogAdd("HandleDisplay window closed");
         }
 
+        private void BtnInfo_Click(object sender, RoutedEventArgs e)
+        {
+            Director.Main.OpenInfoWindow(HelpMenu.AddWindowsMenu);
+        }
+
         #endregion
 
         #region Methods

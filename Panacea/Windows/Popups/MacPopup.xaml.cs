@@ -111,6 +111,11 @@ namespace Panacea.Windows
             }
         }
 
+        private void BtnInfo_Click(object sender, RoutedEventArgs e)
+        {
+            Director.Main.OpenInfoWindow(HelpMenu.MacPopup);
+        }
+
         #endregion
 
         #region Methods

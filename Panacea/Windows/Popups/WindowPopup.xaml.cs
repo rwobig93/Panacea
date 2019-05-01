@@ -217,6 +217,11 @@ namespace Panacea.Windows
             if (!startingUp)
                 VerifyResetButtonRequirement();
         }
+
+        private void BtnInfo_Click(object sender, RoutedEventArgs e)
+        {
+            ShowInfoWindow();
+        }
         #endregion
 
         #region Methods
@@ -846,6 +851,23 @@ namespace Panacea.Windows
                 {
                     btnReset.Visibility = Visibility.Visible;
                 }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ShowInfoWindow()
+        {
+            try
+            {
+                HelpMenu menu = HelpMenu.WindowsMenu;
+                if (GrdWinWindows.Visibility == Visibility.Visible)
+                    menu = HelpMenu.WindowsMenu;
+                else
+                    menu = HelpMenu.StartProcessMenu;
+                Director.Main.OpenInfoWindow(menu);
             }
             catch (Exception ex)
             {

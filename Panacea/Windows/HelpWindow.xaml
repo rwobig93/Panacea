@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Panacea.Windows"
-        mc:Ignorable="d"
+        mc:Ignorable="d" Closing="Window_Closing"
         Title="HelpWindow" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Height="760" Width="1260" WindowStyle="None" AllowsTransparency="True" Background="{StaticResource BaseBackgroundBrush}" Foreground="{x:Null}">
     <Window.Resources>
         <SolidColorBrush x:Name="TitleColor" x:Key="TitleColor" Color="#FF0CD8E2" />
@@ -48,7 +48,7 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <TextBlock x:Name="LabelTitle" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Help Window" VerticalAlignment="Top" Height="30" Width="138" Foreground="#FF707070" FontSize="20" TextAlignment="Center" Margin="-1,0,0,0" d:IsLocked="True" />
+        <TextBlock x:Name="LabelTitle" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Help Window" VerticalAlignment="Top" Height="30" Width="138" Foreground="{DynamicResource TitleColor}" FontSize="20" TextAlignment="Center" Margin="-1,0,0,0" d:IsLocked="True" />
         <Rectangle x:Name="RectMenu" Panel.ZIndex="-3" Margin="0,1,0,0" HorizontalAlignment="Left" Width="139" Stroke="#66918C8C" d:IsLocked="True">
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -61,20 +61,19 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <Button Content="Button" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top" Width="118"/>
-        <Button Content="Button" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,64,0,0" VerticalAlignment="Top" Width="118"/>
-        <Button Content="Button" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,93,0,0" VerticalAlignment="Top" Width="118"/>
-        <Button Content="Button" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,122,0,0" VerticalAlignment="Top" Width="118"/>
-        <Button Content="Button" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,151,0,0" VerticalAlignment="Top" Width="118"/>
-        <Button Content="Button" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,180,0,0" VerticalAlignment="Top" Width="118"/>
-        <Button Content="Button" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,209,0,0" VerticalAlignment="Top" Width="118"/>
-        <Button Content="Button" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,238,0,0" VerticalAlignment="Top" Width="118"/>
-        <Button Content="Button" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,267,0,0" VerticalAlignment="Top" Width="118"/>
-        <Button Content="Button" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,296,0,0" VerticalAlignment="Top" Width="118"/>
-        <Button Content="Button" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,325,0,0" VerticalAlignment="Top" Width="118"/>
-        <Button Content="Button" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,354,0,0" VerticalAlignment="Top" Width="118"/>
+        <Button x:Name="BtnSlideNotification" Content="Notification Icon" Click="BtnSlide_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top" Width="118"/>
+        <Button x:Name="BtnSlideDesktopWin" Content="Desktop Window" Click="BtnSlide_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,64,0,0" VerticalAlignment="Top" Width="118"/>
+        <Button x:Name="BtnSlideUtilBar" Content="Utility Bar" Click="BtnSlide_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,93,0,0" VerticalAlignment="Top" Width="118"/>
+        <Button x:Name="BtnSlideAudioMenu" Content="Audio Menu" Click="BtnSlide_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,122,0,0" VerticalAlignment="Top" Width="118"/>
+        <Button x:Name="BtnSlideNetworkMenu" Content="Network Menu" Click="BtnSlide_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,151,0,0" VerticalAlignment="Top" Width="118"/>
+        <Button x:Name="BtnSlideMacPopup" Content="Mac Popup" Click="BtnSlide_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,180,0,0" VerticalAlignment="Top" Width="118"/>
+        <Button x:Name="BtnSlideSettingsMenu" Content="Settings Menu" Click="vBtnSlide_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,209,0,0" VerticalAlignment="Top" Width="118"/>
+        <Button x:Name="BtnSlideWindowsMenu" Content="Windows Menu" Click="BtnSlide_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,238,0,0" VerticalAlignment="Top" Width="118"/>
+        <Button x:Name="BtnSlideAddWindows" Content="Add Windows" Click="BtnSlide_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,267,0,0" VerticalAlignment="Top" Width="118"/>
+        <Button x:Name="BtnSlideStartProc" Content="Start Processes" Click="BtnSlide_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,296,0,0" VerticalAlignment="Top" Width="118"/>
+        <Button x:Name="BtnSlidePopoutFeat" Content="Popout Feature" Click="BtnSlide_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,325,0,0" VerticalAlignment="Top" Width="118"/>
         <!--#endregion-->
-        <Grid x:Name="GridHelpSlides" Margin="140,-1520,0,-5320" Height="7600" VerticalAlignment="Center" Panel.ZIndex="0">
+        <Grid x:Name="GridHelpSlides" Margin="140,-1900,0,-5718" Height="8378" VerticalAlignment="Center" Panel.ZIndex="0">
             <!--#region Help Slide 1-->
             <Rectangle x:Name="RectSlide1" Margin="0,0,0,0" HorizontalAlignment="Left" Height="760" Stroke="#7F918C8C" VerticalAlignment="Top" Width="1120" Panel.ZIndex="0">
                 <Rectangle.Fill>
@@ -141,7 +140,7 @@
             <Image x:Name="ImgSlide3_1" HorizontalAlignment="Left" Height="205" Margin="10,2069,0,0" VerticalAlignment="Top" Width="1100" Source="/Panacea;component/Dependencies/Help_Images/Panacea_Demo_UtilityBar_Edited.png"/>
             <Label x:Name="LabelSlide3Desc1" Content="1. Close button &#xD;&#xA;(application still runs in the background, &#xD;&#xA;open from the notification icon)&#xD;&#xA;&#xD;&#xA;2. Network Menu&#xD;&#xA;&#xD;&#xA;3. Audio Devices Menu&#xD;&#xA;&#xD;&#xA;4. Settings Menu&#xD;&#xA;&#xD;&#xA;5. Windows / Process Start Menu&#xD;&#xA;- Left click moves all windows for the active&#xD;&#xA;window profile&#xD;&#xA;- Right click opens the Window/Start Process&#xD;&#xA;Menu&#xD;&#xA;&#xD;&#xA;6. Copy Emote Button (Shruggie)" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="10,1582,704,0" Height="487" TextOptions.TextFormattingMode="Display"/>
             <Label x:Name="LabelSlide3Desc2" Content="7. Main Textbox&#xA;- Press enter to use the current active&#xA;function&#xA;- Also pulls up MAC converter window if&#xA;entry is validated as a MAC address&#xA;&#xA;8. Active Function&#xA;- Click this to toggle active function&#xA;(Ping / NSlookup)&#xA;&#xA;9. Current Network Connectivity Status&#xD;&#xA;- Left Click this to show info panel&#xA;&#xA;10. Current Interface Active&#xA;&#xA;11. Current Throughput / WiFi RSSI/Signal" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="421,1583,299,0" Height="487" TextOptions.TextFormattingMode="Display"/>
-            <Label x:Name="LabelSlide3Desc2_Copy" Content="Hotkeys:&#xD;&#xA;(While cursor is in Textbox)&#xD;&#xA;&#xD;&#xA;Shift + Enter:&#xD;&#xA;Toggle Active Function&#xD;&#xA;&#xD;&#xA;Ctrl + Left/Right Arrow Key:&#xD;&#xA;Move Utility Bar to another&#xD;&#xA;monitor" VerticalAlignment="Top" HorizontalContentAlignment="Center" Foreground="{StaticResource TitleColor}" FontSize="20" Margin="826,1583,10,0" Height="487" TextOptions.TextFormattingMode="Display"/>
+            <Label x:Name="LabelSlide3Desc2_Copy" Content="Hotkeys:&#xA;(While cursor is in Textbox)&#xA;&#xA;Shift + Enter:&#xA;Toggle Active Function&#xA;&#xA;Ctrl + Left/Right Arrow Key:&#xA;Move Utility Bar to another&#xA;monitor&#xD;&#xA;&#xD;&#xA;Hotkey (Anywhere):&#xD;&#xA;&#xD;&#xA;Ctrl + Enter:&#xD;&#xA;Moves focus inside textbox,&#xD;&#xA;this works even outside the&#xD;&#xA;application" VerticalAlignment="Top" HorizontalContentAlignment="Center" Foreground="{StaticResource TitleColor}" FontSize="20" Margin="826,1583,10,0" Height="487" TextOptions.TextFormattingMode="Display"/>
             <!--#endregion-->
             <!--#region Help Slide 4-->
             <Rectangle x:Name="RectSlide4" Margin="0,2280,0,0" HorizontalAlignment="Left" Height="760" Stroke="#7F918C8C" VerticalAlignment="Top" Width="1120" Panel.ZIndex="0">
@@ -182,9 +181,144 @@
                 </Rectangle.Fill>
             </Rectangle>
             <Label x:Name="LabelSlide5Title" Content="Network Menu" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="36" Foreground="{StaticResource TitleColor}" Margin="10,3040,10,0"/>
-            <Image x:Name="ImgSlide5_1" HorizontalAlignment="Left" Height="335" Margin="5,3102,0,0" VerticalAlignment="Top" Width="704" Source="/Panacea;component/Dependencies/Help_Images/Panacea_Demo_UtilBar_Network_Edited.png"/>
-            <Label x:Name="LabelSlide5Desc1" Content="1. Windows Recording Devices&#xD;&#xA;- List of current active recording devices,&#xD;&#xA;these are things like mics.&#xD;&#xA;- The current selected device is highlighted&#xD;&#xA;- Click another device to change default&#xD;&#xA;communication to that device&#xD;&#xA;- Currently only available from the Utility&#xD;&#xA;Bar&#xD;&#xA;&#xD;&#xA;2. Windows Playback Devices&#xD;&#xA;- List of current active playback devices,&#xD;&#xA;these are things like speakers&#xD;&#xA;- The current selected device is highlighted&#xD;&#xA;- Click another device to change default&#xD;&#xA;sound playback to that device&#xD;&#xA;&#xD;&#xA;3. Close Button&#xD;&#xA;&#xD;&#xA;4. Popout Button&#xD;&#xA;- Only on popup menus on the Utility Bar&#xD;&#xA;&#xD;&#xA;5. Refresh Audio Devices&#xD;&#xA;- Refresh Playback and Recording Device&#xD;&#xA;lists manually, these should auto refresh" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="10,3437,719,0" Height="354" TextOptions.TextFormattingMode="Display"/>
+            <Image x:Name="ImgSlide5_1" HorizontalAlignment="Left" Height="335" Margin="212,3103,0,0" VerticalAlignment="Top" Width="704" Source="/Panacea;component/Dependencies/Help_Images/Panacea_Demo_UtilBar_Network_Edited.png"/>
+            <Label x:Name="LabelSlide5Desc1" Content="1. Current Network Action&#xD;&#xA;- Displays the current action if you press enter&#xD;&#xA;in the main textbox&#xD;&#xA;&#xD;&#xA;2. Main Textbox&#xD;&#xA;- Ping/DNS multiple by seperating w/ a comma&#xD;&#xA;(example: google.com,firefox.com)&#xD;&#xA;&#xD;&#xA;3. Resolved DNS Entries&#xD;&#xA;- Shows all DNS resolved entries, You can click&#xD;&#xA;the address or hostname to copy it to your&#xD;&#xA;clipboard, or the = in the middle to copy both" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="10,3437,639,0" Height="354" TextOptions.TextFormattingMode="Display"/>
+            <Label x:Name="LabelSlide5Desc2" Content="4. Ping Entries&#xD;&#xA;- Shows any current pings, Pause and Close buttons are on the right&#xD;&#xA;- Ping Stats: (H)Highest, (L)Lowest, (A)Average, (C)Current&#xD;&#xA;&#xD;&#xA;5-8. Close, Popout, Minimize, Reset Window Size/Location&#xD;&#xA;&#xD;&#xA;9. Close all ping entries&#xD;&#xA;&#xD;&#xA;10. Pause/UnPause all ping entries" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="486,3437,10,0" Height="354" TextOptions.TextFormattingMode="Display"/>
+            <!--#endregion-->
+            <!--#region Help Slide 6-->
+            <Rectangle x:Name="RectSlide6" Margin="0,3800,0,0" HorizontalAlignment="Left" Height="760" Stroke="#7F918C8C" VerticalAlignment="Top" Width="1120" Panel.ZIndex="0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="RectSlide6Title" Height="58" VerticalAlignment="Top" Stroke="#7F918C8C" Panel.ZIndex="0" Margin="0,3800,0,0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Label x:Name="LabelSlide6Title" Content="Mac Popup" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="36" Foreground="{StaticResource TitleColor}" Margin="10,3800,10,0"/>
+            <Image x:Name="ImgSlide6_1" HorizontalAlignment="Left" Height="335" Margin="212,3863,0,0" VerticalAlignment="Top" Width="704" Source="/Panacea;component/Dependencies/Help_Images/Panacea_Demo_UtilBar_MacPopup_Edited.png"/>
+            <Label x:Name="LabelSlide6Desc1" Content="1. Main Textbox&#xD;&#xA;- Enter a MAC address in any format and hit enter&#xD;&#xA;- MAC converter is usable from any action&#xD;&#xA;&#xD;&#xA;2. MAC Address in Network notation (click to copy to clipboard)&#xD;&#xA;&#xD;&#xA;3. MAC Address in Colon notation (click to copy to clipboard)&#xD;&#xA;&#xD;&#xA;4. MAC Address in Dash notation (click to copy to clipboard)&#xD;&#xA;&#xD;&#xA;5. Case Slider&#xD;&#xA;- Toggle to switch MAC addresses between upper/lower case" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="10,4197,531,0" Height="354" TextOptions.TextFormattingMode="Display"/>
+            <Label x:Name="LabelSlide6Desc2" Content="6. Convert Button&#xD;&#xA;- Click to convert a MAC address in the textbox to the left&#xD;&#xA;&#xD;&#xA;7. Close Window&#xD;&#xA;&#xD;&#xA;8. Minimize Window" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="594,4206,10,0" Height="354" TextOptions.TextFormattingMode="Display"/>
+            <!--#endregion-->
+            <!--#region Help Slide 7-->
+            <Rectangle x:Name="RectSlide7" Margin="0,4560,0,0" HorizontalAlignment="Left" Height="760" Stroke="#7F918C8C" VerticalAlignment="Top" Width="1120" Panel.ZIndex="0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="RectSlide7Title" Height="58" VerticalAlignment="Top" Stroke="#7F918C8C" Panel.ZIndex="0" Margin="0,4560,0,0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Label x:Name="LabelSlide7Title" Content="Settings Menu" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="36" Foreground="{StaticResource TitleColor}" Margin="10,4560,10,0"/>
+            <Image x:Name="ImgSlide7_1" HorizontalAlignment="Left" Height="335" Margin="212,4977,0,0" VerticalAlignment="Top" Width="636" Source="/Panacea;component/Dependencies/Help_Images/Panacea_Demo_UtilBar_Settings_Edited.png"/>
+            <Label x:Name="LabelSlide7Desc1" Content="1. Windows/Startup Button Names&#xD;&#xA;- Type in the fields to rename each button&#xD;&#xA;&#xD;&#xA;2. Default Network Action&#xD;&#xA;- Select the action you want to be selected by default on startup&#xD;&#xA;&#xD;&#xA;3. Reset Config to Default&#xD;&#xA;- Resets all application settings back to default&#xD;&#xA;&#xD;&#xA;4-5. Close Window, Popout Window&#xD;&#xA;&#xD;&#xA;6. Run Panacea when Windows Starts" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="6,4623,535,0" Height="354" TextOptions.TextFormattingMode="Display"/>
+            <Label x:Name="LabelSlide7Desc2" Content="7. Update to Beta Versions&#xD;&#xA;- If checked you will get beta updates&#xD;&#xA;&#xD;&#xA;8. View Changelog&#xD;&#xA;- Shows current and previous changelogs&#xD;&#xA;&#xD;&#xA;9. Send Diagnostic Logs&#xD;&#xA;- Sends a zip'd file w/ anonymous logs and error messages&#xD;&#xA;&#xD;&#xA;10. Current application version number&#xD;&#xA;- Click number to copy to clipboard" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="594,4623,10,0" Height="354" TextOptions.TextFormattingMode="Display"/>
+            <!--#endregion-->
+            <!--#region Help Slide 8-->
+            <Rectangle x:Name="RectSlide8" Margin="0,5320,0,0" HorizontalAlignment="Left" Height="760" Stroke="#7F918C8C" VerticalAlignment="Top" Width="1120" Panel.ZIndex="0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="RectSlide8Title" Height="58" VerticalAlignment="Top" Stroke="#7F918C8C" Panel.ZIndex="0" Margin="0,5320,0,0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Label x:Name="LabelSlide8Title" Content="Windows Menu" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="36" Foreground="{StaticResource TitleColor}" Margin="10,5320,10,0"/>
+            <Image x:Name="ImgSlide8_1" HorizontalAlignment="Left" Height="335" Margin="548,5383,0,0" VerticalAlignment="Top" Width="562" Source="/Panacea;component/Dependencies/Help_Images/Panacea_Demo_UtilBar_Windows_Edited.png"/>
+            <Label x:Name="LabelSlide8Desc1" Content="1. Switch to the Start Process Menu&#xD;&#xA;&#xD;&#xA;2. Switch to the Windows Menu&#xD;&#xA;&#xD;&#xA;3. Window list&#xD;&#xA;- Displays saved Window by: ProcessName | Window Title&#xD;&#xA;&#xD;&#xA;4. Delete Selected Window&#xD;&#xA;&#xD;&#xA;5-6. Close Window, Popout Window&#xD;&#xA;&#xD;&#xA;7. Update Selected Window Size &amp; Location&#xD;&#xA;- Updates the currently selected process window to it's&#xD;&#xA;current location and size, if it's running and open&#xD;&#xA;&#xD;&#xA;8. Move Selected Window&#xD;&#xA;- Moves the process window for the selected window to the&#xD;&#xA;desired location and size&#xD;&#xA;&#xD;&#xA;9. Current Window Profile&#xD;&#xA;- Switch window profiles, you have up to 4&#xD;&#xA;&#xD;&#xA;10. Add process window&#xD;&#xA;- Opens the Add process window" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="6,5381,572,0" Height="693" TextOptions.TextFormattingMode="Display"/>
+            <Label x:Name="LabelSlide8Desc2" Content="11. Window Profile Activate&#xD;&#xA;- Click the button for a window profile to move windows&#xD;&#xA;in the corresponding window profile&#xD;&#xA;&#xD;&#xA;12. Start Process Activate&#xD;&#xA;- Click the button to start processes for the corresponding&#xD;&#xA;start profile" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="553,5723,10,0" Height="348" TextOptions.TextFormattingMode="Display"/>
+            <!--#endregion-->
+            <!--#region Help Slide 9-->
+            <Rectangle x:Name="RectSlide9" Margin="0,6080,0,0" HorizontalAlignment="Left" Height="760" Stroke="#7F918C8C" VerticalAlignment="Top" Width="1120" Panel.ZIndex="0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="RectSlide9Title" Height="58" VerticalAlignment="Top" Stroke="#7F918C8C" Panel.ZIndex="0" Margin="0,6080,0,0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Label x:Name="LabelSlide9Title" Content="Add Windows Menu" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="36" Foreground="{StaticResource TitleColor}" Margin="10,6080,10,0"/>
+            <Image x:Name="ImgSlide9_1" HorizontalAlignment="Left" Height="365" Margin="472,6470,0,0" VerticalAlignment="Top" Width="643" Source="/Panacea;component/Dependencies/Help_Images/Panacea_Demo_UtilBar_Windows_Add_Edited.png"/>
+            <Label x:Name="LabelSlide9Desc1" Content="1. Process Windows List&#xD;&#xA;- Displays all currently running windows by process&#xD;&#xA;and title&#xD;&#xA;&#xD;&#xA;2. Close/Finish Button&#xD;&#xA;&#xD;&#xA;3. Refresh List&#xD;&#xA;- Refreshes the Process Window List&#xD;&#xA;&#xD;&#xA;4. Process Details&#xD;&#xA;&#xD;&#xA;5. Ignore Window Title&#xD;&#xA;- If the checkbox is checked then anytime a window&#xD;&#xA;is moved it will move all windows for that process&#xD;&#xA;no matter what the window title is&#xD;&#xA;- Some applications have hidden windows and this&#xD;&#xA;can cause odd behavior (Outlook &amp; Cisco Jabber),&#xD;&#xA;If you notice weird behavior try and uncheck this&#xD;&#xA;box when adding it&#xD;&#xA;&#xD;&#xA;6. Add the selected process to the window list&#xD;&#xA;&#xD;&#xA;7. Window Location and Size Details" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="6,6143,653,0" Height="697" TextOptions.TextFormattingMode="Display"/>
+            <Label x:Name="LabelSlide9Desc2" Content="8. Process Window Outline&#xD;&#xA;- When you select a Process from the window list this orange outline&#xD;&#xA;will appear around the corresponding application window on&#xD;&#xA;your screen to make it easy to identify which window you have&#xD;&#xA;selected." VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="486,6143,10,0" Height="348" TextOptions.TextFormattingMode="Display"/>
+            <!--#endregion-->
+            <!--#region Help Slide 10-->
+            <Rectangle x:Name="RectSlide10" Margin="0,6840,0,0" HorizontalAlignment="Left" Height="760" Stroke="#7F918C8C" VerticalAlignment="Top" Width="1120" Panel.ZIndex="0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="RectSlide10Title" Height="58" VerticalAlignment="Top" Stroke="#7F918C8C" Panel.ZIndex="0" Margin="0,6840,0,0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Label x:Name="LabelSlide10Title" Content="Start Process Menu" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="36" Foreground="{StaticResource TitleColor}" Margin="10,6840,10,0"/>
+            <Image x:Name="ImgSlide10_1" HorizontalAlignment="Left" Height="461" Margin="486,6903,0,0" VerticalAlignment="Top" Width="629" Source="/Panacea;component/Dependencies/Help_Images/Panacea_Demo_UtilBar_StartProc_Edited.png"/>
+            <Label x:Name="LabelSlide10Desc1" Content="1. Switch to the Start Process Menu&#xA;&#xA;2. Switch to the Windows Menu&#xD;&#xA;&#xD;&#xA;3. Start, Edit, or Delete Selected Process&#xD;&#xA;&#xD;&#xA;4. Add a new Process, Switch Current Process Profile&#xD;&#xA;&#xD;&#xA;5. Add New Start Process&#xD;&#xA;- Path: Full path of the application to launch&#xD;&#xA;- Args: Any arguments passed to the application&#xD;&#xA;- Name: Friendly Name you want it called in the list&#xD;&#xA;- Move After Start: If yes then the process window&#xD;&#xA;will be moved automatically if it matches a process&#xD;&#xA;window in the current window profile&#xD;&#xA;&#xD;&#xA;6. Close, Minimize&#xD;&#xA;&#xD;&#xA;7. Start Process List" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="6,6902,639,0" Height="688" TextOptions.TextFormattingMode="Display"/>
+            <Label x:Name="LabelSlide10Desc2" Content="8. Activate Process Window Profile / Start Process Profile&#xD;&#xA;- Click the button to start processes for the corresponding&#xA;start profile&#xD;&#xA;- Click the button for a window profile to move windows&#xA;in the corresponding window profile" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="486,7364,5,0" Height="226" TextOptions.TextFormattingMode="Display"/>
+            <!--#endregion-->
+            <!--#region Help Slide 11-->
+            <Rectangle x:Name="RectSlide11" Margin="0,7600,0,0" HorizontalAlignment="Left" Height="760" Stroke="#7F918C8C" VerticalAlignment="Top" Width="1120" Panel.ZIndex="0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="RectSlide11Title" Height="58" VerticalAlignment="Top" Stroke="#7F918C8C" Panel.ZIndex="0" Margin="0,7600,0,0">
+                <Rectangle.Fill>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF1C1C1C" Offset="0"/>
+                        <GradientStop Color="Black" Offset="1"/>
+                    </LinearGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Label x:Name="LabelSlide11Title" Content="Popup Window Popout Feature" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="36" Foreground="{StaticResource TitleColor}" Margin="10,7600,10,0"/>
+            <Image x:Name="ImgSlide11_1" HorizontalAlignment="Left" Height="335" Margin="6,7663,0,0" VerticalAlignment="Top" Width="542" Source="/Panacea;component/Dependencies/Help_Images/Panacea_Demo_Popup_PoppedOut_Edited.png"/>
+            <Label x:Name="LabelSlide11Desc1" Content="1. Window Grab Bar&#xD;&#xA;- Drag/Move the window around by hold clicking on this bar&#xD;&#xA;&#xD;&#xA;2. Popout / Popin Button&#xD;&#xA;- Any popup with this button allows you to &quot;Pop&quot; the popup&#xD;&#xA;to either be anchored to the utility bar or be it's own window&#xD;&#xA;- Once a popup is popped out you can leave it up while&#xD;&#xA;closing any other window or the utility bar&#xD;&#xA;&#xD;&#xA;3. Resize Edge&#xD;&#xA;- You can resize any popup window once it is popped out" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="6,8003,572,0" Height="347" TextOptions.TextFormattingMode="Display"/>
+            <Label x:Name="LabelSlide11Desc2" Content="1. Reset Size/Location&#xD;&#xA;- If a popup window has been resized this button will&#xD;&#xA;appear, this will reset the popup back to it's original&#xD;&#xA;size and pop the window back onto the utility bar&#xD;&#xA;&#xD;&#xA;2. Popout/Popin&#xD;&#xA;- You can resize then pop the window back onto the &#xD;&#xA;utility bar if you prefer a certain size&#xD;&#xA;- The size, location, and state of these windows will be&#xD;&#xA;auto restored in a later release" VerticalAlignment="Top" HorizontalContentAlignment="Center" FontSize="20" Foreground="{StaticResource DescColor}" Margin="604,8003,5,0" Height="347" TextOptions.TextFormattingMode="Display"/>
+            <Image x:Name="ImgSlide11_2" HorizontalAlignment="Left" Height="335" Margin="604,7663,0,0" VerticalAlignment="Top" Width="506" Source="/Panacea;component/Dependencies/Help_Images/Panacea_Demo_Popup_PoppedOutResized_Edited.png"/>
             <!--#endregion-->
         </Grid>
+        <Button x:Name="BtnClose" Content="Close" Click="BtnClose_Click" Style="{StaticResource ButtonEdges}" HorizontalAlignment="Left" Margin="10,726,0,0" VerticalAlignment="Top" Width="118" Foreground="{DynamicResource TitleColor}"/>
     </Grid>
 </Window>

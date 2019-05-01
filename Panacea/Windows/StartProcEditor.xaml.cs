@@ -139,6 +139,11 @@ namespace Panacea.Windows
                 LogException(ex);
             }
         }
+
+        private void BtnInfo_Click(object sender, RoutedEventArgs e)
+        {
+            Director.Main.OpenInfoWindow(HelpMenu.StartProcessMenu);
+        }
         #endregion
 
         #region Methods

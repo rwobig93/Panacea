@@ -78,6 +78,7 @@
                     <ComboBoxItem Content="Utility Bar"/>
                     <ComboBoxItem Content="Desktop Window"/>
                 </ComboBox>
+                <Button x:Name="BtnInfo" Click="BtnInfo_Click" Content="🛈" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="10,2,0,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="18" />
             </Grid>
         </ScrollViewer>
     </Grid>

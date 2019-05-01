@@ -547,6 +547,11 @@ namespace Panacea.Windows
             }
         }
 
+        private void BtnInfo_Click(object sender, RoutedEventArgs e)
+        {
+            Director.Main.OpenInfoWindow(HelpMenu.AudioMenu);
+        }
+
         #endregion
     }
 }

@@ -1089,9 +1089,34 @@ namespace Panacea.Windows
                     WindowStartupLocation = WindowStartupLocation.CenterScreen
                 };
                 uDebugLogAdd($"Window handler info window constructed");
+                PopupWindows.Add(WindowHandleDisplay);
                 WindowHandleDisplay.Show();
-                WindowHandleDisplay.Closed += (s,e) => { Events.TriggerWindowInfoChange(true); };
+                WindowHandleDisplay.Closed += (s,e) => { Events.TriggerWindowInfoChange(true); PopupWindows.Remove(WindowHandleDisplay); };
                 uDebugLogAdd($"Window handler info window shown");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void OpenInfoWindow(HelpMenu menu)
+        {
+            try
+            {
+                var foundWindow = PopupWindows.Find(x => x.GetType() == typeof(HelpWindow));
+                if (foundWindow == null)
+                {
+                    uDebugLogAdd("Opening info/help window");
+                    HelpWindow help = new HelpWindow(menu);
+                    help.Show();
+                    ShowNotification("Opened Info/Help Window");
+                }
+                else
+                {
+                    uDebugLogAdd("Info/Help window already exists, canceling instantiation");
+                    ShowNotification("Info/Help Window Already Open");
+                }
             }
             catch (Exception ex)
             {
