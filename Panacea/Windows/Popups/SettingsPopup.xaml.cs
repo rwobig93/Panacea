@@ -147,42 +147,7 @@ namespace Panacea.Windows.Popups
             StartSettingsUpdate(SettingsUpdate.TextBoxAction);
         }
 
-        private void TxtPopSetWinPro1_KeyDown(object sender, KeyEventArgs e)
-        {
-            StartSettingsUpdate(SettingsUpdate.ProfileName);
-        }
-
-        private void TxtPopSetWinPro2_KeyDown(object sender, KeyEventArgs e)
-        {
-            StartSettingsUpdate(SettingsUpdate.ProfileName);
-        }
-
-        private void TxtPopSetWinPro3_KeyDown(object sender, KeyEventArgs e)
-        {
-            StartSettingsUpdate(SettingsUpdate.ProfileName);
-        }
-
-        private void TxtPopSetWinPro4_KeyDown(object sender, KeyEventArgs e)
-        {
-            StartSettingsUpdate(SettingsUpdate.ProfileName);
-        }
-
-        private void TxtPopSetStartPro1_KeyDown(object sender, KeyEventArgs e)
-        {
-            StartSettingsUpdate(SettingsUpdate.ProfileName);
-        }
-
-        private void TxtPopSetStartPro2_KeyDown(object sender, KeyEventArgs e)
-        {
-            StartSettingsUpdate(SettingsUpdate.ProfileName);
-        }
-
-        private void TxtPopSetStartPro3_KeyDown(object sender, KeyEventArgs e)
-        {
-            StartSettingsUpdate(SettingsUpdate.ProfileName);
-        }
-
-        private void TxtPopSetStartPro4_KeyDown(object sender, KeyEventArgs e)
+        private void TxtPopSet_KeyUp(object sender, KeyEventArgs e)
         {
             StartSettingsUpdate(SettingsUpdate.ProfileName);
         }
@@ -623,7 +588,6 @@ namespace Panacea.Windows.Popups
                             {
                                 Actions.AddToWindowsStartup(false);
                             }
-                            UpdateUISettings();
                             // Set Window/Start profile names
                             uDebugLogAdd("SETUPDATE: Window/Start profile names");
                             Toolbox.settings.WindowProfileName1 = string.IsNullOrWhiteSpace(TxtPopSetWinPro1.Text) ? "Profile 1" : TxtPopSetWinPro1.Text;
@@ -639,6 +603,7 @@ namespace Panacea.Windows.Popups
                             // Trigger Events
                             Events.TriggerWindowInfoChange();
                             //Events.TriggerStartInfoChange();
+                            //UpdateUISettings();
                             break;
                         case 99:
                             ShowNotification("Incorrect format entered");

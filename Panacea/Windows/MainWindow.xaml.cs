@@ -807,12 +807,12 @@ namespace Panacea
             ShowChangelog();
         }
 
-        private void txtWindowProfileName_KeyDown(object sender, KeyEventArgs e)
+        private void TxtWindowProfile_KeyUp(object sender, KeyEventArgs e)
         {
             StartSettingsUpdate(SettingsUpdate.ProfileName);
         }
 
-        private void txtStartProfileName_KeyDown(object sender, KeyEventArgs e)
+        private void TxtStartProfile_KeyUp(object sender, KeyEventArgs e)
         {
             StartSettingsUpdate(SettingsUpdate.ProfileName);
         }

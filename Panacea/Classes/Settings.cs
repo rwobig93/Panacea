@@ -63,7 +63,7 @@ namespace Panacea.Classes
         private bool _pingTypeChosen { get; set; } = false;
         private bool _showUtilBarOnStartup { get; set; } = false;
         private bool _startMinimized { get; set; } = false;
-        private bool _initialStartup { get; set; } = false;
+        private bool _initialStartup { get; set; } = true;
         private string _productionURI { get; set; } = null;
         private string _upProductionURI { get; set; } = null;
         private string _latestChangelog { get; set; } = "I'm a default Changelog! You shouldn't ever see me! :D";

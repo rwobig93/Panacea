@@ -191,10 +191,10 @@ namespace Panacea.Windows
             {
                 if (Toolbox.settings.PreferredWindow == WindowPreference.NotChosen)
                     AskForPreferredWindowStyle();
-                if (!Toolbox.settings.InitialStartup)
+                if (Toolbox.settings.InitialStartup)
                 {
-                    Toolbox.settings.InitialStartup = true;
-                    OpenInfoWindow(HelpMenu.NotificationIcon);
+                    Toolbox.settings.InitialStartup = false;
+                    OpenInfoWindow(HelpMenu.NotificationIcon, true);
                 }
                 if (Toolbox.settings.PreferredWindow == WindowPreference.DesktopWindow)
                     ShowDesktopWindow();
@@ -658,7 +658,10 @@ namespace Panacea.Windows
                                     if (DebugMode)
                                         ShowNotification($"Skipping Changelog show as debug: {DebugMode}");
                                     else
-                                        Actions.ShowChangelog();
+                                    {
+                                        if (!Toolbox.settings.InitialStartup)
+                                            Actions.ShowChangelog();
+                                    }
                                 }
                             }
                             if (Toolbox.changeLogs.Find(x => x.Version == Toolbox.settings.CurrentVersion.ToString()) != null)
@@ -1085,7 +1088,7 @@ namespace Panacea.Windows
             }
         }
 
-        public void OpenInfoWindow(HelpMenu menu)
+        public void OpenInfoWindow(HelpMenu menu, bool initialStartup = false)
         {
             try
             {
@@ -1094,6 +1097,8 @@ namespace Panacea.Windows
                 {
                     uDebugLogAdd($"Opening info/help window to {menu.ToString()}");
                     HelpWindow help = new HelpWindow(menu);
+                    if (initialStartup)
+                        help.Closed += (s, e) => { Actions.ShowChangelog(); };
                     help.Show();
                     ShowNotification("Opened Info/Help Window");
                 }
