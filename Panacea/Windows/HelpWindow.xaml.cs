@@ -102,7 +102,7 @@ namespace Panacea.Windows
             }
         }
 
-        private void SlideHelpMenu(HelpMenu menu)
+        public void SlideHelpMenu(HelpMenu menu)
         {
             try
             {
@@ -110,52 +110,52 @@ namespace Panacea.Windows
                 switch (menu)
                 {
                     case HelpMenu.NotificationIcon:
+                        slideTo.Top -= 0;
+                        slideTo.Bottom += 0;
+                        break;
+                    case HelpMenu.DesktopWindow:
                         slideTo.Top -= 760;
                         slideTo.Bottom += 760;
                         break;
-                    case HelpMenu.DesktopWindow:
+                    case HelpMenu.UtilityBar:
                         slideTo.Top -= (760 * 2);
                         slideTo.Bottom += (760 * 2);
                         break;
-                    case HelpMenu.UtilityBar:
+                    case HelpMenu.AudioMenu:
                         slideTo.Top -= (760 * 3);
                         slideTo.Bottom += (760 * 3);
                         break;
-                    case HelpMenu.AudioMenu:
+                    case HelpMenu.NetworkMenu:
                         slideTo.Top -= (760 * 4);
                         slideTo.Bottom += (760 * 4);
                         break;
-                    case HelpMenu.NetworkMenu:
+                    case HelpMenu.MacPopup:
                         slideTo.Top -= (760 * 5);
                         slideTo.Bottom += (760 * 5);
                         break;
-                    case HelpMenu.MacPopup:
+                    case HelpMenu.SettingsMenu:
                         slideTo.Top -= (760 * 6);
                         slideTo.Bottom += (760 * 6);
                         break;
-                    case HelpMenu.SettingsMenu:
+                    case HelpMenu.WindowsMenu:
                         slideTo.Top -= (760 * 7);
                         slideTo.Bottom += (760 * 7);
                         break;
-                    case HelpMenu.WindowsMenu:
+                    case HelpMenu.AddWindowsMenu:
                         slideTo.Top -= (760 * 8);
                         slideTo.Bottom += (760 * 8);
                         break;
-                    case HelpMenu.AddWindowsMenu:
+                    case HelpMenu.StartProcessMenu:
                         slideTo.Top -= (760 * 9);
                         slideTo.Bottom += (760 * 9);
                         break;
-                    case HelpMenu.StartProcessMenu:
+                    case HelpMenu.PopoutFeature:
                         slideTo.Top -= (760 * 10);
                         slideTo.Bottom += (760 * 10);
                         break;
-                    case HelpMenu.PopoutFeature:
-                        slideTo.Top -= (760 * 11);
-                        slideTo.Bottom += (760 * 11);
-                        break;
                     default:
-                        slideTo.Top -= 760;
-                        slideTo.Bottom += 760;
+                        slideTo.Top -= 0;
+                        slideTo.Bottom += 0;
                         break;
                 }
                 Toolbox.AnimateGrid(GridHelpSlides, slideTo);
@@ -174,6 +174,19 @@ namespace Panacea.Windows
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                if (e.ChangedButton == MouseButton.Left)
+                    DragMove();
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
     }
 }

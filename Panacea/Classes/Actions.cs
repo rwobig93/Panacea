@@ -57,7 +57,7 @@ namespace Panacea.Classes
                     {
                         uDebugLogAdd("Generating mail");
                         MailMessage message = new MailMessage();
-                        MailAddress from = new MailAddress("PanaceaLogs@WobigTech.net");
+                        MailAddress from = new MailAddress("PanaceaDiag@WobigTech.net");
                         smtp.UseDefaultCredentials = true;
                         smtp.Timeout = TimeSpan.FromMinutes(5.0).Seconds;
 

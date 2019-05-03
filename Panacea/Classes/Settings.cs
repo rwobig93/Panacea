@@ -63,6 +63,7 @@ namespace Panacea.Classes
         private bool _pingTypeChosen { get; set; } = false;
         private bool _showUtilBarOnStartup { get; set; } = false;
         private bool _startMinimized { get; set; } = false;
+        private bool _initialStartup { get; set; } = false;
         private string _productionURI { get; set; } = null;
         private string _upProductionURI { get; set; } = null;
         private string _latestChangelog { get; set; } = "I'm a default Changelog! You shouldn't ever see me! :D";
@@ -386,6 +387,15 @@ namespace Panacea.Classes
             {
                 _startMinimized = value;
                 OnPropertyChanged("StartMinimized");
+            }
+        }
+        public bool InitialStartup
+        {
+            get { return _initialStartup; }
+            set
+            {
+                _initialStartup = value;
+                OnPropertyChanged("InitialStartup");
             }
         }
         public string ProductionURI

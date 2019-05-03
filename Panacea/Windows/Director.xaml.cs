@@ -191,6 +191,11 @@ namespace Panacea.Windows
             {
                 if (Toolbox.settings.PreferredWindow == WindowPreference.NotChosen)
                     AskForPreferredWindowStyle();
+                if (!Toolbox.settings.InitialStartup)
+                {
+                    Toolbox.settings.InitialStartup = true;
+                    OpenInfoWindow(HelpMenu.NotificationIcon);
+                }
                 if (Toolbox.settings.PreferredWindow == WindowPreference.DesktopWindow)
                     ShowDesktopWindow();
                 else
@@ -220,7 +225,6 @@ namespace Panacea.Windows
 
         private void SubscribeToEvents()
         {
-            Events.UpdateDebugStatus += Events_UpdateDebugStatus;
             Events.AudioEndpointListUpdated += Events_AudioEndpointListUpdated;
             Events.WinInfoChanged += Events_WinInfoChanged;
             Events.StartProcInfoChanged += Events_StartProcInfoChanged;
@@ -255,22 +259,6 @@ namespace Panacea.Windows
                 ShowNotification("Audio Devices Updated!");
             else
                 Interfaces.AudioMain.FirstRefresh = false;
-        }
-
-        private void Events_UpdateDebugStatus(DebugUpdateArgs args)
-        {
-            try
-            {
-                if (Toolbox.debugLog.Length > 10000)
-                {
-                    Toolbox.debugLog.Append($"{args.DebugType.ToString()} :: {DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()}: Dumping Debug Logs...");
-                    DumpDebugLog();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
         }
 
         private void InitializeUtilBar()
@@ -314,7 +302,7 @@ namespace Panacea.Windows
                     using (StreamWriter sw = File.AppendText($@"{LogDirectory}DebugLog_{DateTime.Now.ToString("MM-dd-yy")}.log"))
                         sw.WriteLine(Toolbox.debugLog.ToString());
                     Toolbox.debugLog.Clear();
-                    break;
+                    DesktopWindow.txtStatus.Clear();
                 }
                 catch (IOException io)
                 {
@@ -326,7 +314,7 @@ namespace Panacea.Windows
                         using (StreamWriter sw = File.AppendText($@"{LogDirectory}DebugLog_{DateTime.Now.ToString("MM-dd-yy")}_{Toolbox.GenerateRandomNumber()}.log"))
                             sw.WriteLine(Toolbox.debugLog.ToString());
                         Toolbox.debugLog.Clear();
-                        break;
+                        DesktopWindow.txtStatus.Clear();
                     }
                 }
                 catch (Exception ex)
@@ -980,10 +968,6 @@ namespace Panacea.Windows
                     uDebugLogAdd("DisplayProfileLibrary was null, instantiating a new one");
                     Toolbox.settings.DisplayProfileLibrary = new DisplayProfileLibrary();
                 }
-                if (Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile == null || Toolbox.settings.DisplayProfileLibrary.DisplayProfiles.Count <= 0)
-                {
-                    AddDisplayProfileToLibrary(CurrentDisplay, true);
-                }
                 var displayMatch = DisplayProfile.DoDisplaysMatch(CurrentDisplay, Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile.DisplayArea);
                 if (!displayMatch)
                 {
@@ -1018,6 +1002,7 @@ namespace Panacea.Windows
                 else
                 {
                     uDebugLogAdd("Display additon already matches one in the library, cancelling Libary addition");
+                    Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile = foundDisplay;
                 }
                 uDebugLogAdd("Finished Display Profile Library Addition");
             }
@@ -1107,15 +1092,17 @@ namespace Panacea.Windows
                 var foundWindow = PopupWindows.Find(x => x.GetType() == typeof(HelpWindow));
                 if (foundWindow == null)
                 {
-                    uDebugLogAdd("Opening info/help window");
+                    uDebugLogAdd($"Opening info/help window to {menu.ToString()}");
                     HelpWindow help = new HelpWindow(menu);
                     help.Show();
                     ShowNotification("Opened Info/Help Window");
                 }
                 else
                 {
-                    uDebugLogAdd("Info/Help window already exists, canceling instantiation");
-                    ShowNotification("Info/Help Window Already Open");
+                    uDebugLogAdd($"Info/Help window already exists, sliding to {menu.ToString()}");
+                    ((HelpWindow)foundWindow).SlideHelpMenu(menu);
+                    ((HelpWindow)foundWindow).Focus();
+                    ShowNotification($"Slid Help Window to {menu.ToString()}");
                 }
             }
             catch (Exception ex)

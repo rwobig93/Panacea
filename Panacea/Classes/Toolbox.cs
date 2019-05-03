@@ -105,7 +105,11 @@ namespace Panacea.Classes
             try
             {
                 debugLog.Append($"{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {caller.ToUpper()} :: {_type.ToString()}: {_log}{Environment.NewLine}");
-                Events.AddDebugStatus(_log, _type); 
+                if (Toolbox.debugLog.Length > 10000)
+                {
+                    Toolbox.debugLog.Append($"{DateTime.Now.ToLocalTime().ToString("MM-dd-yy")}_{DateTime.Now.ToLocalTime().ToLongTimeString()} :: {caller.ToUpper()} :: {_type.ToString()}: Dumping Debug Logs...{Environment.NewLine}");
+                    Director.Main.DumpDebugLog();
+                }
             }
             catch (Exception ex)
             {

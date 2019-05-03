@@ -1033,7 +1033,14 @@ namespace Panacea
 
         private void SubscribeToEvents()
         {
-            Events.UpdateDebugStatus += Events_UpdateDebugStatus;
+            try
+            {
+                // Placeholder
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void TestWifi()

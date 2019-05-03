@@ -1471,7 +1471,7 @@ namespace Panacea.Windows
             BackgroundWorker worker = new BackgroundWorker();
             worker.DoWork += (sender, e) =>
             {
-                Ping p = new Ping();
+                var timeout = TimeSpan.FromMilliseconds(400);
                 int prevSuccess = -1;
                 int prevFailure = -1;
                 int successCounter = 0;
@@ -1480,9 +1480,9 @@ namespace Panacea.Windows
                 {
                     try
                     {
+                        Ping p = new Ping();
                         successCounter = 0;
                         failureCounter = 0;
-                        var timeout = TimeSpan.FromMilliseconds(400);
 
                         /// Layer 4 connectivity verification
                         // Google https
@@ -1683,6 +1683,7 @@ namespace Panacea.Windows
                             uDebugLogAdd($"Success: {successCounter} | Failure: {failureCounter} | CurrConn: {currentConnectivityStatus.ToString()}");
                         prevSuccess = successCounter;
                         prevFailure = failureCounter;
+                        p.Dispose();
                     }
                     catch (Exception ex)
                     {
@@ -1707,6 +1708,7 @@ namespace Panacea.Windows
                     {
                         if (netIfs == null)
                             netIfs = new List<NetworkInterface>();
+                        netIfs.Clear();
                         tempEthIf = CurrentEthInterface;
                         interfaces = NetworkInterface.GetAllNetworkInterfaces();
                         foreach (var adapter in interfaces.ToList().FindAll(x => x.NetworkInterfaceType == NetworkInterfaceType.Ethernet || x.NetworkInterfaceType == NetworkInterfaceType.GigabitEthernet || x.NetworkInterfaceType == NetworkInterfaceType.FastEthernetFx || x.NetworkInterfaceType == NetworkInterfaceType.FastEthernetT || x.NetworkInterfaceType == NetworkInterfaceType.Ethernet3Megabit))
@@ -1735,19 +1737,19 @@ namespace Panacea.Windows
 
         private void tUpdateConnectedSSIDs()
         {
+            uint? wlanSignalQuality = null;
+            if (wClient == null)
+            {
+                wClient = new WlanClient();
+                uDebugLogAdd("WlanClient was null, initialized a new one");
+            }
             BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
             worker.DoWork += (sender, e) =>
             {
-                uint? wlanSignalQuality = null;
                 while (true)
                 {
                     try
                     {
-                        if (wClient == null)
-                        {
-                            wClient = new WlanClient();
-                            uDebugLogAdd("WlanClient was null, initialized a new one");
-                        }
                         _connectedSSIDs.Clear();
                         foreach (var wlanIf in wClient.Interfaces)
                         {

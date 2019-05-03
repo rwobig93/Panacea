@@ -206,14 +206,6 @@ namespace Panacea.Classes
 
     public class Events
     {
-        // Debug Log Add Event
-        public delegate void AddDebugLogStatus(DebugUpdateArgs args);
-        public static event AddDebugLogStatus UpdateDebugStatus;
-        public static void AddDebugStatus(string logUpdate, DebugType debugType = DebugType.INFO)
-        {
-            DebugUpdateArgs args = new DebugUpdateArgs(logUpdate, debugType);
-            UpdateDebugStatus(args);
-        }
         // Util Bar Move Event
         public delegate void UtilBarMoved(UtilMoveArgs args);
         public static event UtilBarMoved UtilBarMoveTrigger;
