@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Panacea.Windows"
         xmlns:src="clr-namespace:Panacea.Classes"
         mc:Ignorable="d" Topmost="True" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" Loaded="WinNetMain_Loaded" SizeChanged="WinNetMain_SizeChanged"
-        Title="Network Popup" Height="300" MinHeight="300" Width="535" MinWidth="535" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
+        Title="Network Popup" Height="300" MinHeight="250" Width="535" MinWidth="500" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
     <Window.Resources>
         <src:Minus15Converter x:Key="Minus15Converter"/>
         <src:Minus25Converter x:Key="Minus25Converter"/>

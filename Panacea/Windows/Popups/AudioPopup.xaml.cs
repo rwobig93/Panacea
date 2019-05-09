@@ -286,9 +286,6 @@ namespace Panacea.Windows
         {
             try
             {
-                var utilTop = UtilityBar.UtilBarMain.Top;
-                var actHeight = this.ActualHeight;
-                uDebugLogAdd($"{utilTop - actHeight}");
                 if ((this.Left != PopinLeft || this.Top != PopinTop || this.ActualWidth != PopinWidth || this.ActualHeight != PopinHeight) && btnReset.Visibility != Visibility.Visible)
                 {
                     btnReset.Visibility = Visibility.Visible;

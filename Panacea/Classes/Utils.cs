@@ -246,6 +246,13 @@ namespace Panacea.Classes
             NetConnectivityArgs args = new NetConnectivityArgs(conStatus, conType, wLinkSpeed, eLinkSpeed, currEth, currWlan);
             NetConnectivityChanged(args);
         }
+        // DisplayProfile Change
+        public delegate void DisplayProfileChange();
+        public static event DisplayProfileChange DisplayProfileChanged;
+        public static void TriggerDisplayProfileChange()
+        {
+            DisplayProfileChanged();
+        }
     }
 
     #region Event Args

@@ -113,7 +113,7 @@ namespace Panacea.Windows
 
         private void WinMain_Loaded(object sender, RoutedEventArgs e)
         {
-            tLocationWatcher();
+            MoveUtilBarToPreferredDisplay();
         }
 
         private void WinMain_Closing(object sender, CancelEventArgs e)
@@ -286,11 +286,17 @@ namespace Panacea.Windows
             {
                 Events.UtilBarMoveTrigger += Events_UtilBarMoveTrigger;
                 Events.WinInfoChanged += Events_WinInfoChanged;
+                Events.DisplayProfileChanged += Events_DisplayProfileChanged;
             }
             catch (Exception ex)
             {
                 LogException(ex);
             }
+        }
+
+        private void Events_DisplayProfileChanged()
+        {
+            MoveUtilBarToPreferredDisplay();
         }
 
         private void Events_WinInfoChanged(WindowInfoArgs args)
@@ -365,7 +371,7 @@ namespace Panacea.Windows
                 this.WindowState = WindowState.Normal;
                 _imHiding = false;
                 this.Show();
-                VerifyBarLocation();
+                MoveUtilBarToPreferredDisplay();
                 if (_firstShow)
                 {
                     _firstShow = false;
@@ -376,78 +382,6 @@ namespace Panacea.Windows
             catch (Exception ex)
             {
                 LogException(ex);
-            }
-        }
-
-        private void tLocationWatcher()
-        {
-            try
-            {
-                BackgroundWorker worker = new BackgroundWorker() { WorkerReportsProgress = true };
-                worker.DoWork += (ws, we) =>
-                {
-                    try
-                    {
-                        while (true)
-                        {
-                            worker.ReportProgress(1);
-                            Thread.Sleep(2000);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        LogException(ex);
-                    }
-                };
-                worker.ProgressChanged += (ps, pe) =>
-                {
-                    if (pe.ProgressPercentage == 1)
-                    {
-                        try
-                        {
-                            VerifyBarLocation();
-                        }
-                        catch (Exception ex)
-                        {
-                            LogException(ex);
-                        }
-                    }
-                };
-                worker.RunWorkerAsync();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
-        }
-
-        private void VerifyBarLocation()
-        {
-            try
-            {
-                if (_imHiding)
-                    return;
-                if (Director.Main.CurrentDisplay != null)
-                {
-                    Display chosenDisplay = null;
-                    if (_startingUp)
-                        MoveUtilBarToPreferredDisplay();
-                    else if (dockedDisplay == null)
-                    {
-                        chosenDisplay = Director.Main.CurrentDisplay.Displays.Find(x => x.PrimaryDisplay == true);
-                        dockedDisplay = chosenDisplay;
-                    }
-                    else
-                        chosenDisplay = dockedDisplay;
-
-                    MoveUtilBar(chosenDisplay);
-                }
-                else
-                    uDebugLogAdd("Current display is null when verifying utility bar location", DebugType.FAILURE);
-            }
-            catch (Exception ex)
-            {
-                uDebugLogAdd($"Failure to move/verify utility bar location: {ex.Message}", DebugType.FAILURE);
             }
         }
 
@@ -480,19 +414,29 @@ namespace Panacea.Windows
         {
             try
             {
-                uDebugLogAdd("Starting util bar move to preferred display");
-                var prefDisplay = Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile.PreferredDisplay;
-                if (prefDisplay != null)
+                if (_imHiding)
+                    return;
+                if (Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile != null)
                 {
-                    uDebugLogAdd("Preferred display isn't null for current display profile, moving to preferred display");
-                    MoveUtilBar(prefDisplay);
+                    uDebugLogAdd("Starting util bar move to preferred display");
+                    var prefDisplay = Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile.PreferredDisplay;
+                    if (prefDisplay != null)
+                    {
+                        uDebugLogAdd("Preferred display isn't null for current display profile, moving to preferred display");
+                        dockedDisplay = prefDisplay;
+                        MoveUtilBar(prefDisplay);
+                    }
+                    else
+                    {
+                        uDebugLogAdd("Preferred display is null for current display profile, going to primary display instead");
+                        dockedDisplay = Director.Main.CurrentDisplay.Displays.Find(x => x.PrimaryDisplay == true);
+                        MoveUtilBar(dockedDisplay);
+                    }
                 }
-                else
-                    uDebugLogAdd("Preferred display is null for current display profile, skipping");
             }
             catch (Exception ex)
             {
-                LogException(ex);
+                uDebugLogAdd($"Failure to move/verify utility bar preferred location: {ex.Message}", DebugType.FAILURE);
             }
         }
 

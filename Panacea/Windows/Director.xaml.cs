@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Management;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
@@ -59,6 +60,8 @@ namespace Panacea.Windows
         private bool downloadInProgress = false;
         private Hardcodet.Wpf.TaskbarNotification.TaskbarIcon taskIcon = null;
         private Octokit.GitHubClient gitClient = null;
+        private ManagementEventWatcher procWatchStart = null;
+        private ManagementEventWatcher procWatchStop = null;
         #endregion
 
         #region Event Handlers
@@ -143,6 +146,7 @@ namespace Panacea.Windows
         private void FullApplicationClose()
         {
             UtilBar.TearDownGlobalHotkey();
+            //TeardownGlobalProcessWatchers();
             TearDownBackgroundNotificationIcon();
             CloseAllOpenPopupWindows();
             DesktopWindow.Close();
@@ -193,7 +197,6 @@ namespace Panacea.Windows
                     AskForPreferredWindowStyle();
                 if (Toolbox.settings.InitialStartup)
                 {
-                    Toolbox.settings.InitialStartup = false;
                     OpenInfoWindow(HelpMenu.NotificationIcon, true);
                 }
                 if (Toolbox.settings.PreferredWindow == WindowPreference.DesktopWindow)
@@ -229,6 +232,102 @@ namespace Panacea.Windows
             Events.WinInfoChanged += Events_WinInfoChanged;
             Events.StartProcInfoChanged += Events_StartProcInfoChanged;
             Events.NetConnectivityChanged += Events_NetConnectivityChanged;
+            Events.DisplayProfileChanged += Events_DisplayProfileChanged;
+            //InitializeGlobalProcessWatchers();
+        }
+
+        private void InitializeGlobalProcessWatchers()
+        {
+            try
+            {
+                uDebugLogAdd("Starting Global Process Watcher Initializations");
+                string watcherScope = @"\\.\root\CIMV2";
+                string startQuery = "SELECT TargetInstance FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process'";
+                string stopQuery = "SELECT TargetInstance FROM __InstanceDeletionEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process'";
+
+                procWatchStart = new ManagementEventWatcher(watcherScope, startQuery);
+                procWatchStart.EventArrived += ProcWatchStart_EventArrived;
+                procWatchStart.Start();
+                uDebugLogAdd("Initialized Process Start Watcher");
+
+                procWatchStop = new ManagementEventWatcher(watcherScope, stopQuery);
+                procWatchStop.EventArrived += ProcWatchStop_EventArrived;
+                procWatchStop.Start();
+                uDebugLogAdd("Initialized Process Stop Watcher");
+
+                uDebugLogAdd("Finished Initializing Global Process Watchers");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void TeardownGlobalProcessWatchers()
+        {
+            try
+            {
+                uDebugLogAdd("Starting Global Process Watcher Teardown");
+                if (procWatchStart != null)
+                {
+                    procWatchStart.Stop();
+                    procWatchStart = null;
+                    uDebugLogAdd("Tore down Global Process Start Watcher");
+                }
+                if (procWatchStop != null)
+                {
+                    procWatchStop.Stop();
+                    procWatchStop = null;
+                    uDebugLogAdd("Tore down Global Process Stop Watcher");
+                }
+                uDebugLogAdd("Global Process Watcher Teardown finished");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ProcWatchStop_EventArrived(object sender, EventArrivedEventArgs e)
+        {
+            try
+            {
+                ManagementBaseObject targetInst = ((ManagementBaseObject)e.NewEvent.Properties["TargetInstance"].Value);
+                string handle = targetInst["Handle"].ToString();
+                var foundProc = Process.GetProcessById(WinAPIWrapper.GetProcessId(new IntPtr(Convert.ToInt32(handle))));
+                uDebugLogAdd($"Stop Event: {foundProc.ProcessName} | {foundProc.Id} | {handle}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ProcWatchStart_EventArrived(object sender, EventArrivedEventArgs e)
+        {
+            try
+            {
+                ManagementBaseObject targetInst = ((ManagementBaseObject)e.NewEvent.Properties["TargetInstance"].Value);
+                string handle = targetInst["Handle"].ToString();
+                var foundProc = Process.GetProcessById(WinAPIWrapper.GetProcessId(new IntPtr(Convert.ToInt32(handle))));
+                uDebugLogAdd($"Start Event: {foundProc.ProcessName} | {foundProc.Id} | {handle}");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void Events_DisplayProfileChanged()
+        {
+            try
+            {
+                // Thrown here in case the event doesn't have a listener yet
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
         }
 
         private void Events_NetConnectivityChanged(NetConnectivityArgs args)
@@ -302,7 +401,7 @@ namespace Panacea.Windows
                     using (StreamWriter sw = File.AppendText($@"{LogDirectory}DebugLog_{DateTime.Now.ToString("MM-dd-yy")}.log"))
                         sw.WriteLine(Toolbox.debugLog.ToString());
                     Toolbox.debugLog.Clear();
-                    DesktopWindow.txtStatus.Clear();
+                    Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { DesktopWindow.txtStatus.Clear(); } catch (Exception ex) { LogException(ex); } });
                 }
                 catch (IOException io)
                 {
@@ -314,7 +413,7 @@ namespace Panacea.Windows
                         using (StreamWriter sw = File.AppendText($@"{LogDirectory}DebugLog_{DateTime.Now.ToString("MM-dd-yy")}_{Toolbox.GenerateRandomNumber()}.log"))
                             sw.WriteLine(Toolbox.debugLog.ToString());
                         Toolbox.debugLog.Clear();
-                        DesktopWindow.txtStatus.Clear();
+                        Dispatcher.Invoke(DispatcherPriority.Normal, (ThreadStart)delegate { try { DesktopWindow.txtStatus.Clear(); } catch (Exception ex) { LogException(ex); } });
                     }
                 }
                 catch (Exception ex)
@@ -366,9 +465,9 @@ namespace Panacea.Windows
                     uDebugLogAdd("Starting settings serialization");
                     var settings = new JsonSerializerSettings()
                     {
-                        MissingMemberHandling = MissingMemberHandling.Ignore,
-                        DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-                        NullValueHandling = NullValueHandling.Ignore,
+                        //MissingMemberHandling = MissingMemberHandling.Ignore,
+                        //DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                        //NullValueHandling = NullValueHandling.Ignore,
                     };
                     string serializedObj = JsonConvert.SerializeObject(Toolbox.settings, Formatting.Indented, settings);
                     using (StreamWriter sw = new StreamWriter($@"{ConfigDirectory}Settings.conf"))
@@ -543,10 +642,7 @@ namespace Panacea.Windows
                         while (true)
                         {
                             Thread.Sleep(1000);
-                            if (updateCounter > 2 && updateCounter % 2 == 0)
-                            {
-                                worker.ReportProgress(1);
-                            }
+                            worker.ReportProgress(1);
                             if (updateCounter > 300 && updateCounter % 300 == 0)
                             {
                                 uDebugLogAdd("5min passed, now running timed actions");
@@ -943,18 +1039,25 @@ namespace Panacea.Windows
         {
             try
             {
-                if (CurrentDisplay == null)
-                {
-                    CurrentDisplay = new CurrentDisplay();
-                    uDebugLogAdd("Current display was null, created new current display");
-                }
-                CurrentDisplay.Displays.Clear();
+                CurrentDisplay tempDisplay = new CurrentDisplay();
                 foreach (var display in System.Windows.Forms.Screen.AllScreens)
                 {
-                    CurrentDisplay.Displays.Add(Display.ConvertFromScreen(display));
+                    tempDisplay.Displays.Add(Display.ConvertFromScreen(display));
                 }
-                CurrentDisplay.Displays = CurrentDisplay.Displays.OrderBy(x => x.Bounds.X).ToList();
-                VerifyDisplayProfileMatch();
+                if (CurrentDisplay == null || CurrentDisplay.Displays.Count <= 0)
+                {
+                    CurrentDisplay = new CurrentDisplay();
+                    foreach (var disp in tempDisplay.Displays)
+                        CurrentDisplay.Displays.Add(disp);
+                    uDebugLogAdd("Current display was null, created new current display");
+                }
+                tempDisplay.Displays = tempDisplay.Displays.OrderBy(x => x.Bounds.X).ToList();
+                bool displayChanged = VerifyDisplayProfileMatch(tempDisplay);
+                tempDisplay = null;
+                if (displayChanged)
+                {
+                    Events.TriggerDisplayProfileChange();
+                }
             }
             catch (Exception ex)
             {
@@ -962,8 +1065,9 @@ namespace Panacea.Windows
             }
         }
 
-        private void VerifyDisplayProfileMatch()
+        private bool VerifyDisplayProfileMatch(CurrentDisplay displayToMatch)
         {
+            bool displayProfileChanged = false;
             try
             {
                 if (Toolbox.settings.DisplayProfileLibrary == null)
@@ -971,41 +1075,56 @@ namespace Panacea.Windows
                     uDebugLogAdd("DisplayProfileLibrary was null, instantiating a new one");
                     Toolbox.settings.DisplayProfileLibrary = new DisplayProfileLibrary();
                 }
-                var displayMatch = DisplayProfile.DoDisplaysMatch(CurrentDisplay, Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile.DisplayArea);
-                if (!displayMatch)
+                DisplayProfile matchedProfile = null;
+                foreach (var displayProfile in Toolbox.settings.DisplayProfileLibrary.DisplayProfiles)
                 {
-                    uDebugLogAdd($"Current Display Profile returned {displayMatch} for matching the existing Current Display Profile");
-                    AddDisplayProfileToLibrary(CurrentDisplay);
+                    bool isMatch = DisplayProfile.DoDisplaysMatch(displayToMatch, displayProfile.DisplayArea);
+                    if (isMatch)
+                    {
+                        matchedProfile = displayProfile;
+                        break;
+                    }
+                }
+                if (matchedProfile == null)
+                {
+                    uDebugLogAdd("Current DisplayArea didn't match any existing Display Profiles, creating a new one");
+                    AddDisplayProfileToLibrary(displayToMatch);
+                    displayProfileChanged = true;
+                }
+                else
+                {
+                    bool currentMatch = DisplayProfile.DoDisplaysMatch(matchedProfile.DisplayArea, CurrentDisplay);
+                    if (currentMatch)
+                        displayProfileChanged = false;
+                    else
+                    {
+                        uDebugLogAdd("Display profile match found but isn't current, changing current display to matched display");
+                        Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile = matchedProfile;
+                        CurrentDisplay = Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile.DisplayArea;
+                        displayProfileChanged = true;
+                    }
                 }
             }
             catch (Exception ex)
             {
                 LogException(ex);
             }
+            return displayProfileChanged;
         }
 
-        private void AddDisplayProfileToLibrary(CurrentDisplay display, bool setAsCurrentDisplayProfile = false)
+        private void AddDisplayProfileToLibrary(CurrentDisplay display, bool setAsCurrentDisplayProfile = true)
         {
             try
             {
                 uDebugLogAdd("Starting Display Profile addition to Library");
-                var foundDisplay = Toolbox.settings.DisplayProfileLibrary.DisplayProfiles.Find(x => x.DisplayArea == display);
-                if (foundDisplay == null)
+                DisplayProfile newDisplay = new DisplayProfile() { DisplayArea = display, PreferredDisplay = display.Displays.Find(x => x.PrimaryDisplay == true) };
+                Toolbox.settings.DisplayProfileLibrary.DisplayProfiles.Add(newDisplay);
+                uDebugLogAdd("New display added successfully");
+                if (setAsCurrentDisplayProfile)
                 {
-                    uDebugLogAdd("Was unable to find a matching display, adding new display to Library");
-                    DisplayProfile newDisplay = new DisplayProfile() { DisplayArea = display, PreferredDisplay = display.Displays.Find(x => x.PrimaryDisplay == true) };
-                    Toolbox.settings.DisplayProfileLibrary.DisplayProfiles.Add(newDisplay);
-                    uDebugLogAdd("New display added successfully");
-                    if (setAsCurrentDisplayProfile)
-                    {
-                        Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile = newDisplay;
-                        uDebugLogAdd($"SetAsCurrent is {setAsCurrentDisplayProfile}, Set new display as current");
-                    }
-                }
-                else
-                {
-                    uDebugLogAdd("Display additon already matches one in the library, cancelling Libary addition");
-                    Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile = foundDisplay;
+                    Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile = newDisplay;
+                    CurrentDisplay = Toolbox.settings.DisplayProfileLibrary.CurrentDisplayProfile.DisplayArea;
+                    uDebugLogAdd($"SetAsCurrent is {setAsCurrentDisplayProfile}, Set new display as current");
                 }
                 uDebugLogAdd("Finished Display Profile Library Addition");
             }
@@ -1098,7 +1217,7 @@ namespace Panacea.Windows
                     uDebugLogAdd($"Opening info/help window to {menu.ToString()}");
                     HelpWindow help = new HelpWindow(menu);
                     if (initialStartup)
-                        help.Closed += (s, e) => { Actions.ShowChangelog(); };
+                        help.Closed += (s, e) => { Toolbox.settings.InitialStartup = false; Actions.ShowChangelog(); };
                     help.Show();
                     ShowNotification("Opened Info/Help Window");
                 }
