@@ -209,17 +209,61 @@ namespace Panacea
 
         private void BtnTest_Click(object sender, RoutedEventArgs e)
         {
-            TestOpenPort();
+            TestTextizzleTransformizzle();
         }
 
-        private void TestOpenPort()
+        private void TestTextizzleTransformizzle()
         {
             try
             {
-                var google = Network.IsPortOpen("google.com", 443, TimeSpan.FromSeconds(1));
-                var microsoft = Network.IsPortOpen("microsoft.com", 443, TimeSpan.FromSeconds(1));
-                var apple = Network.IsPortOpen("apple.com", 443, TimeSpan.FromSeconds(1));
-                Director.Main.ShowNotification($"Port open summary: [g] {google} [m] {microsoft} [a] {apple}");
+                // Call webpage
+                string url = "http://www.gizoogle.net/textilizer.php";
+                System.Uri myUri = new System.Uri(url);
+                HttpWebRequest webRequest = (HttpWebRequest)HttpWebRequest.Create(myUri);
+                webRequest.Method = "POST";
+                webRequest.ContentType = "application/x-www-form-urlencoded";
+                webRequest.BeginGetRequestStream(new AsyncCallback(GetRequestStreamCallback), webRequest);
+                
+                // Parse results
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void GetRequestStreamCallback(IAsyncResult callbackResult)
+        {
+            try
+            {
+                HttpWebRequest webRequest = (HttpWebRequest)callbackResult.AsyncState;
+                Stream postStream = webRequest.EndGetRequestStream(callbackResult);
+
+                string body = "translatetext=test+translate+this+text+for+me+will+you?&translate=Tranzizzle+Dis+Shiznit";
+                byte[] byteArray = Encoding.UTF8.GetBytes(body);
+
+                postStream.Write(byteArray, 0, byteArray.Length);
+                postStream.Close();
+
+                webRequest.BeginGetResponse(new AsyncCallback(GetResponseStreamCallback), webRequest);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void GetResponseStreamCallback(IAsyncResult callbackResult)
+        {
+            try
+            {
+                HttpWebRequest request = (HttpWebRequest)callbackResult.AsyncState;
+                HttpWebResponse response = (HttpWebResponse)request.EndGetResponse(callbackResult);
+                using (StreamReader httpWebStreamReader = new StreamReader(response.GetResponseStream()))
+                {
+                    string result = httpWebStreamReader.ReadToEnd();
+                    Prompt.OK(result);
+                }
             }
             catch (Exception ex)
             {

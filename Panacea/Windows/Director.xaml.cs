@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
@@ -189,7 +190,7 @@ namespace Panacea.Windows
             }
         }
 
-        private void ShowPreferredWindow()
+        public void ShowPreferredWindow()
         {
             try
             {
@@ -560,6 +561,7 @@ namespace Panacea.Windows
                 NotificationMenu.Items.Add(ItemQuit);
                 taskIcon = new Hardcodet.Wpf.TaskbarNotification.TaskbarIcon { Icon = new System.Drawing.Icon(Assembly.GetExecutingAssembly().GetManifestResourceStream("Panacea.Dependencies.Panacea_Icon.ico")) };
                 taskIcon.ContextMenu = NotificationMenu;
+                taskIcon.DoubleClickCommand = new CommandShowChosenWindow();
                 uDebugLogAdd("Background Notification Icon successfully initialized");
             }
             catch (Exception ex)

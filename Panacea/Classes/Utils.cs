@@ -605,5 +605,20 @@ namespace Panacea.Classes
         }
     }
 
+    public class CommandShowChosenWindow : ICommand
+    {
+        public void Execute(object parameter)
+        {
+            Director.Main.ShowPreferredWindow();
+        }
+
+        public bool CanExecute(object parameter)
+        {
+            return true;
+        }
+
+        public event EventHandler CanExecuteChanged;
+    }
+
     #endregion
 }
