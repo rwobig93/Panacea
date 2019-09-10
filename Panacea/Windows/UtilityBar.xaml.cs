@@ -1376,32 +1376,35 @@ namespace Panacea.Windows
         {
             try
             {
-                lblConnectivityStatus.Content = currentConnectivityStatus.ToString();
-                switch (currentConnectivityStatus)
+                if (lblConnectivityStatus.Content.ToString() != currentConnectivityStatus.ToString())
                 {
-                    case ConnectivityStatus.Internet:
-                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 39, 216, 0));
-                        break;
-                    case ConnectivityStatus.Layer4:
-                        lblConnectivityStatus.Content = "Internet (L4)";
-                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 39, 216, 0));
-                        break;
-                    case ConnectivityStatus.Layer3:
-                        lblConnectivityStatus.Content = "Internet (L3)";
-                        lblConnectivityStatus.Foreground = new SolidColorBrush(Toolbox.ColorFromHex("#FFC9DC05"));
-                        break;
-                    case ConnectivityStatus.Local:
-                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 207, 228, 0));
-                        break;
-                    case ConnectivityStatus.None:
-                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 255, 0, 0));
-                        break;
-                    case ConnectivityStatus.DNSError:
-                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 223, 0, 224));
-                        break;
-                    case ConnectivityStatus.DHCPError:
-                        lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 223, 0, 224));
-                        break;
+                    lblConnectivityStatus.Content = currentConnectivityStatus.ToString();
+                    switch (currentConnectivityStatus)
+                    {
+                        case ConnectivityStatus.Internet:
+                            lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 39, 216, 0));
+                            break;
+                        case ConnectivityStatus.Layer4:
+                            lblConnectivityStatus.Content = "Internet (L4)";
+                            lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 39, 216, 0));
+                            break;
+                        case ConnectivityStatus.Layer3:
+                            lblConnectivityStatus.Content = "Internet (L3)";
+                            lblConnectivityStatus.Foreground = new SolidColorBrush(Toolbox.ColorFromHex("#FFC9DC05"));
+                            break;
+                        case ConnectivityStatus.Local:
+                            lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 207, 228, 0));
+                            break;
+                        case ConnectivityStatus.None:
+                            lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 255, 0, 0));
+                            break;
+                        case ConnectivityStatus.DNSError:
+                            lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 223, 0, 224));
+                            break;
+                        case ConnectivityStatus.DHCPError:
+                            lblConnectivityStatus.Foreground = new SolidColorBrush(Color.FromArgb(100, 223, 0, 224));
+                            break;
+                    }
                 }
             }
             catch (Exception ex)

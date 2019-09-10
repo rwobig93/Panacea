@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Panacea.Windows"
         xmlns:src="clr-namespace:Panacea.Classes"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         mc:Ignorable="d" Topmost="True" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" Loaded="WinPopupMain_Loaded" SizeChanged="WinPopupMain_SizeChanged"
         Title="Window Popup" Height="429" Width="545" MinHeight="325" MinWidth="526" Foreground="{x:Null}" Background="#02010101" ShowInTaskbar="False" BorderBrush="#02010101">
     <Window.Resources>
@@ -61,6 +62,7 @@
         <Button x:Name="btnMinimize" Click="BtnMinimize_Click" Content="_" Visibility="Hidden" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,58,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
         <Button x:Name="btnPopInOut" Click="BtnPopInOut_Click" Content="🢅" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,30,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" />
         <Button x:Name="btnClose" Click="BtnClose_Click" Content="X" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="0,2,2,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="{x:Null}" Panel.ZIndex="200" FontSize="16" HorizontalAlignment="Right" Width="27" />
+        <mah:ToggleSwitch x:Name="ToggleSwitch" IsChecked="True" OnLabel="Windows" OffLabel="StartProc" IsCheckedChanged="ToggleSwitch_IsCheckedChanged" Panel.ZIndex="200" Margin="52,0,363,383" OnSwitchBrush="#FF15D3CA" OffSwitchBrush="#FFE00F0F" BorderBrush="Green" SwitchForeground="#FF15D3CA" ThumbIndicatorBrush="#FF474747" ThumbIndicatorDisabledBrush="#FF474747" Foreground="#FF8D8D8D" />
         <Rectangle x:Name="rectTitleBar" Fill="#02010102" MouseDown="RectTitleBar_MouseDown" Height="27" Margin="2,2,58,0" VerticalAlignment="Top" Panel.ZIndex="100"/>
         <Label x:Name="LabelHeader" Content="Start Processes" HorizontalContentAlignment="Center" VerticalAlignment="Top" Foreground="#FF8D8D8D" FontSize="16" Height="32"/>
         <Grid x:Name="GrdWinWindows" Margin="-548,30,550,95">
@@ -109,8 +111,6 @@
             <Button x:Name="BtnStartAdd_Copy" Click="BtnStartAdd_Click" Content="Add Multiple Processes" HorizontalAlignment="Right" Style="{StaticResource ButtonEdges}" IsEnabled="False" Margin="0,10,10,0" VerticalAlignment="Top" Width="149" Height="23"/>
             <Label Content="Current Profile:" HorizontalAlignment="Right" Margin="0,0,142,223" VerticalAlignment="Bottom" Foreground="#FF8D8D8D" FontSize="14"/>
         </Grid>
-        <Button x:Name="BtnMenuWindows" Click="BtnMenuWindows_Click" Content="Windows Menu" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="374,0,0,51" VerticalAlignment="Bottom" Width="136" Height="32"/>
-        <Button x:Name="BtnMenuStartProc" Click="BtnMenuStartProc_Click" Content="Start Process Menu" Style="{StaticResource BaseButton}" HorizontalAlignment="Left" Margin="374,0,0,14" VerticalAlignment="Bottom" Width="136" Height="32"/>
         <Button x:Name="BtnInfo" Click="BtnInfo_Click" Content="🛈" Style="{StaticResource BaseButton}" Grid.Row="0" Margin="3,2,0,0" Height="27" Padding="0" VerticalAlignment="Top" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="27" Background="{x:Null}" Panel.ZIndex="200" FontSize="18" />
     </Grid>
 </Window>

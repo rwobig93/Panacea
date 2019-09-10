@@ -101,14 +101,9 @@ namespace Panacea.Windows
             Actions.TriggerProcessProfileStart(StartProfile.Start4);
         }
 
-        private void BtnMenuWindows_Click(object sender, RoutedEventArgs e)
+        private void ToggleSwitch_IsCheckedChanged(object sender, EventArgs e)
         {
-            ToggleMenuGrid(GrdWinWindows);
-        }
-
-        private void BtnMenuStartProc_Click(object sender, RoutedEventArgs e)
-        {
-            ToggleMenuGrid(GrdWinStartProc);
+            ToggleSwitchMenu();
         }
 
         private void BtnWinAdd_Click(object sender, RoutedEventArgs e)
@@ -868,6 +863,28 @@ namespace Panacea.Windows
                 else
                     menu = HelpMenu.StartProcessMenu;
                 Director.Main.OpenInfoWindow(menu);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        private void ToggleSwitchMenu()
+        {
+            try
+            {
+                uDebugLogAdd($"ToggleSwitch is: {ToggleSwitch.IsChecked}");
+                if (ToggleSwitch.IsChecked == true)
+                {
+                    ToggleMenuGrid(GrdWinWindows);
+                    uDebugLogAdd("Toggled Switch, showing Window Grid");
+                }
+                else if (ToggleSwitch.IsChecked == false)
+                {
+                    ToggleMenuGrid(GrdWinStartProc);
+                    uDebugLogAdd("Toggled Switch, showing Start Proc Grid");
+                }
             }
             catch (Exception ex)
             {

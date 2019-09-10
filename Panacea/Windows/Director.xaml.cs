@@ -89,6 +89,11 @@ namespace Panacea.Windows
         {
             ShowDesktopWindow();
         }
+
+        private void ItemLogs_Click(object sender, RoutedEventArgs e)
+        {
+            OpenLogFolder();
+        }
         #endregion
 
         #region Methods
@@ -541,6 +546,9 @@ namespace Panacea.Windows
                 MenuItem ItemUtilBar = new MenuItem() { Name = "IShowUtilBar", Header = "Show UtilityBar" };
                 ItemUtilBar.Click += ItemUtilBar_Click;
                 Separator ItemSeperator = new Separator();
+                MenuItem ItemLogs = new MenuItem() { Name = "IOpenLogDirectory", Header = "Open Log Directory" };
+                ItemLogs.Click += ItemLogs_Click;
+                Separator ItemSeperator2 = new Separator();
                 MenuItem ItemQuit = new MenuItem() { Name = "IQuit", Header = "Quit" };
                 ItemQuit.Click += ItemQuit_Click;
                 ContextMenu NotificationMenu = new ContextMenu()
@@ -558,6 +566,8 @@ namespace Panacea.Windows
                 NotificationMenu.Items.Add(ItemDesktop);
                 NotificationMenu.Items.Add(ItemUtilBar);
                 NotificationMenu.Items.Add(ItemSeperator);
+                NotificationMenu.Items.Add(ItemLogs);
+                NotificationMenu.Items.Add(ItemSeperator2);
                 NotificationMenu.Items.Add(ItemQuit);
                 taskIcon = new Hardcodet.Wpf.TaskbarNotification.TaskbarIcon { Icon = new System.Drawing.Icon(Assembly.GetExecutingAssembly().GetManifestResourceStream("Panacea.Dependencies.Panacea_Icon.ico")) };
                 taskIcon.ContextMenu = NotificationMenu;
@@ -621,12 +631,16 @@ namespace Panacea.Windows
                         switch (e.ProgressPercentage)
                         {
                             case 1:
+                                // 1sec Timed Actions
                                 RefreshDisplaySizes();
                                 break;
                             case 2:
+                                // 5min Timed Actions
                                 SaveSettings();
+                                ActivateOpenWindows();
                                 break;
                             case 3:
+                                // 60min Timed Actions
                                 tCheckForUpdates();
                                 break;
                         }
@@ -644,6 +658,7 @@ namespace Panacea.Windows
                         while (true)
                         {
                             Thread.Sleep(1000);
+                            // A second passed, run 1 sec timed action
                             worker.ReportProgress(1);
                             if (updateCounter > 300 && updateCounter % 300 == 0)
                             {
@@ -666,6 +681,35 @@ namespace Panacea.Windows
                 };
                 worker.RunWorkerAsync();
                 uDebugLogAdd("Auto timed actions worker started");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
+        public void ActivateOpenWindows()
+        {
+            try
+            {
+                int activeCounter = 0;
+                uDebugLogAdd("Starting window activation");
+                if (this.UtilBar != null)
+                {
+                    uDebugLogAdd("Utilbar isn't null, activating...");
+                    this.UtilBar.Activate();
+                    activeCounter++;
+                }
+                foreach (var popup in PopupWindows)
+                {
+                    if (popup != null)
+                    {
+                        uDebugLogAdd($"{popup.Name} isn't null, activating...");
+                        popup.Activate();
+                        activeCounter++;
+                    }
+                }
+                uDebugLogAdd($"Finished activating {activeCounter} windows");
             }
             catch (Exception ex)
             {
@@ -710,7 +754,16 @@ namespace Panacea.Windows
                             worker.ReportProgress(2);
                         }
                         else
+                        {
                             uDebugLogAdd($"Upstaller not found at: {upstaller}");
+                            upstallerUpdateInProg = true;
+                            Task u = Task.Run(async () => { await GetUpdate(AppUpdate.Upstaller); });
+                            while (!u.IsCompleted)
+                            {
+                                Thread.Sleep(500);
+                            }
+                            worker.ReportProgress(4);
+                        }
 
                         // Panacea update
                         if ((Toolbox.settings.CurrentVersion != new Version("0.0.0.0")) && Toolbox.settings.CurrentVersion != currVer)
@@ -786,6 +839,11 @@ namespace Panacea.Windows
                         else if (pe.ProgressPercentage == 3)
                         {
                             ShowNotification($"Updated from v{prevVer} to v{currVer}");
+                        }
+                        else if (pe.ProgressPercentage == 4)
+                        {
+                            uDebugLogAdd($"Upstaller installation not found so we're installing that biatch now!");
+                            UpdateUpstaller();
                         }
                     }
                     catch (Exception ex)
@@ -1252,6 +1310,23 @@ namespace Panacea.Windows
                 LogException(ex);
             }
         }
+
+        public void OpenLogFolder()
+        {
+            try
+            {
+                uDebugLogAdd("Opening log folder in file explorer");
+                Process p = new Process();
+                p.StartInfo.FileName = "explorer.exe";
+                p.StartInfo.Arguments = LogDirectory;
+                p.Start();
+                uDebugLogAdd("Opened log folder in file explorer");
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
         #endregion
 
         #region Install/Update
@@ -1374,9 +1449,17 @@ namespace Panacea.Windows
                 VerifyBackupDirectory();
                 CleanupBackupClient();
                 FileInfo fi = new FileInfo($@"{CurrentDirectory}\Upstaller.exe");
-                uDebugLogAdd($@"Moving old client to it's new home, Before: {fi.FullName}");
-                fi.MoveTo($@"{CurrentDirectory}\Backup\Upstaller.exe");
-                uDebugLogAdd($@"Finished old client backup, After: {fi.FullName}");
+                if (fi.Exists)
+                {
+                    uDebugLogAdd($@"Moving old client to it's new home, Before: {fi.FullName}");
+                    fi.MoveTo($@"{CurrentDirectory}\Backup\Upstaller.exe");
+                    uDebugLogAdd($@"Finished old client backup, After: {fi.FullName}");
+                }
+                else
+                {
+                    uDebugLogAdd($"File doesn't exist: {fi.Name}");
+                    uDebugLogAdd("Canceling previous version backup");
+                }
             }
             catch (Exception ex)
             {

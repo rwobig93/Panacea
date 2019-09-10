@@ -516,7 +516,7 @@ namespace Panacea.Classes
         {
             _currentStartList.Remove(startItem);
             OnPropertyChanged("ActiveStartList");
-            Events.TriggerStartInfoChange(true);
+            Events.TriggerStartInfoChange();
         }
         public void UpdateWindowLocation(WindowItem windowItem, Process proc)
         {
