@@ -2,26 +2,21 @@
 using Newtonsoft.Json;
 using Octokit;
 using Panacea.Classes;
-using Panacea.Windows;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Management;
 using System.Net;
 using System.Net.Http;
-using System.Net.Mail;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
@@ -639,7 +634,10 @@ namespace Panacea.Windows
                                 SaveSettings();
                                 ActivateOpenWindows();
                                 break;
-                            case 3:
+                            //case 3:
+                                // 15min Timed Actions
+                                //break;
+                            case 4:
                                 // 60min Timed Actions
                                 tCheckForUpdates();
                                 break;
@@ -665,10 +663,15 @@ namespace Panacea.Windows
                                 uDebugLogAdd("5min passed, now running timed actions");
                                 worker.ReportProgress(2);
                             }
+                            //if (updateCounter > 900 && updateCounter % 900 == 0)
+                            //{
+                            //    uDebugLogAdd("15min passed, now running timed actions");
+                            //    worker.ReportProgress(3);
+                            //}
                             if (updateCounter > 3600 && updateCounter % 3600 == 0)
                             {
                                 uDebugLogAdd("60min passed, now running update timed action");
-                                worker.ReportProgress(3);
+                                worker.ReportProgress(4);
                                 updateCounter = -1;
                             }
                             updateCounter++;
@@ -696,17 +699,23 @@ namespace Panacea.Windows
                 uDebugLogAdd("Starting window activation");
                 if (this.UtilBar != null)
                 {
-                    uDebugLogAdd("Utilbar isn't null, activating...");
-                    this.UtilBar.Show();
-                    activeCounter++;
+                    if (this.UtilBar.IsVisible)
+                    {
+                        uDebugLogAdd("Utilbar isn't null & is visible, activating...");
+                        this.UtilBar.Show();
+                        activeCounter++;
+                    }
                 }
                 foreach (var popup in PopupWindows)
                 {
                     if (popup != null)
                     {
-                        uDebugLogAdd($"{popup.Name} isn't null, activating...");
-                        popup.Show();
-                        activeCounter++;
+                        if (popup.IsVisible)
+                        {
+                            uDebugLogAdd($"{popup.Name} isn't null & is visible, activating...");
+                            popup.Show();
+                            activeCounter++;
+                        }
                     }
                 }
                 uDebugLogAdd($"Finished activating {activeCounter} windows");
@@ -1258,7 +1267,7 @@ namespace Panacea.Windows
                 uDebugLogAdd($"Window handler info window constructed");
                 PopupWindows.Add(WindowHandleDisplay);
                 WindowHandleDisplay.Show();
-                WindowHandleDisplay.Closed += (s,e) => { Events.TriggerWindowInfoChange(true); PopupWindows.Remove(WindowHandleDisplay); };
+                WindowHandleDisplay.Closed += (s, e) => { Events.TriggerWindowInfoChange(true); PopupWindows.Remove(WindowHandleDisplay); };
                 uDebugLogAdd($"Window handler info window shown");
             }
             catch (Exception ex)
