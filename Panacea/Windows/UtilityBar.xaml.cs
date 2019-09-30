@@ -528,9 +528,9 @@ namespace Panacea.Windows
                         }
                         else if (popupNetwork != null)
                         {
-                            if (popupNetwork.Opacity == 0)
+                            if (!popupNetwork.IsVisible)
                                 popupNetwork.PopupShow();
-                            else if (popupNetwork.Opacity == 1.0)
+                            else if (popupNetwork.IsVisible)
                                 popupNetwork.PopupHide();
                         }
                         break;
@@ -543,9 +543,9 @@ namespace Panacea.Windows
                         }
                         else if (popupSettings != null)
                         {
-                            if (popupSettings.Opacity == 0)
+                            if (!popupSettings.IsVisible)
                                 popupSettings.PopupShow();
-                            else if (popupSettings.Opacity == 1.0)
+                            else if (popupSettings.IsVisible)
                                 popupSettings.PopupHide();
                         }
                         break;
@@ -558,9 +558,9 @@ namespace Panacea.Windows
                         }
                         else if (popupAudio != null)
                         {
-                            if (popupAudio.Opacity == 0)
+                            if (!popupAudio.IsVisible)
                                 popupAudio.PopupShow();
-                            else if (popupAudio.Opacity == 1.0)
+                            else if (popupAudio.IsVisible)
                                 popupAudio.PopupHide();
                         }
                         break;
@@ -573,9 +573,9 @@ namespace Panacea.Windows
                         }
                         else if (popupEmote != null)
                         {
-                            if (popupEmote.Opacity == 0)
+                            if (!popupEmote.IsVisible)
                                 popupEmote.PopupShow();
-                            else if (popupEmote.Opacity == 1.0)
+                            else if (popupEmote.IsVisible)
                                 popupEmote.PopupHide();
                         }
                         break;
@@ -588,9 +588,9 @@ namespace Panacea.Windows
                         }
                         else if (popupWindows != null)
                         {
-                            if (popupWindows.Opacity == 0)
+                            if (!popupWindows.IsVisible)
                                 popupWindows.PopupShow();
-                            else if (popupWindows.Opacity == 1.0)
+                            else if (popupWindows.IsVisible)
                                 popupWindows.PopupHide();
                         }
                         break;
@@ -603,9 +603,9 @@ namespace Panacea.Windows
                         }
                         else if (popupInfo != null)
                         {
-                            if (popupInfo.Opacity == 0)
+                            if (!popupInfo.IsVisible)
                                 popupInfo.PopupShow();
-                            else if (popupInfo.Opacity == 1.0)
+                            else if (popupInfo.IsVisible)
                                 popupInfo.PopupHide();
                         }
                         break;
