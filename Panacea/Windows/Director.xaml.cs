@@ -697,7 +697,7 @@ namespace Panacea.Windows
                 if (this.UtilBar != null)
                 {
                     uDebugLogAdd("Utilbar isn't null, activating...");
-                    this.UtilBar.Activate();
+                    this.UtilBar.Show();
                     activeCounter++;
                 }
                 foreach (var popup in PopupWindows)
@@ -705,7 +705,7 @@ namespace Panacea.Windows
                     if (popup != null)
                     {
                         uDebugLogAdd($"{popup.Name} isn't null, activating...");
-                        popup.Activate();
+                        popup.Show();
                         activeCounter++;
                     }
                 }

@@ -248,7 +248,6 @@ namespace Panacea.Windows
             {
                 this.Top = UtilityBar.UtilBarMain.Top - PopinHeight;
                 this.Left = UtilityBar.UtilBarMain.Left + UtilityBar.UtilBarMain.btnMenuAudio.Margin.Left;
-                this.Opacity = 0;
             }
             catch (Exception ex)
             {
@@ -260,8 +259,9 @@ namespace Panacea.Windows
         {
             try
             {
-                if (this.Opacity == 1.0)
-                    this.BeginAnimation(Window.OpacityProperty, outAnimation);
+                //if (this.Opacity == 1.0)
+                //    this.BeginAnimation(Window.OpacityProperty, outAnimation);
+                this.Hide();
             }
             catch (Exception ex)
             {
@@ -273,8 +273,9 @@ namespace Panacea.Windows
         {
             try
             {
-                if (this.Opacity == 0)
-                    this.BeginAnimation(Window.OpacityProperty, inAnimation);
+                //if (this.Opacity == 0)
+                //    this.BeginAnimation(Window.OpacityProperty, inAnimation);
+                this.Show();
             }
             catch (Exception ex)
             {
